@@ -1,16 +1,28 @@
+/* Reset toàn cục để tránh tràn bất ngờ */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden; /* Không cho cuộn */
+  font-family: 'Inter', sans-serif;
+}
+
 .register-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 50px; /* tăng khoảng cách giữa trái và phải */
-  min-height: 100vh;
-  padding: 40px 60px;
-  background: #fff7f0; /* màu nền nhạt giống ảnh */
-  font-family: 'Inter', sans-serif;
+  height: 100vh; /* Đảm bảo vừa khít 1 màn hình */
+  column-gap: 40px;
+  padding: 0 24px;
+  background: #fff7f0;
 }
 
 .register-left {
-  flex: 1;
+  width: 420px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -40,9 +52,9 @@
   background: #ffffff;
   border: 1px solid #1e90ff;
   border-radius: 12px;
-  padding: 32px 30px;
-  width: 100%;
+  padding: 28px 24px;
   max-width: 360px;
+  width: 100%;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -60,6 +72,7 @@
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 15px;
+  transition: border 0.2s ease;
 }
 
 .register-form-box input:focus {
