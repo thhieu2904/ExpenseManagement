@@ -3,12 +3,13 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
   overflow: hidden; /* Không cho cuộn */
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .register-container {
@@ -30,7 +31,7 @@ html, body {
 }
 
 .register-logo {
-  width: 120px;
+  width: 240px;
   margin-bottom: 24px;
 }
 
