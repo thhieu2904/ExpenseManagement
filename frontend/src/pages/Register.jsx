@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 import "../styles/register.css";
-import logo from "../assets/Logo.png";
+import logo from "../assets/login/logo.png";
 import bg from "../assets/login/background.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
@@ -44,7 +44,9 @@ export default function Register() {
       );
 
       setIsSuccess(true);
-      setMessage("Đăng ký thành công! Đang chuyển hướng...");
+      setMessage(
+        response.data.message || "Đăng ký thành công! Đang chuyển hướng..."
+      );
 
       setTimeout(() => navigate("/login"), 1500); // chuyển sau 1.5 giây
     } catch (err) {
