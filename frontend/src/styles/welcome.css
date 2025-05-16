@@ -1,0 +1,55 @@
+.welcome-container {
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  flex-direction: column;          /* quan trọng */
+  align-items: center;
+  justify-content: flex-start;     /* không canh giữa */
+  font-family: 'Inter', sans-serif;
+  text-align: center;
+}
+
+.welcome-logo {
+  width: 200px;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+.welcome-title {
+  font-size: 48px;
+  font-weight: bold;
+  color: #6F3C51;
+  margin-bottom: 12px;
+}
+
+.welcome-desc {
+  font-family: 'Inter', sans-serif;
+  font-style: italic;
+  font-weight: 50;  
+  color: #5a3b4e;
+  font-size: 36px;
+  line-height: 1.6;
+  max-width: 700px;
+  max-height: 290px;
+  margin-bottom: 40px;
+  font-weight: 300;
+}
+
+.welcome-btn-group {
+  display: flex;
+  gap: 200px;                        /* giống khoảng cách trong thiết kế */
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.welcome-button-img {
+  width: 230px;                     /* khớp với nút PNG của anh */
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.welcome-button-img:hover {
+  transform: scale(1.05);
+}
