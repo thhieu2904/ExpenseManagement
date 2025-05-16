@@ -1,50 +1,49 @@
 .welcome-container {
   min-height: 100vh;
+  background-color: #fff8f2;
+  background-image: url("../assets/login/background.png");
   background-size: cover;
   background-position: center;
   display: flex;
-  flex-direction: column;          /* quan trọng */
+  flex-direction: column;
   align-items: center;
-  justify-content: flex-start;     /* không canh giữa */
-  font-family: 'Inter', sans-serif;
+  justify-content: flex-start;
   text-align: center;
+  font-family: "Inter", sans-serif;
+  padding-top: 60px;
 }
 
 .welcome-logo {
-  width: 200px;
-  height: auto;
-  margin-bottom: 10px;
+  width: 240px;
+  margin-bottom: 20px;
+  margin-top: 50px;
 }
 
 .welcome-title {
-  font-size: 48px;
+  font-size: 36px;
   font-weight: bold;
-  color: #6F3C51;
-  margin-bottom: 12px;
+  color: #6f3c51;
+  margin-bottom: 16px;
 }
 
 .welcome-desc {
-  font-family: 'Inter', sans-serif;
+  font-size: 18px;
   font-style: italic;
-  font-weight: 50;  
-  color: #5a3b4e;
-  font-size: 36px;
+  color: #7e5d6d;
+  max-width: 600px;
+  margin: 0 auto 40px auto;
   line-height: 1.6;
-  max-width: 700px;
-  max-height: 290px;
-  margin-bottom: 40px;
-  font-weight: 300;
 }
 
 .welcome-btn-group {
   display: flex;
-  gap: 200px;                        /* giống khoảng cách trong thiết kế */
+  gap: 80px;
   flex-wrap: wrap;
   justify-content: center;
 }
 
 .welcome-button-img {
-  width: 230px;                     /* khớp với nút PNG của anh */
+  width: 180px;
   height: auto;
   cursor: pointer;
   transition: transform 0.2s ease;

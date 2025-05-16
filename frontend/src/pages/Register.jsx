@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
-import '../styles/register.css';
-import logo from '../assets/Logo.png';
-import bg from '../assets/Giao_dien_dang_nhap/imgbackground.png';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
+import "../styles/register.css";
+import logo from "../assets/Logo.png";
+import bg from "../assets/login/background.png";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
 
 export default function Register() {
   const [formData, setFormData] = useState({
-    username: '',
-    fullname: '',
-    password: '',
-    confirmPassword: '',
+    username: "",
+    fullname: "",
+    password: "",
+    confirmPassword: "",
   });
 
   const isFormValid =
@@ -23,11 +26,33 @@ export default function Register() {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+  const navigate = useNavigate();
+  const [message, setMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Đăng ký:', formData);
-    // navigate('/login');
+    try {
+      const { username, fullname, password } = formData;
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/register",
+        {
+          username,
+          fullname,
+          password,
+        }
+      );
+
+      setIsSuccess(true);
+      setMessage("Đăng ký thành công! Đang chuyển hướng...");
+
+      setTimeout(() => navigate("/login"), 1500); // chuyển sau 1.5 giây
+    } catch (err) {
+      setIsSuccess(false);
+      const msg =
+        err.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại.";
+      setMessage(msg);
+    }
   };
 
   return (
@@ -83,7 +108,11 @@ export default function Register() {
           onChange={handleChange}
           required
         />
-
+        {message && (
+          <div className={`login-message ${isSuccess ? "success" : "error"}`}>
+            {message}
+          </div>
+        )}
         <button
           type="submit"
           className="register-button"
