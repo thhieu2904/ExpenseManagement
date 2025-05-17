@@ -1,4 +1,5 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect, useState } from "react";
+
 import avatar1 from "../../assets/avatars/cat1.png";
 import avatar2 from "../../assets/avatars/cat2.png";
 import avatar3 from "../../assets/avatars/cat3.png";
@@ -8,6 +9,21 @@ import logoSrc from "../../assets/login/logo2.png";
 const animalAvatars = [avatar1, avatar2, avatar3];
 
 const Header = ({ userName = "Nguyễn Văn A", userAvatar }) => {
+  const [name, setName] = useState(userName);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        if (parsed.fullname) setName(parsed.fullname);
+        else if (parsed.username) setName(parsed.username);
+      } catch (err) {
+        console.error("Lỗi đọc user:", err);
+      }
+    }
+  }, []);
+
   // ✅ Random ảnh 1 lần duy nhất khi avatar trống
   const fallbackAvatar = useMemo(() => {
     const index = Math.floor(Math.random() * animalAvatars.length);
@@ -50,7 +66,7 @@ const Header = ({ userName = "Nguyễn Văn A", userAvatar }) => {
             alt={`${userName}'s avatar`}
             className={styles.avatar}
           />
-          <span className={styles.userName}>{userName}</span>
+          <span className={styles.userName}>{name}</span>
         </div>
       </div>
     </header>

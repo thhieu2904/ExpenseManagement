@@ -4,6 +4,7 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); /* Thêm bóng đổ nhẹ */
   display: flex;
   justify-content: flex-start; /* Căn các mục về bên trái */
+  width: 100vw;
 }
 
 .navList {
@@ -12,6 +13,7 @@
   padding: 0;
   display: flex; /* Sắp xếp các mục li theo hàng ngang */
   align-items: center;
+  gap: 18px;
 }
 
 .navItem {
