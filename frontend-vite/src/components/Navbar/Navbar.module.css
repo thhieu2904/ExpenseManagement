@@ -13,6 +13,7 @@
   padding: 0;
   display: flex; /* Sắp xếp các mục li theo hàng ngang */
   align-items: center;
+  gap: 18px;
 }
 
 .navItem {
