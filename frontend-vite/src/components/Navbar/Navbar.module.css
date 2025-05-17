@@ -1,0 +1,54 @@
+.navbarContainer {
+  background-color: #3f51b5; /* Màu xanh dương tương tự thiết kế - bạn nên dùng mã màu chính xác từ Figma */
+  padding: 12px 32px; /* Khoảng đệm trên/dưới và trái/phải */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); /* Thêm bóng đổ nhẹ */
+  display: flex;
+  justify-content: flex-start; /* Căn các mục về bên trái */
+}
+
+.navList {
+  list-style-type: none; /* Bỏ dấu chấm đầu dòng của ul */
+  margin: 0;
+  padding: 0;
+  display: flex; /* Sắp xếp các mục li theo hàng ngang */
+  align-items: center;
+}
+
+.navItem {
+  margin-right: 20px; /* Khoảng cách giữa các mục */
+}
+
+.navItem:last-child {
+  margin-right: 0; /* Mục cuối cùng không cần margin bên phải */
+}
+
+.navLink {
+  color: #ffffff; /* Màu chữ trắng */
+  text-decoration: none; /* Bỏ gạch chân của link */
+  padding: 8px 15px; /* Tăng vùng click và tạo khoảng đệm cho từng mục */
+  border-radius: 4px; /* Bo tròn nhẹ các góc */
+  font-size: 1rem; /* Kích thước chữ (16px) */
+  font-weight: 500; /* Độ đậm của chữ */
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out; /* Hiệu ứng chuyển đổi mượt mà */
+}
+
+.navLink:hover {
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.1
+  ); /* Hiệu ứng nền khi di chuột qua */
+  color: #e0e0e0; /* Thay đổi màu chữ nhẹ khi hover */
+}
+
+.navLink.active {
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.2
+  ); /* Nền nổi bật hơn cho mục đang active */
+  font-weight: 700; /* Chữ đậm hơn cho mục active */
+  color: #ffffff;
+}
