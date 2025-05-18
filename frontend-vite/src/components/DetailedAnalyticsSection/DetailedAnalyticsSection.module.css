@@ -1,0 +1,145 @@
+/* src/components/DetailedAnalyticsSection/DetailedAnalyticsSection.module.css */
+.analyticsContainer {
+  display: flex;
+  flex-wrap: wrap; /* Cho phép xuống dòng trên màn hình nhỏ */
+  gap: 20px;
+  margin-top: 25px;
+  padding: 15px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+}
+
+.trendChartContainer {
+  flex: 2; /* Chiếm 2/3 không gian */
+  min-width: 300px; /* Đảm bảo có chiều rộng tối thiểu */
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.categoryChartContainer {
+  flex: 1; /* Chiếm 1/3 không gian */
+  min-width: 300px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* src/components/DetailedAnalyticsSection/IncomeExpenseTrendChart.module.css */
+.chartContainer {
+  /* Dùng chung cho cả 2 chart con */
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap; /* Cho phép filter xuống dòng */
+  gap: 10px;
+}
+
+.chartTitle {
+  font-size: 1.3rem;
+  color: #2c3e50;
+  margin: 0;
+  font-weight: 600;
+}
+
+.filterButtons button {
+  background-color: #ecf0f1;
+  border: 1px solid #bdc3c7;
+  color: #34495e;
+  padding: 8px 15px;
+  margin-left: 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  font-size: 0.9rem;
+}
+
+.filterButtons button:hover {
+  background-color: #d2d6d8;
+}
+
+.filterButtons button.active {
+  background-color: #3f51b5; /* Màu giống Navbar */
+  color: white;
+  border-color: #3f51b5;
+}
+
+.loadingText,
+.errorText,
+.noDataText {
+  text-align: center;
+  padding: 30px 0;
+  color: #7f8c8d;
+  font-size: 1rem;
+}
+
+.errorText {
+  color: #c0392b;
+}
+
+/* src/components/DetailedAnalyticsSection/CategoryExpenseChart.module.css */
+/* (Sử dụng chung .chartContainer, .chartTitle, .loadingText, .errorText, .noDataText từ IncomeExpenseTrendChart.module.css nếu muốn) */
+/* Nếu muốn tách riêng, bạn có thể copy các style đó vào đây */
+
+.customTooltip {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.tooltipLabel {
+  margin: 0 0 5px 0;
+  color: #333;
+  font-weight: 500;
+}
+
+.tooltipPercentage {
+  margin: 0;
+  color: #555;
+  font-size: 0.9em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  /* Target tablets and large phones */
+  .analyticsContainer {
+    flex-direction: column;
+  }
+  .trendChartContainer,
+  .categoryChartContainer {
+    flex: 1 1 100%; /* Chiếm toàn bộ chiều rộng khi xuống dòng */
+  }
+}
+
+@media (max-width: 768px) {
+  /* Target smaller devices */
+  .header {
+    /* Cho header của IncomeExpenseTrendChart */
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .filterButtons {
+    margin-top: 10px;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+  }
+  .filterButtons button {
+    margin-left: 0;
+    flex-grow: 1; /* Các nút filter chiếm đều không gian */
+    margin: 0 2px;
+  }
+  .chartTitle {
+    font-size: 1.1rem;
+  }
+}

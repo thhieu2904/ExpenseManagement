@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Header from "../components/Header/Header";
 import Navbar from "../components/Navbar/Navbar";
+import StatsOverview from "../components/StatsOverview/StatsOverview";
+import DetailedAnalyticsSection from "../components/DetailedAnalyticsSection/DetailedAnalyticsSection";
+import RecentTransactions from "../components/RecentTransactions/RecentTransactions";
+import Footer from "../components/Footer/Footer";
 
 const HomePage = () => {
   const [userData, setUserData] = useState({ name: "", avatarUrl: null });
@@ -39,10 +43,17 @@ const HomePage = () => {
         userAvatar={userData.avatarUrl} // Header sẽ dùng avatar mặc định nếu avatarUrl là null
       />
       <Navbar />
-      <main style={{ padding: "20px", textAlign: "center" }}>
-        <h1>Chào mừng {userData.name} đến với Trang Chủ!</h1>
-        <p>Đây là nội dung chính của trang quản lý chi tiêu.</p>
+      <main
+        style={{
+          padding: "20px",
+          textAlign: "center",
+        }}
+      >
+        <StatsOverview />
+        <DetailedAnalyticsSection />
+        <RecentTransactions />
       </main>
+      <Footer />
     </div>
   );
 };

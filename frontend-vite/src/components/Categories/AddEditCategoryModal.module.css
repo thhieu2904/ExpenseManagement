@@ -1,0 +1,209 @@
+/* src/components/Categories/AddEditCategoryModal.module.css */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Nền mờ */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050; /* Cao hơn các phần tử khác */
+  padding: 15px;
+}
+
+.modalContent {
+  background-color: #f9f9f9; /* Màu nền hơi ngà giống ảnh */
+  padding: 20px 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 500px; /* Giới hạn chiều rộng modal */
+  position: relative; /* Cho nút đóng tuyệt đối */
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modalTitle {
+  font-size: 1.5rem; /* Kích thước tiêu đề giống ảnh */
+  font-weight: bold; /* Đậm hơn */
+  color: #333;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: 1px solid #ccc; /* Viền cho nút X giống ảnh */
+  color: #888;
+  font-size: 1.2rem; /* Kích thước chữ X */
+  font-weight: bold;
+  padding: 2px 8px; /* Padding để nút dễ nhấn hơn */
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.closeButton:hover {
+  color: #000;
+  background-color: #f0f0f0;
+}
+
+.categoryForm {
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroup {
+  margin-bottom: 18px; /* Khoảng cách giữa các group */
+}
+
+.formLabel {
+  display: block;
+  font-size: 0.95rem; /* Kích thước label */
+  color: #333;
+  margin-bottom: 6px;
+  font-weight: 500; /* Đậm hơn chút */
+}
+
+.requiredStar {
+  color: red;
+  margin-left: 2px;
+}
+
+.formInput {
+  width: 100%;
+  padding: 10px 12px; /* Padding cho input */
+  border: 1px solid #ccc; /* Border giống ảnh */
+  border-radius: 4px;
+  font-size: 0.95rem;
+  box-sizing: border-box; /* Quan trọng để padding không làm tăng kích thước */
+}
+.formInput:focus {
+  border-color: #3f51b5; /* Màu focus */
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
+}
+
+.radioGroup {
+  display: flex;
+  gap: 20px; /* Khoảng cách giữa các radio button */
+  margin-top: 5px;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  color: #333;
+  cursor: pointer;
+}
+
+.radioInput {
+  margin-right: 6px;
+  /* Bạn có thể tùy chỉnh thêm style cho radio input nếu muốn */
+}
+
+.iconSelectionGrid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(40px, 1fr)
+  ); /* Responsive grid cho icon */
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #ccc; /* Border giống ảnh */
+  border-radius: 4px;
+  background-color: #fff; /* Nền trắng cho khu vực chọn icon */
+  max-height: 150px; /* Giới hạn chiều cao, cho phép cuộn */
+  overflow-y: auto;
+}
+
+.iconButton {
+  background-color: #f0f0f0;
+  border: 1px solid transparent; /* Để có hiệu ứng border khi selected */
+  border-radius: 4px;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem; /* Kích thước icon */
+  color: #555;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.iconButton:hover {
+  background-color: #e0e0e0;
+}
+
+.iconButtonSelected {
+  background-color: #d6e4ff; /* Màu nền khi icon được chọn */
+  border-color: #3f51b5; /* Màu viền khi icon được chọn */
+  color: #3f51b5;
+}
+
+.formDivider {
+  border: 0;
+  border-top: 1px solid #e0e0e0;
+  margin: 25px 0; /* Khoảng cách cho đường kẻ */
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end; /* Đẩy nút về bên phải */
+  gap: 10px; /* Khoảng cách giữa các nút */
+}
+
+.formButton {
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent; /* Thêm border để kích thước nhất quán */
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cancelButton {
+  background-color: #f0f0f0; /* Nền xám nhạt giống ảnh */
+  color: #333;
+  border-color: #ccc; /* Border xám giống ảnh */
+}
+.cancelButton:hover {
+  background-color: #e0e0e0;
+}
+
+.submitButton {
+  background-color: #3f51b5; /* Màu xanh dương cho nút Thêm/Lưu */
+  color: white;
+  border-color: #3f51b5;
+}
+.submitButton:hover {
+  background-color: #303f9f;
+  border-color: #303f9f;
+}
+
+.formButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.errorMessage {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  border: 1px solid #ef9a9a;
+}

@@ -1,0 +1,169 @@
+/* src/components/StatsOverview/StatsOverview.module.css */
+.statsOverviewContainer {
+  padding: 20px;
+  background-color: #f4f6f8; /* Màu nền nhạt cho khu vực tổng quan */
+  border-radius: 8px;
+  margin-top: 20px; /* Khoảng cách với Navbar phía trên */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.title {
+  font-size: 1.8rem;
+  color: #333;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.titleIcon {
+  margin-right: 10px;
+  color: #3f51b5; /* Màu icon tiêu đề */
+}
+
+.addTransactionButton {
+  background-color: #3f51b5; /* Màu xanh dương giống Navbar */
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Khoảng cách giữa icon và text */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.addTransactionButton:hover {
+  background-color: #303f9f; /* Màu đậm hơn khi hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.statsCards {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(280px, 1fr)
+  ); /* Responsive grid */
+  gap: 20px;
+}
+
+.statCard {
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: flex-start; /* Căn icon và content theo chiều dọc */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.statCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.cardIconWrapper {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20px;
+  flex-shrink: 0; /* Ngăn icon bị co lại */
+}
+
+.cardIcon {
+  font-size: 1.6rem; /* Kích thước icon trong card */
+}
+
+/* Màu sắc cụ thể cho từng icon đã được đặt inline trong JSX để dễ quản lý hơn,
+   nhưng bạn có thể định nghĩa class riêng ở đây nếu muốn. */
+/* Ví dụ:
+.incomeCard .cardIcon { color: #4CAF50; }
+.expenseCard .cardIcon { color: #f44336; }
+.balanceCard .cardIcon { color: #607D8B; }
+*/
+
+.cardContent {
+  flex-grow: 1;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.cardTitle {
+  font-size: 1.1rem;
+  color: #333;
+  margin: 0;
+  font-weight: 600;
+}
+
+.cardPeriod {
+  font-size: 0.8rem;
+  color: #757575;
+}
+
+.cardAmount {
+  font-size: 1.9rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: #212121;
+}
+
+/* Màu sắc cho số tiền dựa trên loại card */
+.incomeCard .cardAmount {
+  color: #4caf50; /* Xanh lá cho thu nhập */
+}
+.expenseCard .cardAmount {
+  color: #f44336; /* Đỏ cho chi tiêu */
+}
+.balanceCard .cardAmount {
+  color: #3f51b5; /* Xanh dương cho số dư */
+}
+
+.cardChange {
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.positiveChange {
+  color: #4caf50; /* Xanh lá cho tăng trưởng tốt */
+}
+
+.negativeChange {
+  color: #f44336; /* Đỏ cho giảm hoặc tăng trưởng không tốt */
+}
+
+.loading,
+.error,
+.noData {
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 1.1rem;
+  color: #555;
+  background-color: #fff;
+  border-radius: 8px;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.error {
+  color: #d32f2f; /* Màu đỏ cho thông báo lỗi */
+  border-left: 5px solid #d32f2f;
+}

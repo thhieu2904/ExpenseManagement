@@ -25,7 +25,7 @@ app.listen(PORT, () =>
 const authRoutes = require("./routes/auth");
 app.use("/api/auth", authRoutes);
 
-const categoryRoutes = require("./routes/categories");
+const categoryRoutes = require("./routes/category");
 app.use("/api/categories", categoryRoutes);
 
 const accountRoutes = require("./routes/accounts");
@@ -37,5 +37,7 @@ app.use("/api/transactions", transactionRoutes);
 const { swaggerUi, swaggerSpec } = require("./swagger");
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-const statsRoutes = require("./routes/stats");
-app.use("/api/stats", statsRoutes);
+// const statsRoutes = require("./routes/stats");
+// app.use("/api/stats", statsRoutes);
+const statisticsRoutes = require("./routes/statistics.routes");
+app.use("/api/statistics", statisticsRoutes);

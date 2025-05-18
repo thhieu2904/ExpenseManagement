@@ -1,0 +1,227 @@
+/* src/components/RecentTransactions/RecentTransactions.module.css */
+
+/* ... (Tất cả các style cũ của bạn cho .recentTransactionsContainer, .header, .title, .viewDetailsButton, .tableWrapper, .transactionsTable, .amountHeader, .loadingIndicator, .noTransactions, .errorText, .noMoreTransactions giữ nguyên) ... */
+
+/* Container cho nút "Tải thêm" để định vị nó ở góc phải */
+.loadMoreButtonOuterContainer {
+  display: flex;
+  justify-content: flex-end; /* Căn nút về bên phải */
+  padding-top: 15px; /* Khoảng cách phía trên nút với bảng hoặc nội dung khác */
+  margin-top: 10px; /* Thêm chút margin nếu cần */
+}
+
+/* Thiết kế lại nút "Tải thêm" */
+.loadMoreButton {
+  background-color: #3f51b5; /* Màu xanh dương chủ đạo (giống Navbar) */
+  color: white;
+  border: none;
+  padding: 10px 22px; /* Tăng padding cho đẹp hơn */
+  border-radius: 20px; /* Bo tròn nhiều tạo thành hình viên thuốc */
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.25s ease, box-shadow 0.25s ease,
+    transform 0.15s ease;
+  display: inline-flex; /* Để icon và text căn chỉnh tốt */
+  align-items: center;
+  gap: 8px; /* Khoảng cách giữa text và icon */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.loadMoreButton:hover:not(:disabled) {
+  background-color: #303f9f; /* Màu đậm hơn khi hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px); /* Hiệu ứng nhấc nhẹ khi hover */
+}
+
+.loadMoreButton:active:not(:disabled) {
+  transform: translateY(0px); /* Hiệu ứng nhấn xuống */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.loadMoreButton:disabled {
+  background-color: #9fa8da; /* Màu nhạt hơn khi disabled */
+  color: #e8eaf6;
+  cursor: not-allowed;
+  opacity: 0.8;
+  box-shadow: none;
+}
+
+.loadMoreIcon {
+  /* Không cần style riêng nhiều nếu dùng gap */
+  /* font-size: 0.85em; */ /* Có thể điều chỉnh kích thước icon nếu muốn */
+}
+
+/* Các style khác bạn đã có (ví dụ từ recent_transactions_css_full_code) nên được giữ lại */
+/* Đảm bảo .tableWrapper không có max-height và overflow-y: auto */
+.tableWrapper {
+  /* max-height: 400px; */ /* Đã bỏ */
+  /* overflow-y: auto; */ /* Đã bỏ */
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+/* ... (phần responsive và các style khác giữ nguyên) ... */
+.recentTransactionsContainer {
+  background-color: #ffffff;
+  padding: 20px 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  margin-top: 25px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 1.6rem;
+  color: #2c3e50;
+  font-weight: 600;
+  margin: 0;
+}
+
+.viewDetailsButton {
+  background-color: transparent;
+  color: #3f51b5;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.viewDetailsButton:hover {
+  background-color: rgba(63, 81, 181, 0.05);
+  color: #303f9f;
+}
+
+.transactionsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.transactionsTable th,
+.transactionsTable td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+.transactionsTable th {
+  background-color: #f8f9fa;
+  color: #555;
+  font-weight: 600;
+}
+.transactionsTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.transactionsTable tbody tr:hover {
+  background-color: #f7f7f7;
+}
+
+.amountHeader {
+  text-align: right !important;
+}
+
+.loadingIndicator,
+.noMoreTransactions {
+  text-align: center;
+  padding: 15px;
+  color: #777;
+  font-size: 0.9em;
+}
+.loadingIndicator span {
+  margin-left: 8px;
+}
+
+.noTransactions {
+  text-align: center;
+  padding: 30px 0;
+  color: #888;
+  font-style: italic;
+}
+.errorText {
+  color: #c0392b;
+  font-style: normal;
+  font-weight: 500;
+  text-align: center;
+  padding: 10px 0;
+}
+.noTransactions.errorText {
+  padding: 30px 0;
+}
+
+.noMoreTransactions {
+  text-align: center;
+  padding: 15px;
+  color: #888;
+  font-style: italic;
+  margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+  .recentTransactionsContainer .tableWrapper {
+    border: none;
+  }
+  .recentTransactionsContainer .transactionsTable thead {
+    display: none;
+  }
+  .recentTransactionsContainer .transactionsTable,
+  .recentTransactionsContainer .transactionsTable tbody,
+  .recentTransactionsContainer .transactionsTable tr,
+  .recentTransactionsContainer .transactionsTable td {
+    display: block;
+    width: 100% !important;
+  }
+  .recentTransactionsContainer .transactionsTable tr {
+    margin-bottom: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+  .recentTransactionsContainer .transactionsTable td {
+    text-align: right;
+    padding-left: 50%;
+    position: relative;
+    border-bottom: 1px dashed #eee;
+  }
+  .recentTransactionsContainer .transactionsTable td:last-child {
+    border-bottom: none;
+  }
+  .recentTransactionsContainer .transactionsTable td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 10px;
+    width: calc(50% - 20px);
+    padding-right: 10px;
+    font-weight: bold;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .recentTransactionsContainer .amountCell,
+  .recentTransactionsContainer .actionsCell {
+    text-align: right !important;
+  }
+  .recentTransactionsContainer .categoryCell {
+    justify-content: flex-end;
+  }
+  .recentTransactionsContainer .descriptionCell {
+    white-space: normal;
+    text-align: right;
+  }
+  .loadMoreButtonOuterContainer {
+    /* Căn giữa nút trên mobile nếu muốn */
+    justify-content: center;
+  }
+}

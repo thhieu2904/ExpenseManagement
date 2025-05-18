@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/welcome.css";
+import styles from "../styles/Welcome.module.css"; // ✅ đúng module
 
 import logo from "../assets/login/logo.png";
 import btnRegister from "../assets/login/btn_dangky.png";
@@ -9,26 +9,26 @@ import btnLogin from "../assets/login/btn_dangnhap.png";
 export default function Welcome() {
   const navigate = useNavigate();
   return (
-    <div className="welcome-container">
-      <img src={logo} alt="Logo EMG" className="welcome-logo" />
+    <div className={styles["welcome-container"]}>
+      <img src={logo} alt="Logo EMG" className={styles["welcome-logo"]} />
 
-      <h1 className="welcome-title">Chào mừng đến với EMG</h1>
-      <p className="welcome-desc">
+      <h1 className={styles["welcome-title"]}>Chào mừng đến với EMG</h1>
+      <p className={styles["welcome-desc"]}>
         Trải nghiệm ứng dụng giúp bạn theo dõi, phân tích và giúp quản lí tài
         chính hiệu quả
       </p>
 
-      <div className="welcome-btn-group">
+      <div className={styles["welcome-btn-group"]}>
         <img
           src={btnRegister}
           alt="Đăng ký"
-          className="welcome-button-img"
+          className={styles["welcome-button-img"]}
           onClick={() => navigate("/register")}
         />
         <img
           src={btnLogin}
           alt="Đăng nhập"
-          className="welcome-button-img"
+          className={styles["welcome-button-img"]}
           onClick={() => navigate("/login")}
         />
       </div>
