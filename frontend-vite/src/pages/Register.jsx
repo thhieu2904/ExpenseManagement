@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-import "../styles/register.css";
+import styles from "../styles/Register.module.css";
 import logo from "../assets/login/logo.png";
 import bg from "../assets/login/background.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -48,7 +48,7 @@ export default function Register() {
         response.data.message || "Đăng ký thành công! Đang chuyển hướng..."
       );
 
-      setTimeout(() => navigate("/login"), 1500); // chuyển sau 1.5 giây
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
       setIsSuccess(false);
       const msg =
@@ -59,18 +59,18 @@ export default function Register() {
 
   return (
     <div
-      className="register-container"
+      className={styles["register-container"]}
       style={{ backgroundImage: `url(${bg})` }}
     >
-      <div className="register-left">
-        <img src={logo} alt="logo" className="register-logo" />
-        <h1 className="register-title">EXPENSE MANAGEMENT</h1>
-        <p className="register-desc">
+      <div className={styles["register-left"]}>
+        <img src={logo} alt="logo" className={styles["register-logo"]} />
+        <h1 className={styles["register-title"]}>EXPENSE MANAGEMENT</h1>
+        <p className={styles["register-desc"]}>
           Tạo tài khoản để bắt đầu quản lí thông minh cùng EMG
         </p>
       </div>
 
-      <form className="register-form-box" onSubmit={handleSubmit}>
+      <form className={styles["register-form-box"]} onSubmit={handleSubmit}>
         <label htmlFor="username">Tên tài khoản:</label>
         <input
           id="username"
@@ -110,14 +110,20 @@ export default function Register() {
           onChange={handleChange}
           required
         />
+
         {message && (
-          <div className={`login-message ${isSuccess ? "success" : "error"}`}>
+          <div
+            className={`${styles["login-message"]} ${
+              isSuccess ? styles["success"] : styles["error"]
+            }`}
+          >
             {message}
           </div>
         )}
+
         <button
           type="submit"
-          className="register-button"
+          className={styles["register-button"]}
           disabled={!isFormValid}
         >
           <FontAwesomeIcon icon={faUserPlus} />

@@ -1,0 +1,206 @@
+/* src/components/Categories/CategoryList.module.css */
+.categoryListContainer {
+  background-color: #ffffff;
+  padding: 20px 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+.listHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Căn giữa các item trong header theo chiều dọc */
+  padding: 10px 15px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  border-radius: 6px 6px 0 0;
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.headerColumnName {
+  flex-basis: 50%; /* Điều chỉnh flex-basis */
+  text-align: left;
+}
+/* Thay thế .headerColumnIcon bằng .headerColumnTotalAmount */
+.headerColumnTotalAmount {
+  flex-basis: 30%; /* Điều chỉnh flex-basis */
+  text-align: right; /* Căn phải cho số tiền */
+  padding-right: 10px; /* Thêm padding để không sát lề */
+}
+.headerColumnActions {
+  flex-basis: 20%;
+  text-align: center;
+}
+
+.listItems {
+  max-height: 450px;
+  overflow-y: auto;
+  margin-top: 5px;
+}
+
+.categoryItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #f1f3f5;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.categoryItem:last-child {
+  border-bottom: none;
+}
+
+.categoryItem:hover {
+  background-color: #f8f9fa;
+}
+
+.categoryInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-basis: 50%; /* Phù hợp với headerColumnName */
+}
+
+.categoryIcon {
+  font-size: 1.3rem;
+  color: #3f51b5;
+  width: 25px;
+  text-align: center;
+}
+
+.categoryName {
+  font-size: 1rem;
+  color: #343a40;
+}
+
+/* CSS cho cột tổng tiền mới */
+.categoryTotalAmount {
+  flex-basis: 30%; /* Phù hợp với headerColumnTotalAmount */
+  font-weight: 500;
+  text-align: right; /* Căn phải số tiền */
+  padding-right: 10px; /* Thêm padding */
+}
+
+.incomeAmount {
+  color: #28a745 !important; /* Màu xanh cho thu nhập */
+}
+
+.expenseAmount {
+  color: #dc3545; /* Màu đỏ cho chi tiêu */
+}
+
+.categoryActions {
+  display: flex;
+  gap: 10px;
+  flex-basis: 20%; /* Phù hợp với headerColumnActions */
+  justify-content: center;
+}
+
+.actionButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  font-size: 1rem;
+  color: #6c757d;
+  transition: color 0.2s ease;
+  border-radius: 4px;
+}
+.actionButton:hover {
+  background-color: #e9ecef;
+}
+
+.editButton:hover {
+  color: #007bff;
+}
+
+.deleteButton:hover {
+  color: #dc3545;
+}
+
+.loadingMessage,
+.errorMessage,
+.noCategoriesMessage {
+  text-align: center;
+  padding: 30px 0;
+  color: #6c757d;
+  font-size: 1rem;
+}
+
+.errorMessage {
+  color: #dc3545;
+}
+.inlineError {
+  /* Style cho lỗi hiển thị cùng danh sách */
+  color: #dc3545;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin: 10px 15px;
+  text-align: center;
+}
+
+/* Responsive (tùy chỉnh nếu cần) */
+@media (max-width: 768px) {
+  /* Tăng breakpoint để áp dụng sớm hơn */
+  .listHeader {
+    /* Có thể ẩn header trên mobile nếu không gian chật hẹp */
+    /* display: none; */
+    font-size: 0.8rem;
+    padding: 8px 10px;
+  }
+  .headerColumnName {
+    flex-basis: 40%;
+  }
+  .headerColumnTotalAmount {
+    flex-basis: 35%;
+    text-align: right;
+  }
+  .headerColumnActions {
+    flex-basis: 25%;
+  }
+
+  .categoryItem {
+    /* Chuyển sang layout block cho từng item trên mobile */
+    flex-direction: column;
+    align-items: flex-start; /* Căn trái các mục con */
+    padding: 12px 10px;
+  }
+  .categoryInfo {
+    width: 100%; /* Chiếm toàn bộ chiều rộng */
+    margin-bottom: 8px; /* Khoảng cách với các mục khác */
+    flex-basis: auto; /* Reset flex-basis */
+  }
+  .categoryTotalAmount {
+    width: 100%;
+    text-align: left; /* Căn trái trên mobile cho dễ đọc */
+    padding-right: 0;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    flex-basis: auto;
+  }
+  .categoryTotalAmount::before {
+    /* Thêm label cho totalAmount trên mobile */
+    content: "Tổng tiền: ";
+    font-weight: bold;
+    color: #495057;
+    margin-right: 5px;
+  }
+
+  .categoryActions {
+    width: 100%;
+    justify-content: flex-start; /* Căn trái các nút action */
+    gap: 15px;
+    flex-basis: auto;
+  }
+  .categoryIcon {
+    font-size: 1.1rem;
+  }
+  .categoryName {
+    font-size: 0.95rem;
+  }
+}

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/login.css";
+import styles from "../styles/Login.module.css";
 import logo from "../assets/login/logo.png";
 import bg from "../assets/login/background.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -43,20 +43,24 @@ export default function Login() {
 
   return (
     <div
-      className="register-container"
+      className={styles["login-container"]}
       style={{ backgroundImage: `url(${bg})` }}
     >
-      <div className="register-left">
-        <img src={logo} alt="logo" className="register-logo" />
-        <h1 className="register-title">EXPENSE MANAGEMENT</h1>
-        <p className="register-desc">
+      <div className={styles["login-left"]}>
+        <img src={logo} alt="logo" className={styles["login-logo"]} />
+        <h1 className={styles["login-title"]}>EXPENSE MANAGEMENT</h1>
+        <p className={styles["login-desc"]}>
           Đăng nhập để bắt đầu quản lí thông minh cùng EMG
         </p>
       </div>
 
-      <form className="register-form-box" onSubmit={handleLogin}>
+      <form className={styles["login-form-box"]} onSubmit={handleLogin}>
         {message && (
-          <div className={`login-message ${isSuccess ? "success" : "error"}`}>
+          <div
+            className={`${styles["login-message"]} ${
+              isSuccess ? styles["success"] : styles["error"]
+            }`}
+          >
             {message}
           </div>
         )}
@@ -81,12 +85,12 @@ export default function Login() {
           required
         />
 
-        <button type="submit" className="register-button">
+        <button type="submit" className={styles["login-button"]}>
           <FontAwesomeIcon icon={faSignInAlt} />
           &nbsp;Đăng nhập
         </button>
 
-        <p className="login-bottom">
+        <p className={styles["login-bottom"]}>
           <span onClick={() => navigate("/register")}>
             Bạn chưa có tài khoản?
           </span>

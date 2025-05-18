@@ -1,0 +1,133 @@
+/* src/components/Categories/CategoryPageHeader.module.css */
+.categoryHeaderContainer {
+  display: flex;
+  justify-content: space-between; /* Đẩy leftSection và addButtonContainer ra hai bên */
+  /* Thay đổi align-items để nút "Thêm" có thể dịch xuống dưới */
+  align-items: flex-end; /* Căn các item con theo phía dưới của container */
+  padding: 30px 25px; /* Tăng padding trên dưới để khung cao hơn, ví dụ: 30px */
+  background-color: #f4f6f8;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  min-height: 100px; /* Đặt chiều cao tối thiểu nếu cần để đảm bảo không gian */
+}
+
+.leftSection {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Khoảng cách giữa tiêu đề và cụm tab */
+  /* Nếu align-items: flex-end ở trên làm title quá thấp, bạn có thể thêm margin-bottom cho tabButtons */
+}
+
+.titleSection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.titleIcon {
+  font-size: 1.8rem;
+  color: #555;
+  transform: rotate(-15deg);
+}
+
+.title {
+  font-size: 1.8rem;
+  color: #2c3e50;
+  font-weight: 600;
+  margin: 0;
+}
+
+.tabButtons {
+  display: flex;
+  gap: 10px;
+  background-color: #ffffff;
+  padding: 6px;
+  border-radius: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  align-self: flex-start;
+  /* margin-bottom: auto; */ /* Đẩy tab lên nếu leftSection được kéo dài bởi align-items: flex-end */
+}
+
+.tabButton {
+  background-color: transparent;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #555;
+  cursor: pointer;
+  transition: background-color 0.25s ease, color 0.25s ease,
+    box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+
+.tabButton.active {
+  background-color: #ffe0e6;
+  color: #d9534f;
+  box-shadow: 0 2px 4px rgba(217, 83, 79, 0.2);
+}
+
+.tabButton:not(.active):hover {
+  background-color: #e9ecef;
+}
+
+.addButtonContainer {
+  /* Với align-items: flex-end trên .categoryHeaderContainer,
+     container này sẽ tự động được căn chỉnh ở dưới cùng bên phải.
+     Chúng ta có thể không cần nhiều style ở đây nữa. */
+  /* Nếu muốn nút có khoảng cách với cạnh dưới của khung, có thể thêm padding vào .categoryHeaderContainer */
+}
+
+.addCategoryButton {
+  background-color: #3f51b5;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  /* Không cần margin-top nữa nếu align-items: flex-end hoạt động như mong muốn */
+}
+
+.addCategoryButton:hover {
+  background-color: #303f9f;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .categoryHeaderContainer {
+    flex-direction: column;
+    align-items: stretch; /* Reset lại align-items cho mobile */
+    padding: 20px; /* Giảm padding trên mobile */
+    min-height: auto; /* Reset min-height */
+  }
+  .leftSection {
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px; /* Tạo khoảng cách với nút Thêm khi nó xuống dòng */
+  }
+  /* .titleSection không cần thay đổi nhiều */
+  .tabButtons {
+    justify-content: center;
+    width: auto;
+    align-self: center;
+  }
+  .addButtonContainer {
+    /* margin-top: 0; */ /* Reset margin-top nếu có */
+    display: flex;
+    justify-content: center;
+  }
+  .addCategoryButton {
+    width: auto;
+  }
+}

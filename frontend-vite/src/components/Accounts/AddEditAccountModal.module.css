@@ -1,0 +1,245 @@
+/* src/components/Accounts/AddEditAccountModal.module.css */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Nền mờ */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050; /* Đảm bảo nó ở trên các phần tử khác */
+  padding: 15px; /* Padding để modal không dính sát cạnh màn hình nhỏ */
+  opacity: 0; /* Bắt đầu ẩn */
+  animation: fadeInOverlay 0.3s ease-out forwards; /* Animation cho overlay */
+}
+
+.modalContent {
+  background-color: #ffffff;
+  padding: 25px 30px;
+  border-radius: 10px; /* Bo góc nhiều hơn chút */
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 500px; /* Giới hạn chiều rộng modal */
+  position: relative;
+  transform: scale(0.95) translateY(-10px); /* Trạng thái ban đầu cho animation */
+  opacity: 0; /* Bắt đầu ẩn */
+  animation: slideInModal 0.3s 0.1s ease-out forwards; /* Animation cho content, có delay nhẹ */
+}
+
+/* Animations */
+@keyframes fadeInOverlay {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInModal {
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e9ecef; /* Đường kẻ nhạt hơn */
+}
+
+.modalTitle {
+  font-size: 1.3rem; /* Kích thước tiêu đề */
+  font-weight: 600;
+  color: #343a40; /* Màu chữ đậm hơn */
+  margin: 0;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  color: #6c757d; /* Màu xám cho nút X */
+  font-size: 1.6rem;
+  font-weight: bold;
+  line-height: 1;
+  padding: 0; /* Bỏ padding mặc định */
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+.closeButton:hover {
+  opacity: 1;
+}
+
+.accountForm {
+  /* Đổi tên từ categoryForm */
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroup {
+  margin-bottom: 18px;
+}
+
+.formLabel {
+  display: block;
+  font-size: 0.9rem;
+  color: #495057; /* Màu label */
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.requiredStar {
+  color: #dc3545; /* Màu đỏ cho dấu sao */
+  margin-left: 3px;
+}
+
+.formInput {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #ced4da; /* Border nhạt hơn */
+  border-radius: 6px; /* Bo góc nhiều hơn chút */
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.formInput::placeholder {
+  color: #adb5bd;
+}
+.formInput:focus {
+  border-color: #3f51b5; /* Màu focus (màu chủ đạo của bạn) */
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(63, 81, 181, 0.25); /* Shadow focus */
+}
+.formInput:disabled {
+  background-color: #e9ecef;
+  opacity: 0.7;
+}
+
+.radioGroup {
+  display: flex;
+  gap: 25px; /* Tăng khoảng cách giữa các radio */
+  margin-top: 8px;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  color: #495057;
+  cursor: pointer;
+}
+
+.radioInput {
+  margin-right: 8px;
+  width: 16px; /* Kích thước radio */
+  height: 16px;
+  accent-color: #3f51b5; /* Màu cho radio khi được chọn */
+}
+.radioInput:disabled {
+  opacity: 0.7;
+}
+
+.formHint {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-top: 5px;
+}
+
+.formDivider {
+  border: 0;
+  border-top: 1px solid #e9ecef;
+  margin: 25px 0;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.formButton {
+  padding: 10px 22px; /* Tăng padding nút */
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s,
+    box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.5; /* Đảm bảo text và icon thẳng hàng */
+}
+
+.cancelButton {
+  background-color: #f8f9fa; /* Nền sáng hơn cho nút Hủy */
+  color: #495057;
+  border-color: #ced4da;
+}
+.cancelButton:hover:not(:disabled) {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.submitButton {
+  background-color: #3f51b5; /* Màu chủ đạo */
+  color: white;
+  border-color: #3f51b5;
+}
+.submitButton:hover:not(:disabled) {
+  background-color: #303f9f; /* Đậm hơn khi hover */
+  border-color: #2c388a;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.formButton:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.errorMessage {
+  background-color: #f8d7da; /* Nền đỏ nhạt cho lỗi */
+  color: #721c24; /* Màu chữ đỏ đậm */
+  padding: 12px 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  border: 1px solid #f5c6cb; /* Viền đỏ nhạt */
+  text-align: left; /* Căn trái cho dễ đọc */
+}
+
+/* Responsive cho modal */
+@media (max-width: 576px) {
+  .modalContent {
+    padding: 20px;
+    margin: 10px; /* Để không dính sát cạnh trên mobile */
+  }
+  .modalTitle {
+    font-size: 1.15rem;
+  }
+  .formLabel {
+    font-size: 0.85rem;
+  }
+  .formInput,
+  .formButton {
+    font-size: 0.9rem;
+    padding: 9px 12px;
+  }
+  .radioGroup {
+    flex-direction: column; /* Radio xếp chồng trên mobile */
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .formActions {
+    flex-direction: column-reverse; /* Nút submit ở trên trên mobile */
+    gap: 10px;
+  }
+  .formButton {
+    width: 100%; /* Nút chiếm full width */
+  }
+}

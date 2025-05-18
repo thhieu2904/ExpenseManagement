@@ -2,13 +2,16 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import styles from "./Navbar.module.css";
 
+import HomePage from "../../pages/HomePage";
+import CategoriesPage from "../../pages/CategoriesPage";
+import AccountPage from "../../pages/AccountPage";
 const Navbar = () => {
   // Danh sách các mục điều hướng
   // Quan trọng: 'path' phải khớp với các định nghĩa route trong App.jsx của bạn
   const navigationItems = [
-    { name: "Trang chủ", path: "/homepage" }, // Hoặc '/' nếu bạn muốn trang chủ là root
-    { name: "Danh mục", path: "/categories" },
-    { name: "Tài khoản", path: "/accounts" },
+    { name: "Trang chủ", path: "/HomePage" }, // Hoặc '/' nếu bạn muốn trang chủ là root
+    { name: "Danh mục", path: "/CategoriesPage" },
+    { name: "Tài khoản", path: "/AccountPage" },
     { name: "Mục tiêu", path: "/goals" },
     { name: "Ngân sách", path: "/budgets" },
     { name: "Giao dịch", path: "/transactions" },

@@ -1,0 +1,61 @@
+/* src/components/DetailedAnalyticsSection/CategoryExpenseChart.module.css */
+
+.chartContainer {
+  width: 100%;
+  /* background-color: #f9f9f9; */ /* Tùy chọn: màu nền nhẹ cho khu vực biểu đồ */
+  /* padding: 15px; */ /* Tùy chọn: padding nếu không được cung cấp bởi container cha */
+  /* border-radius: 8px; */ /* Tùy chọn: bo góc */
+  /* box-shadow: 0 1px 3px rgba(0,0,0,0.05); */ /* Tùy chọn: bóng đổ nhẹ */
+}
+
+.chartTitle {
+  font-size: 1.3rem; /* Giữ kích thước đồng nhất với biểu đồ kia */
+  color: #2c3e50; /* Màu tiêu đề */
+  margin-top: 0; /* Bỏ margin trên nếu không cần */
+  margin-bottom: 20px; /* Khoảng cách với biểu đồ */
+  font-weight: 600; /* Độ đậm chữ */
+  text-align: center; /* Căn giữa tiêu đề cho biểu đồ tròn có thể đẹp hơn */
+}
+
+.loadingText,
+.errorText,
+.noDataText {
+  text-align: center;
+  padding: 30px 0;
+  color: #7f8c8d; /* Màu chữ cho các thông báo */
+  font-size: 1rem;
+  min-height: 100px; /* Đảm bảo có không gian khi đang tải hoặc lỗi */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.errorText {
+  color: #c0392b; /* Màu đỏ cho thông báo lỗi */
+}
+
+.customTooltip {
+  background-color: rgba(255, 255, 255, 0.95); /* Nền tooltip */
+  border: 1px solid #dfe4ea; /* Viền tooltip */
+  padding: 10px 15px; /* Padding cho tooltip */
+  border-radius: 6px; /* Bo góc tooltip */
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12); /* Bóng đổ cho tooltip */
+  font-size: 0.9rem; /* Cỡ chữ trong tooltip */
+}
+
+.tooltipLabel {
+  margin: 0 0 5px 0;
+  color: #34495e; /* Màu chữ cho tên danh mục */
+  font-weight: 500; /* Độ đậm chữ */
+}
+
+.tooltipPercentage {
+  margin: 0;
+  color: #7f8c8d; /* Màu chữ cho phần trăm */
+  font-size: 0.85em; /* Cỡ chữ nhỏ hơn cho phần trăm */
+}
+
+/* Kiểu cho Legend (chú thích) của Recharts nếu bạn muốn tùy chỉnh thêm ngoài props */
+/* Ví dụ: nếu bạn muốn các mục trong legend có khoảng cách đều hơn */
+/* Bạn có thể cần phải target các class cụ thể mà Recharts tạo ra cho legend items */
+/* .recharts-legend-item { margin-bottom: 5px !important; } */

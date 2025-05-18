@@ -4,7 +4,7 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); /* Thêm bóng đổ nhẹ */
   display: flex;
   justify-content: flex-start; /* Căn các mục về bên trái */
-  width: 100vw;
+  /* width: 100vw; */
 }
 
 .navList {
