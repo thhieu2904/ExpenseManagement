@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import styles from "./StatsOverview.module.css";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlus,
@@ -11,6 +12,7 @@ import {
   faWallet,
   faChartLine, // Icon cho tiêu đề "Tổng quan chi tiêu"
 } from "@fortawesome/free-solid-svg-icons";
+import AddTransactionModal from "../Transactions/AddEditTransactionModal";
 
 // Hàm tiện ích định dạng tiền tệ (ví dụ: 1000000 -> "1.000.000 ₫")
 const formatCurrency = (amount) => {
@@ -34,67 +36,48 @@ const getCurrentMonthYearLabel = (apiMonthYear) => {
 };
 
 const StatsOverview = () => {
-  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  //state để mở modal thêm giao dịch
+  const [isModalOpen, setIsModalOpen] = useState(false);
   useEffect(() => {
     const fetchStatsOverview = async () => {
       setLoading(true);
       setError("");
       try {
+        // ... logic fetch của bạn giữ nguyên
         const token = localStorage.getItem("token");
         if (!token) {
           setError("Bạn chưa đăng nhập. Vui lòng đăng nhập để xem thông tin.");
           setLoading(false);
-          // Tùy chọn: chuyển hướng về trang login
-          // navigate('/login');
           return;
         }
-
         const response = await axios.get(
           "http://localhost:5000/api/statistics/overview",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         setStats(response.data);
       } catch (err) {
+        // ... logic catch lỗi của bạn giữ nguyên
         console.error("Lỗi khi tải dữ liệu tổng quan:", err);
-        if (err.response && err.response.status === 401) {
-          setError(
-            "Phiên đăng nhập hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại."
-          );
-          // Tùy chọn: Xóa token cũ và chuyển hướng
-          // localStorage.removeItem('token');
-          // localStorage.removeItem('user');
-          // navigate('/login');
-        } else if (
-          err.response &&
-          err.response.data &&
-          err.response.data.message
-        ) {
-          setError(`Lỗi từ server: ${err.response.data.message}`);
-        } else {
-          setError("Không thể tải dữ liệu tổng quan. Vui lòng thử lại sau.");
-        }
+        setError("Không thể tải dữ liệu tổng quan. Vui lòng thử lại sau.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchStatsOverview();
-  }, [navigate]);
+  }, []); // Thêm mảng phụ thuộc rỗng để useEffect chỉ chạy một lần sau khi mount
 
   const handleAddTransaction = () => {
-    // Điều hướng đến trang thêm giao dịch hoặc mở modal
-    // Ví dụ: navigate('/transactions/new');
-    console.log("Chuyển đến trang thêm giao dịch");
-    // Bạn cần tạo route và component cho trang này
-    navigate("/transactions/new"); // Giả sử bạn có route này
+    setIsModalOpen(true);
+  };
+
+  const handleTransactionAdded = () => {
+    setIsModalOpen(false); // Đóng modal
+    window.location.reload(); // Cách đơn giản nhất để làm mới toàn bộ dữ liệu trang
   };
 
   if (loading) {
@@ -178,7 +161,6 @@ const StatsOverview = () => {
             )}
           </div>
         </div>
-
         {/* Card Chi tiêu */}
         <div className={`${styles.statCard} ${styles.expenseCard}`}>
           <div
@@ -226,57 +208,13 @@ const StatsOverview = () => {
             )}
           </div>
         </div>
-
-        {/* Card Số dư */}
-        <div className={`${styles.statCard} ${styles.balanceCard}`}>
-          <div
-            className={styles.cardIconWrapper}
-            style={{ backgroundColor: "rgba(96, 125, 139, 0.1)" }}
-          >
-            <FontAwesomeIcon
-              icon={faWallet}
-              className={styles.cardIcon}
-              style={{ color: "#607D8B" }}
-            />
-          </div>
-          <div className={styles.cardContent}>
-            <div className={styles.cardHeader}>
-              <h3 className={styles.cardTitle}>Số dư</h3>
-              <span className={styles.cardPeriod}>Hiện tại</span>
-            </div>
-            <p className={styles.cardAmount}>
-              {formatCurrency(stats.balance?.amount)}
-            </p>
-            {/* // Phần hiển thị thay đổi của "Chênh lệch tháng" */}
-            {stats.balance?.changeDescription && (
-              <p
-                className={`${styles.cardChange} ${
-                  // Nếu percentageChange >= 0 (tăng hoặc không đổi) -> positiveChange (màu xanh)
-                  // Nếu percentageChange < 0 (giảm) -> negativeChange (màu đỏ)
-                  (stats.balance?.percentageChange || 0) >= 0
-                    ? styles.positiveChange
-                    : styles.negativeChange
-                }`}
-              >
-                <FontAwesomeIcon
-                  icon={
-                    // Tương tự, icon mũi tên lên cho >= 0, mũi tên xuống cho < 0
-                    (stats.balance?.percentageChange || 0) >= 0
-                      ? faArrowUp
-                      : faArrowDown
-                  }
-                />
-                <strong>
-                  ({stats.balance.percentageChange > 0 ? "+" : ""}
-                  {stats.balance.percentageChange}%)
-                </strong>{" "}
-                {stats.balance.changeDescription}{" "}
-                {/* Mô tả từ backend: "Tăng X%" hoặc "Giảm X%" */}
-              </p>
-            )}
-          </div>
-        </div>
       </div>
+      {/* Modal thêm giao dịch */}
+      <AddTransactionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmitSuccess={handleTransactionAdded}
+      />
     </div>
   );
 };

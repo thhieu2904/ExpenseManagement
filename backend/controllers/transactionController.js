@@ -36,15 +36,40 @@ exports.createTransaction = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 exports.getAllTransactions = async (req, res) => {
   try {
-    const transactions = await Transaction.find({ userId: req.user.id })
-      .populate("accountId", "name")
-      .populate("categoryId", "name type")
-      .sort({ createdAt: -1 });
+    const userId = req.user.id;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
 
-    res.json(transactions);
+    const totalTransactions = await Transaction.countDocuments({ userId });
+    const totalPages = Math.ceil(totalTransactions / limit);
+
+    const transactions = await Transaction.find({ userId })
+      .populate("accountId", "name type")
+      .populate("categoryId", "name icon type") // Lấy thêm cả icon và type của category
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // ✅ BƯỚC QUAN TRỌNG NHẤT: BIẾN ĐỔI DỮ LIỆU
+    const formattedTransactions = transactions.map((t) => ({
+      id: t._id, // Đổi _id thành id
+      date: t.date,
+      description: t.name, // Đổi name thành description
+      note: t.note,
+      amount: t.amount,
+      type: t.type,
+      category: t.categoryId, // Giữ nguyên category là object
+      paymentMethod: t.accountId, // Đổi accountId thành paymentMethod
+    }));
+
+    res.json({
+      data: formattedTransactions,
+      currentPage: page,
+      totalPages: totalPages,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

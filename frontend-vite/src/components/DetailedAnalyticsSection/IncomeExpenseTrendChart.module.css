@@ -171,7 +171,7 @@
     align-items: center;
     flex-wrap: wrap; /* Cho phép các nút lọc xuống dưới tiêu đề nếu cần */
     gap: 15px; /* Khoảng cách giữa tiêu đề và nút lọc */
-    margin-bottom: 10px; /* Khoảng cách dưới tiêu đề */
+    margin-bottom: 20px; /* Khoảng cách dưới tiêu đề */
   }
 
   /* KHỐI BÊN PHẢI */

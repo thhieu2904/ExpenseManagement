@@ -233,45 +233,134 @@ exports.getIncomeExpenseTrend = async (req, res) => {
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 };
+
+// Lấy thống kê chi tiêu theo danh mục (phiên bản nâng cấp)
 exports.getExpenseByCategory = async (req, res) => {
   try {
     const userId = req.user.id;
+    // Lấy các tham số từ query, bao gồm cả 'period'
+    const { period, year, month, date } = req.query;
 
+    const matchStage = {
+      userId: new mongoose.Types.ObjectId(userId),
+      type: "CHITIEU",
+    };
+
+    let startDate, endDate;
+
+    // Xử lý việc tạo khoảng thời gian dựa trên period
+    switch (period) {
+      case "year":
+        if (year) {
+          const parsedYear = parseInt(year);
+          startDate = new Date(Date.UTC(parsedYear, 0, 1)); // 1 tháng 1
+          endDate = new Date(Date.UTC(parsedYear, 11, 31, 23, 59, 59)); // 31 tháng 12
+        }
+        break;
+
+      case "month":
+        if (year && month) {
+          const parsedYear = parseInt(year);
+          const parsedMonth = parseInt(month);
+          startDate = new Date(Date.UTC(parsedYear, parsedMonth - 1, 1));
+          endDate = new Date(Date.UTC(parsedYear, parsedMonth, 0, 23, 59, 59));
+        }
+        break;
+
+      case "week":
+        if (date) {
+          const referenceDate = new Date(date);
+          referenceDate.setUTCHours(0, 0, 0, 0); // Chuẩn hóa về đầu ngày
+
+          // Tính ngày bắt đầu của tuần (Chủ nhật)
+          const dayOfWeek = referenceDate.getUTCDay(); // 0 = Chủ nhật, 1 = Thứ 2...
+          startDate = new Date(referenceDate);
+          startDate.setUTCDate(referenceDate.getUTCDate() - dayOfWeek);
+
+          // Tính ngày kết thúc của tuần (Thứ 7)
+          endDate = new Date(startDate);
+          endDate.setUTCDate(startDate.getUTCDate() + 6);
+          endDate.setUTCHours(23, 59, 59, 999);
+        }
+        break;
+
+      default:
+        // Nếu không có period, có thể trả về lỗi hoặc một khoảng thời gian mặc định
+        return res.status(400).json({
+          message: "Thiếu tham số 'period' hợp lệ (week, month, year).",
+        });
+    }
+
+    // Nếu không thể xác định khoảng thời gian, trả về lỗi
+    if (!startDate || !endDate) {
+      return res
+        .status(400)
+        .json({ message: "Thiếu các tham số ngày tháng cần thiết." });
+    }
+
+    // Gán khoảng thời gian vào matchStage
+    matchStage.date = { $gte: startDate, $lte: endDate };
+
+    // Phần pipeline aggregate phía sau giữ nguyên, nó đã rất tốt rồi
     const result = await Transaction.aggregate([
+      { $match: matchStage },
+      { $group: { _id: "$categoryId", total: { $sum: "$amount" } } },
+      { $sort: { total: -1 } },
       {
-        $match: {
-          userId: new mongoose.Types.ObjectId(userId),
-          type: "CHITIEU",
+        $facet: {
+          topCategories: [
+            { $limit: 5 },
+            {
+              $lookup: {
+                from: "categories",
+                localField: "_id",
+                foreignField: "_id",
+                as: "categoryInfo",
+              },
+            },
+            { $unwind: "$categoryInfo" },
+            {
+              $project: {
+                _id: 0,
+                name: "$categoryInfo.name",
+                value: "$total",
+                icon: "$categoryInfo.icon",
+              },
+            },
+          ],
+          otherCategories: [
+            { $skip: 5 },
+            { $group: { _id: null, total: { $sum: "$total" } } },
+            {
+              $project: {
+                _id: 0,
+                name: "Khác",
+                value: "$total",
+                icon: "fa-question-circle",
+              },
+            },
+          ],
         },
-      },
-      {
-        $group: {
-          _id: "$categoryId",
-          total: { $sum: "$amount" },
-        },
-      },
-      {
-        $lookup: {
-          from: "categories",
-          localField: "_id",
-          foreignField: "_id",
-          as: "categoryInfo",
-        },
-      },
-      {
-        $unwind: "$categoryInfo",
       },
       {
         $project: {
-          _id: 0,
-          category: "$categoryInfo.name",
-          total: 1,
+          data: {
+            $concatArrays: [
+              "$topCategories",
+              {
+                $filter: {
+                  input: "$otherCategories",
+                  as: "other",
+                  cond: { $gt: ["$$other.value", 0] },
+                },
+              },
+            ],
+          },
         },
       },
-      { $sort: { total: -1 } },
     ]);
 
-    res.status(200).json(result);
+    res.status(200).json(result[0] ? result[0].data : []);
   } catch (err) {
     console.error("Lỗi khi thống kê theo danh mục:", err);
     res.status(500).json({ message: "Lỗi server", error: err.message });

@@ -1,159 +1,102 @@
 // src/components/RecentTransactions/TransactionItem.jsx
 import React, { forwardRef } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+// BỎ import axios và useNavigate
 import styles from "./RecentTransactions.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faUtensils,
-  faShoppingBag,
-  faMoneyBillWave,
-  faEdit,
-  faTrashAlt,
-  faEllipsisH,
-  faQuestionCircle,
-} from "@fortawesome/free-solid-svg-icons"; // Thêm các icon cần thiết
+import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { getIconObject } from "../../utils/iconMap";
 
-// Hàm định dạng ngày giờ
+// ... các hàm formatDate và formatCurrency giữ nguyên ...
 const formatDate = (dateString) => {
   if (!dateString) return "N/A";
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  } catch (e) {
-    return "Invalid Date";
-  }
+  const date = new Date(dateString);
+  return date.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 };
-
-// Hàm định dạng tiền tệ
 const formatCurrency = (amount) => {
   if (typeof amount !== "number") return "0 ₫";
   return amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 };
 
-// Map category name/id to FontAwesome icon
-// Bạn cần mở rộng map này dựa trên các danh mục thực tế của bạn
-const categoryIconMap = {
-  "Ăn uống": faUtensils,
-  "Mua sắm": faShoppingBag,
-  Lương: faMoneyBillWave,
-  "Di chuyển": "car", // ví dụ
-  "Giải trí": "film", // ví dụ
-  // ... thêm các danh mục khác
-};
+// ✅ Component giờ nhận vào onEditRequest và onDeleteRequest
+const TransactionItem = forwardRef(
+  ({ transaction, onEditRequest, onDeleteRequest }, ref) => {
+    if (!transaction) return null;
 
-const getCategoryIcon = (categoryName) => {
-  return categoryIconMap[categoryName] || faQuestionCircle; // Icon mặc định nếu không tìm thấy
-};
+    const { id, date, category, description, paymentMethod, amount, type } =
+      transaction;
 
-// Component TransactionItem sử dụng forwardRef để nhận ref từ cha
-const TransactionItem = forwardRef(({ transaction, onDeleteSuccess }, ref) => {
-  const navigate = useNavigate();
+    // ✅ Hàm handleEdit và handleDelete giờ chỉ gọi prop từ cha, không chứa logic
+    const handleEdit = () => onEditRequest(transaction);
+    const handleDelete = () => onDeleteRequest(id);
 
-  if (!transaction) {
-    return null; // Hoặc hiển thị một placeholder
-  }
-
-  const { id, date, category, description, paymentMethod, amount, type } =
-    transaction;
-
-  const handleEdit = () => {
-    // Điều hướng đến trang sửa giao dịch, truyền id
-    navigate(`/transactions/edit/${id}`);
-    console.log("Edit transaction:", id);
-  };
-
-  const handleDelete = async () => {
-    if (
-      window.confirm(
-        `Bạn có chắc chắn muốn xóa giao dịch "${description || "này"}" không?`
-      )
-    ) {
-      try {
-        const token = localStorage.getItem("token");
-        await axios.delete(`http://localhost:5000/api/transactions/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        alert("Xóa giao dịch thành công!");
-        if (onDeleteSuccess) {
-          onDeleteSuccess(id); // Gọi callback để cập nhật UI ở component cha
-        }
-      } catch (err) {
-        console.error("Lỗi khi xóa giao dịch:", err);
-        alert("Xóa giao dịch thất bại. Vui lòng thử lại.");
+    // ... hàm getStyleForAccount giữ nguyên ...
+    const getStyleForAccount = (account) => {
+      if (!account?.type) return styles.pmOther;
+      switch (account.type) {
+        case "TIENMAT":
+          return styles.pmCash;
+        case "THENGANHANG":
+          return styles.pmBank;
+        default:
+          return styles.pmOther;
       }
-    }
-  };
+    };
 
-  const paymentMethodStyle = (pmType) => {
-    switch (pmType?.toLowerCase()) {
-      case "bank":
-      case "bidv":
-      case "vietcombank": // Thêm các tên ngân hàng cụ thể
-        return styles.pmBank;
-      case "cash":
-      case "tiền mặt":
-        return styles.pmCash;
-      case "ewallet":
-      case "momo": // Ví dụ
-        return styles.pmEwallet;
-      default:
-        return styles.pmOther;
-    }
-  };
-
-  return (
-    <tr ref={ref} className={styles.transactionRow}>
-      <td data-label="Thời gian">{formatDate(date)}</td>
-      <td data-label="Danh mục" className={styles.categoryCell}>
-        <FontAwesomeIcon
-          icon={getCategoryIcon(category?.name)}
-          className={styles.categoryIcon}
-        />
-        {category?.name || "N/A"}
-      </td>
-      <td data-label="Mô tả" className={styles.descriptionCell}>
-        {description || "-"}
-      </td>
-      <td data-label="Phương thức TT">
-        <span
-          className={`${styles.paymentMethodBadge} ${paymentMethodStyle(
-            paymentMethod?.type || paymentMethod?.name
-          )}`}
+    return (
+      <tr ref={ref} className={styles.transactionRow}>
+        <td data-label="Thời gian">{formatDate(date)}</td>
+        <td data-label="Danh mục" className={styles.categoryCell}>
+          <FontAwesomeIcon
+            icon={getIconObject(category?.icon)}
+            className={styles.categoryIcon}
+            style={{ marginRight: "8px" }}
+          />
+          {category?.name || "N/A"}
+        </td>
+        <td data-label="Mô tả" className={styles.descriptionCell}>
+          {description || "-"}
+        </td>
+        <td data-label="Phương thức TT">
+          <span
+            className={`${styles.paymentMethodBadge} ${getStyleForAccount(
+              paymentMethod
+            )}`}
+          >
+            {paymentMethod?.name || "N/A"}
+          </span>
+        </td>
+        <td
+          data-label="Số tiền"
+          className={`${styles.amountCell} ${
+            type === "THUNHAP" ? styles.incomeAmount : styles.expenseAmount
+          }`}
         >
-          {paymentMethod?.name || "N/A"}
-        </span>
-      </td>
-      <td
-        data-label="Số tiền"
-        className={`${styles.amountCell} ${
-          type === "income" || amount > 0 ? styles.income : styles.expense
-        }`}
-      >
-        {formatCurrency(amount)}
-      </td>
-      <td data-label="Hành động" className={styles.actionsCell}>
-        <button
-          onClick={handleEdit}
-          className={`${styles.actionButton} ${styles.editButton}`}
-          title="Sửa"
-        >
-          <FontAwesomeIcon icon={faEdit} />
-        </button>
-        <button
-          onClick={handleDelete}
-          className={`${styles.actionButton} ${styles.deleteButton}`}
-          title="Xóa"
-        >
-          <FontAwesomeIcon icon={faTrashAlt} />
-        </button>
-      </td>
-    </tr>
-  );
-});
+          {formatCurrency(amount)}
+        </td>
+        <td data-label="Hành động" className={styles.actionsCell}>
+          {/* ✅ Các nút bây giờ gọi hàm mới */}
+          <button
+            onClick={handleEdit}
+            className={`${styles.actionButton} ${styles.editButton}`}
+            title="Sửa"
+          >
+            <FontAwesomeIcon icon={faEdit} />
+          </button>
+          <button
+            onClick={handleDelete}
+            className={`${styles.actionButton} ${styles.deleteButton}`}
+            title="Xóa"
+          >
+            <FontAwesomeIcon icon={faTrashAlt} />
+          </button>
+        </td>
+      </tr>
+    );
+  }
+);
 
 export default TransactionItem;

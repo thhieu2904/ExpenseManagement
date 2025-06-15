@@ -130,7 +130,7 @@
 }
 
 .amountHeader {
-  text-align: right !important;
+  text-align: left;
 }
 
 .loadingIndicator,
@@ -213,15 +213,59 @@
   .recentTransactionsContainer .actionsCell {
     text-align: right !important;
   }
+
   .recentTransactionsContainer .categoryCell {
     justify-content: flex-end;
   }
   .recentTransactionsContainer .descriptionCell {
     white-space: normal;
     text-align: right;
+    max-width: 250px; /* Điều chỉnh độ rộng tối đa bạn muốn */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .loadMoreButtonOuterContainer {
     /* Căn giữa nút trên mobile nếu muốn */
     justify-content: center;
   }
+}
+.paymentMethodBadge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #fff;
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+/* Các class này sẽ được hàm getStyleForAccount sử dụng */
+.pmCash {
+  background-color: #28a745; /* Màu xanh lá cho tiền mặt */
+}
+
+.pmBank {
+  background-color: #007bff; /* Màu xanh dương cho ngân hàng */
+}
+
+.pmEwallet {
+  background-color: #ae4dff; /* Màu tím cho ví điện tử */
+}
+
+.pmOther {
+  background-color: #6c757d; /* Màu xám cho các loại khác */
+}
+.amountCell {
+  font-weight: 600; /* Làm cho số tiền đậm hơn một chút */
+}
+
+.incomeAmount {
+  color: #28a745; /* Màu xanh lá cây cho thu nhập */
+}
+
+.expenseAmount {
+  color: #dc3545; /* Màu đỏ cho chi tiêu */
 }

@@ -54,8 +54,24 @@
   color: #7f8c8d; /* Màu chữ cho phần trăm */
   font-size: 0.85em; /* Cỡ chữ nhỏ hơn cho phần trăm */
 }
+.centerLabel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none; /* Để không cản click vào biểu đồ */
+}
 
-/* Kiểu cho Legend (chú thích) của Recharts nếu bạn muốn tùy chỉnh thêm ngoài props */
-/* Ví dụ: nếu bạn muốn các mục trong legend có khoảng cách đều hơn */
-/* Bạn có thể cần phải target các class cụ thể mà Recharts tạo ra cho legend items */
-/* .recharts-legend-item { margin-bottom: 5px !important; } */
+.centerLabel span {
+  display: block;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.centerLabel strong {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+}

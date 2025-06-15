@@ -14,26 +14,27 @@ import {
 } from "recharts";
 import styles from "./IncomeExpenseTrendChart.module.css";
 
-// Hàm tiện ích định dạng tiền tệ (Không đổi)
 const formatCurrency = (value) => {
   if (value === 0) return "0 ₫";
   if (!value) return "";
   return `${(value / 1000000).toLocaleString("vi-VN")}tr ₫`;
 };
 
-const IncomeExpenseTrendChart = () => {
-  // --- BƯỚC 1: THAY ĐỔI STATE ---
+// ✨ THAY ĐỔI 1: Nhận props từ component cha
+const IncomeExpenseTrendChart = ({
+  period,
+  currentDate,
+  onPeriodChange,
+  onDateChange,
+}) => {
+  // ✨ THAY ĐỔI 2: Xóa bỏ state cục bộ, giờ sẽ dùng props. Chỉ giữ lại state của riêng component này.
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [period, setPeriod] = useState("month"); // Giữ nguyên, mặc định là xem theo tháng
+  // const [period, setPeriod] = useState("month"); // <-- ĐÃ XÓA
+  // const [currentDate, setCurrentDate] = useState(new Date()); // <-- ĐÃ XÓA
 
-  // Bỏ state cũ (currentYear, currentWeekStart) và dùng state trung tâm mới
-  const [currentDate, setCurrentDate] = useState(new Date());
-
-  // --- BƯỚC 2: CẬP NHẬT CÁC HÀM XỬ LÝ ---
-
-  // Hàm điều hướng mới, hoạt động dựa trên 'period'
+  // ✨ THAY ĐỔI 3: Các hàm điều hướng giờ sẽ gọi props `onDateChange`
   const handlePrev = () => {
     const newDate = new Date(currentDate);
     switch (period) {
@@ -49,7 +50,7 @@ const IncomeExpenseTrendChart = () => {
       default:
         break;
     }
-    setCurrentDate(newDate);
+    onDateChange(newDate); // Gọi hàm được truyền từ cha
   };
 
   const handleNext = () => {
@@ -67,11 +68,12 @@ const IncomeExpenseTrendChart = () => {
       default:
         break;
     }
-    setCurrentDate(newDate);
+    onDateChange(newDate); // Gọi hàm được truyền từ cha
   };
 
-  // Hàm hiển thị box ngày tháng mới
+  // Các hàm getDisplayBox và getChartTitle không đổi, chúng sẽ tự động đúng vì đọc từ props
   const getDisplayBox = () => {
+    // ... mã không đổi
     switch (period) {
       case "week":
         const endOfWeek = new Date(currentDate);
@@ -91,8 +93,8 @@ const IncomeExpenseTrendChart = () => {
     }
   };
 
-  // Hàm lấy tiêu đề biểu đồ mới
   const getChartTitle = () => {
+    // ... mã không đổi
     switch (period) {
       case "week":
         return "Xu hướng thu chi theo tuần";
@@ -108,14 +110,15 @@ const IncomeExpenseTrendChart = () => {
     }
   };
 
-  // --- BƯỚC 3: CẬP NHẬT FETCHDATA VỚI LOGIC MỚI HOÀN TOÀN ---
+  // fetchData không đổi, nhưng dependency array của useCallback giờ là props
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        /* ... */ return;
+        setError("Vui lòng đăng nhập.");
+        return;
       }
 
       let apiUrl = "http://localhost:5000/api/statistics/trend";
@@ -126,43 +129,42 @@ const IncomeExpenseTrendChart = () => {
           apiUrl += `?period=day&startDate=${
             currentDate.toISOString().split("T")[0]
           }&days=7`;
-          const weekResponse = await axios.get(apiUrl, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          responseData = weekResponse.data;
           break;
         }
         case "month": {
           const year = currentDate.getFullYear();
           const month = currentDate.getMonth() + 1;
           apiUrl += `?period=day&year=${year}&month=${month}`;
-          const monthResponse = await axios.get(apiUrl, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          responseData = monthResponse.data;
           break;
         }
         case "year": {
           const year = currentDate.getFullYear();
           apiUrl += `?period=month&year=${year}`;
-          const yearResponse = await axios.get(apiUrl, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          responseData = yearResponse.data.map((item) => {
-            const monthNumber = parseInt(item.name.split("-")[1], 10);
-            return { ...item, name: `Tháng ${monthNumber}` };
-          });
           break;
         }
         default:
           throw new Error("Invalid period");
       }
 
-      const formattedData = responseData.map((item) => ({
+      const response = await axios.get(apiUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      responseData = response.data;
+
+      // Xử lý dữ liệu trả về
+      let formattedData = responseData.map((item) => ({
         name: item.name,
         income: item.income || 0,
         expense: item.expense || 0,
       }));
+
+      if (period === "year") {
+        formattedData = responseData.map((item) => {
+          const monthNumber = parseInt(item.name.split("-")[1], 10);
+          return { ...item, name: `Tháng ${monthNumber}` };
+        });
+      }
+
       setData(formattedData);
     } catch (err) {
       console.error("Lỗi tải dữ liệu xu hướng:", err);
@@ -170,33 +172,33 @@ const IncomeExpenseTrendChart = () => {
     } finally {
       setLoading(false);
     }
-  }, [period, currentDate]);
+  }, [period, currentDate]); // Phụ thuộc vào props
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // --- BƯỚC 4: RENDER JSX (Không thay đổi cấu trúc) ---
   return (
     <div className={styles.chartContainer}>
       <div className={styles.header}>
         <div className={styles.headerLeft}>
           <h3 className={styles.chartTitle}>{getChartTitle()}</h3>
           <div className={styles.filterButtons}>
+            {/* ✨ THAY ĐỔI 4: Nút lọc giờ gọi prop onPeriodChange */}
             <button
-              onClick={() => setPeriod("week")}
+              onClick={() => onPeriodChange("week")}
               className={period === "week" ? styles.active : ""}
             >
               Tuần
             </button>
             <button
-              onClick={() => setPeriod("month")}
+              onClick={() => onPeriodChange("month")}
               className={period === "month" ? styles.active : ""}
             >
               Tháng
             </button>
             <button
-              onClick={() => setPeriod("year")}
+              onClick={() => onPeriodChange("year")}
               className={period === "year" ? styles.active : ""}
             >
               Năm
@@ -210,6 +212,7 @@ const IncomeExpenseTrendChart = () => {
         </div>
       </div>
 
+      {/* Phần render biểu đồ không thay đổi */}
       {loading && <p className={styles.loadingText}>Đang tải biểu đồ...</p>}
       {error && <p className={styles.errorText}>{error}</p>}
       {!loading && !error && data.length === 0 && (
@@ -217,7 +220,6 @@ const IncomeExpenseTrendChart = () => {
           Không có dữ liệu cho khoảng thời gian này.
         </p>
       )}
-
       {!loading && !error && data.length > 0 && (
         <ResponsiveContainer width="100%" height={350}>
           <LineChart
@@ -227,7 +229,7 @@ const IncomeExpenseTrendChart = () => {
             <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
             <XAxis dataKey="name" stroke="#666" tick={{ fontSize: 12 }}>
               <Label
-                value={period === "year" ? "Tháng" : "Ngày"} // Label trục X thay đổi linh hoạt
+                value={period === "year" ? "Tháng" : "Ngày"}
                 offset={-15}
                 position="insideBottom"
               />
@@ -246,9 +248,9 @@ const IncomeExpenseTrendChart = () => {
               />
             </YAxis>
             <Tooltip
-              formatter={(value, name) => [
+              formatter={(value) => [
                 `${(value || 0).toLocaleString("vi-VN")} ₫`,
-                name,
+                null,
               ]}
             />
             <Legend wrapperStyle={{ paddingTop: "20px" }} />

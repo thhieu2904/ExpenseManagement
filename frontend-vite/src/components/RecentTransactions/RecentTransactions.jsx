@@ -6,147 +6,136 @@ import TransactionItem from "./TransactionItem";
 import styles from "./RecentTransactions.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import AddEditTransactionModal from "../Transactions/AddEditTransactionModal";
+import ConfirmDialog from "../Common/ConfirmDialog";
 
 const ITEMS_PER_PAGE = 5;
 
 const RecentTransactions = () => {
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState([]);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const initialLoadAttempted = useRef(false);
 
-  // console.log('Component Rendered - isLoading:', isLoading, 'currentPage:', currentPage, 'transactions:', transactions.length, 'hasMore:', hasMore, 'initialLoadAttempted:', initialLoadAttempted.current);
+  // State cho việc sửa/xóa
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
 
-  const fetchTransactionsAPI = useCallback(
-    async (pageToFetch, isInitialCall = false) => {
-      // console.log(`fetchTransactionsAPI called for page: ${pageToFetch}, isInitialCall: ${isInitialCall}, current isLoading: ${isLoading}`);
-      if (isLoading && !isInitialCall) {
-        // console.log("Fetch blocked: Already loading (not initial call).");
-        return;
-      }
+  // ✅ Hàm gọi API chính, xử lý cả tải lần đầu và tải thêm
+  const fetchTransactions = useCallback(
+    async (pageToFetch, shouldRefresh = false) => {
       setIsLoading(true);
-      if (isInitialCall || pageToFetch === 1) {
-        setError("");
-      }
+      if (pageToFetch === 1) setError("");
 
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          setError("Bạn chưa đăng nhập. Vui lòng đăng nhập.");
-          setHasMore(false);
+          setError("Bạn chưa đăng nhập.");
           setIsLoading(false);
           return;
         }
 
         const response = await axios.get(
-          `http://localhost:5000/api/transactions?page=${pageToFetch}&limit=${ITEMS_PER_PAGE}&sortBy=date&order=desc`,
+          `http://localhost:5000/api/transactions?page=${pageToFetch}&limit=${ITEMS_PER_PAGE}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        const newItems =
-          response.data.transactions || response.data.data || response.data;
-        const totalPagesFromAPI = response.data.totalPages;
+        const {
+          data,
+          totalPages: apiTotalPages,
+          currentPage: apiCurrentPage,
+        } = response.data;
 
-        if (newItems && Array.isArray(newItems)) {
-          if (newItems.length > 0) {
-            setTransactions((prevItems) => {
-              if (pageToFetch === 1) {
-                // console.log("Setting initial transactions:", newItems);
-                return [...newItems]; // Thay thế hoàn toàn cho trang đầu tiên
-              } else {
-                // Lọc ra các mục mới thực sự chưa có trong danh sách cũ dựa trên ID
-                const existingIds = new Set(
-                  prevItems.map((item) => item.id || item._id)
-                );
-                const trulyNewItems = newItems.filter(
-                  (item) => !existingIds.has(item.id || item._id)
-                );
-                // console.log("Prev items count:", prevItems.length);
-                // console.log("New items from API:", newItems.length, "Truly new items:", trulyNewItems.length);
-                if (trulyNewItems.length === 0 && newItems.length > 0) {
-                  // API trả về dữ liệu nhưng tất cả đều đã có, có thể là trang cuối cùng đã được tải hết
-                  // hoặc API đang trả về dữ liệu không đúng cách.
-                  // console.log("API returned existing items, considering it as no more new data for this page.");
-                  // setHasMore(false); // Cập nhật hasMore ở ngoài nếu cần dựa trên logic này
-                }
-                return [...prevItems, ...trulyNewItems];
-              }
-            });
-            setCurrentPage(pageToFetch);
-
-            if (totalPagesFromAPI !== undefined) {
-              setHasMore(pageToFetch < totalPagesFromAPI);
-            } else {
-              // Nếu không có totalPagesFromAPI, kiểm tra xem newItems có đủ số lượng không
-              // Hoặc nếu newItems rỗng thì chắc chắn không còn nữa
-              setHasMore(newItems.length === ITEMS_PER_PAGE);
-            }
-          } else {
-            // newItems là mảng rỗng
-            setHasMore(false);
-            if (pageToFetch === 1) setTransactions([]);
-          }
-        } else {
-          console.warn("API did not return a valid array of transactions.");
-          setHasMore(false);
-          if (pageToFetch === 1) setTransactions([]);
+        if (data && Array.isArray(data)) {
+          // Nếu refresh, thay thế toàn bộ. Nếu không, nối vào danh sách cũ.
+          setTransactions((prev) =>
+            shouldRefresh ? data : [...prev, ...data]
+          );
+          setTotalPages(apiTotalPages);
+          setCurrentPage(apiCurrentPage);
+          setHasMore(apiCurrentPage < apiTotalPages);
         }
       } catch (err) {
-        console.error("Lỗi khi tải giao dịch:", err);
-        const errorMessage =
-          err.response?.data?.message ||
-          "Không thể tải danh sách giao dịch. Vui lòng thử lại.";
-        setError(errorMessage);
+        setError("Không thể tải danh sách giao dịch.");
+        console.error("Lỗi fetchTransactions:", err);
       } finally {
         setIsLoading(false);
       }
     },
-    [navigate, isLoading]
+    []
   );
 
+  // Tải dữ liệu lần đầu
   useEffect(() => {
     if (!initialLoadAttempted.current) {
       initialLoadAttempted.current = true;
-      setTransactions([]);
-      setCurrentPage(0);
-      setHasMore(true);
-      setError("");
-      fetchTransactionsAPI(1, true);
+      fetchTransactions(1, true); // Tải trang 1 và yêu cầu refresh
     }
-  }, [fetchTransactionsAPI]);
+  }, [fetchTransactions]);
 
   const handleLoadMore = () => {
     if (!isLoading && hasMore) {
-      fetchTransactionsAPI(currentPage + 1, false);
+      fetchTransactions(currentPage + 1, false); // Tải trang tiếp theo, không refresh
     }
+  };
+
+  // === Các hàm xử lý cho Sửa/Xóa ===
+  const handleEditRequest = (transaction) => {
+    setEditingTransaction(transaction);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteRequest = (transactionId) => {
+    setTransactionToDelete(transactionId);
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!transactionToDelete) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(
+        `http://localhost:5000/api/transactions/${transactionToDelete}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setIsConfirmOpen(false);
+      setTransactionToDelete(null);
+      // Tải lại toàn bộ danh sách từ đầu để đảm bảo nhất quán
+      window.location.reload();
+    } catch (err) {
+      alert("Xóa giao dịch thất bại!");
+      setIsConfirmOpen(false);
+    }
+  };
+
+  const handleSubmitSuccess = () => {
+    setIsModalOpen(false);
+    setEditingTransaction(null);
+    // Tải lại toàn bộ trang để cập nhật cả StatsOverview và RecentTransactions
+    window.location.reload();
   };
 
   const handleViewDetails = () => {
     navigate("/transactions");
   };
 
-  const handleDeleteTransaction = (deletedTransactionId) => {
-    setTransactions((prevItems) =>
-      prevItems.filter((item) => (item.id || item._id) !== deletedTransactionId)
-    );
-  };
-
+  // ... Phần JSX để hiển thị ...
   let content;
-  if (isLoading && transactions.length === 0 && currentPage === 0 && !error) {
-    content = (
-      <div className={styles.loadingIndicator}>
-        <FontAwesomeIcon icon={faSpinner} spin size="lg" />
-        <span>Đang tải giao dịch...</span>
-      </div>
-    );
-  } else if (error && transactions.length === 0) {
+  if (isLoading && transactions.length === 0) {
+    content = <div className={styles.loadingIndicator}>...</div>;
+  } else if (error) {
     content = (
       <p className={`${styles.errorText} ${styles.noTransactions}`}>{error}</p>
     );
-  } else if (!isLoading && transactions.length === 0 && !error) {
+  } else if (transactions.length === 0) {
     content = <p className={styles.noTransactions}>Chưa có giao dịch nào.</p>;
   } else {
     content = (
@@ -165,9 +154,11 @@ const RecentTransactions = () => {
           <tbody>
             {transactions.map((transaction) => (
               <TransactionItem
-                key={transaction.id || transaction._id}
+                key={transaction.id}
                 transaction={transaction}
-                onDeleteSuccess={handleDeleteTransaction}
+                // ✅ Truyền đúng props xuống
+                onEditRequest={handleEditRequest}
+                onDeleteRequest={handleDeleteRequest}
               />
             ))}
           </tbody>
@@ -188,42 +179,50 @@ const RecentTransactions = () => {
         </button>
       </div>
       {content}
-      {error && transactions.length > 0 && !isLoading && (
-        <p className={styles.errorText}>{error}</p>
-      )}
       <div className={styles.loadMoreButtonOuterContainer}>
-        {hasMore && !error && transactions.length > 0 && (
-          <button
-            onClick={handleLoadMore}
-            disabled={isLoading}
-            className={styles.loadMoreButton}
-          >
-            {isLoading ? (
-              <>
-                <FontAwesomeIcon
-                  icon={faSpinner}
-                  spin
-                  className={styles.loadMoreIcon}
-                />{" "}
-                Đang tải...
-              </>
-            ) : (
-              <>
-                Tải thêm{" "}
-                <FontAwesomeIcon
-                  icon={faChevronDown}
-                  className={styles.loadMoreIcon}
-                />
-              </>
-            )}
+        {hasMore && !isLoading && (
+          <button onClick={handleLoadMore} className={styles.loadMoreButton}>
+            <span>Tải thêm</span>
+            <FontAwesomeIcon
+              icon={faChevronDown}
+              className={styles.loadMoreIcon}
+            />
+          </button>
+        )}
+        {isLoading && transactions.length > 0 && (
+          <button className={styles.loadMoreButton} disabled>
+            <FontAwesomeIcon
+              icon={faSpinner}
+              spin
+              className={styles.loadMoreIcon}
+            />
+            <span>Đang tải...</span>
           </button>
         )}
       </div>
-      {!hasMore && transactions.length > 0 && !isLoading && !error && (
+      {!hasMore && transactions.length > 0 && (
         <p className={styles.noMoreTransactions}>
           Đã hiển thị tất cả giao dịch.
         </p>
       )}
+
+      {/* ✅ Render các modal cần thiết */}
+      {isModalOpen && (
+        <AddEditTransactionModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmitSuccess={handleSubmitSuccess}
+          mode={editingTransaction ? "edit" : "add"}
+          initialData={editingTransaction}
+        />
+      )}
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa"
+        message="Bạn có chắc chắn muốn xóa giao dịch này không?"
+      />
     </div>
   );
 };
