@@ -14,7 +14,7 @@ html {
 }
 
 body {
-  @apply bg-red-100; /* Tailwind class cho màu nền */
+  /* @apply bg-red-100; Tailwind class cho màu nền */
 
   /* Đảm bảo body chiếm ít nhất toàn bộ chiều cao của html (tức là viewport) */
   min-height: 100%;

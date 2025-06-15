@@ -92,9 +92,6 @@ const CategoryExpenseChart = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
 
   useEffect(() => {
     console.log("Dữ liệu biểu đồ:", data);
