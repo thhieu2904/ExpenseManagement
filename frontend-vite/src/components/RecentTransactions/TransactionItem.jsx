@@ -1,13 +1,12 @@
 // src/components/RecentTransactions/TransactionItem.jsx
 import React, { forwardRef } from "react";
-// BỎ import axios và useNavigate
 import styles from "./RecentTransactions.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { getIconObject } from "../../utils/iconMap";
 
-// ... các hàm formatDate và formatCurrency giữ nguyên ...
-const formatDate = (dateString) => {
+// Hàm chỉ định dạng ngày (VD: 17/06/2025)
+const formatDateOnly = (dateString) => {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
   return date.toLocaleDateString("vi-VN", {
@@ -16,24 +15,40 @@ const formatDate = (dateString) => {
     year: "numeric",
   });
 };
+
+// Hàm chỉ định dạng giờ (VD: 19:51)
+const formatTimeOnly = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 const formatCurrency = (amount) => {
   if (typeof amount !== "number") return "0 ₫";
   return amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 };
 
-// ✅ Component giờ nhận vào onEditRequest và onDeleteRequest
 const TransactionItem = forwardRef(
   ({ transaction, onEditRequest, onDeleteRequest }, ref) => {
     if (!transaction) return null;
 
-    const { id, date, category, description, paymentMethod, amount, type } =
-      transaction;
+    const {
+      id,
+      date,
+      category,
+      description,
+      paymentMethod,
+      amount,
+      type,
+      createdAt,
+    } = transaction;
 
-    // ✅ Hàm handleEdit và handleDelete giờ chỉ gọi prop từ cha, không chứa logic
     const handleEdit = () => onEditRequest(transaction);
     const handleDelete = () => onDeleteRequest(id);
 
-    // ... hàm getStyleForAccount giữ nguyên ...
     const getStyleForAccount = (account) => {
       if (!account?.type) return styles.pmOther;
       switch (account.type) {
@@ -48,7 +63,15 @@ const TransactionItem = forwardRef(
 
     return (
       <tr ref={ref} className={styles.transactionRow}>
-        <td data-label="Thời gian">{formatDate(date)}</td>
+        {/* ✅ THAY ĐỔI CẤU TRÚC Ô "THỜI GIAN" */}
+        <td data-label="Thời gian">
+          <div className={styles.dateTimeContainer}>
+            <span className={styles.datePart}>{formatDateOnly(date)}</span>
+            <span className={styles.timePart}>
+              Tạo lúc: {formatTimeOnly(createdAt)}
+            </span>
+          </div>
+        </td>
         <td data-label="Danh mục" className={styles.categoryCell}>
           <FontAwesomeIcon
             icon={getIconObject(category?.icon)}

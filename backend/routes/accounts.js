@@ -84,7 +84,9 @@ router.post("/", verifyToken, async (req, res) => {
 // Lấy tất cả tài khoản
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const accounts = await Account.find({ userId: req.user.id });
+    const accounts = await Account.find({ userId: req.user.id }).sort({
+      createdAt: -1,
+    });
     res.json(accounts);
   } catch (err) {
     res.status(500).json({ error: err.message });

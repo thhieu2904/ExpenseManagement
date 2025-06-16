@@ -214,6 +214,7 @@ const StatsOverview = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmitSuccess={handleTransactionAdded}
+        mode="add"
       />
     </div>
   );

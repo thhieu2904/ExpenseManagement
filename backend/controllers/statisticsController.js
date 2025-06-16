@@ -101,7 +101,7 @@ exports.getIncomeExpenseTrend = async (req, res) => {
     const userId = req.user.id;
 
     // In ra các tham số nhận được để gỡ lỗi
-    console.log("Tham số truy vấn đã nhận:", req.query);
+    // console.log("Tham số truy vấn đã nhận:", req.query);
 
     const period = req.query.period || "day";
     const year = parseInt(req.query.year) || new Date().getFullYear();
@@ -233,19 +233,26 @@ exports.getIncomeExpenseTrend = async (req, res) => {
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 };
-
-// Lấy thống kê chi tiêu theo danh mục (phiên bản nâng cấp)
 exports.getStatsByCategory = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { period, year, month, date } = req.query; // Sửa 1: Bỏ điều kiện lọc cứng `type: "CHITIEU"`
+    // ✅ Sửa đổi: Lấy thêm 'type' từ query
+    const { period, year, month, date, type } = req.query;
+
+    // ✅ SỬA ĐỔI VẤN ĐỀ 3: Đặt giới hạn vào một biến dễ thay đổi
+    const TOP_CATEGORIES_LIMIT = 10; // Bạn có thể đổi số này thành 6, 8, 10, ... tùy ý
 
     const matchStage = {
       userId: new mongoose.Types.ObjectId(userId),
     };
 
-    let startDate, endDate; // Logic xử lý khoảng thời gian không đổi, đã đúng
+    // ✅ SỬA ĐỔI VẤN ĐỀ 2: Thêm bộ lọc theo loại (Thu/Chi) ngay từ đầu
+    if (type && (type === "THUNHAP" || type === "CHITIEU")) {
+      matchStage.type = type;
+    }
 
+    // Logic xử lý khoảng thời gian không đổi...
+    let startDate, endDate;
     switch (period) {
       case "year":
         if (year) {
@@ -275,20 +282,14 @@ exports.getStatsByCategory = async (req, res) => {
         }
         break;
       default:
-        return res
-          .status(400)
-          .json({
-            message: "Thiếu tham số 'period' hợp lệ (week, month, year).",
-          });
+        // Mặc định, nếu không có period, sẽ không lọc thời gian
+        break;
     }
 
-    if (!startDate || !endDate) {
-      return res
-        .status(400)
-        .json({ message: "Thiếu các tham số ngày tháng cần thiết." });
+    if (startDate && endDate) {
+      matchStage.date = { $gte: startDate, $lte: endDate };
     }
-
-    matchStage.date = { $gte: startDate, $lte: endDate };
+    // Kết thúc logic thời gian
 
     const result = await Transaction.aggregate([
       { $match: matchStage },
@@ -297,7 +298,7 @@ exports.getStatsByCategory = async (req, res) => {
       {
         $facet: {
           topCategories: [
-            { $limit: 5 },
+            { $limit: TOP_CATEGORIES_LIMIT }, // ✅ Sử dụng biến giới hạn
             {
               $lookup: {
                 from: "categories",
@@ -313,13 +314,12 @@ exports.getStatsByCategory = async (req, res) => {
                 name: "$categoryInfo.name",
                 value: "$total",
                 icon: "$categoryInfo.icon",
-                // Sửa 2: Thêm trường `type` vào kết quả trả về
                 type: "$categoryInfo.type",
               },
             },
           ],
           otherCategories: [
-            { $skip: 5 },
+            { $skip: TOP_CATEGORIES_LIMIT }, // ✅ Sử dụng biến giới hạn
             { $group: { _id: null, total: { $sum: "$total" } } },
             {
               $project: {
@@ -327,7 +327,6 @@ exports.getStatsByCategory = async (req, res) => {
                 name: "Khác",
                 value: "$total",
                 icon: "fa-question-circle",
-                // "Khác" là tổng hợp nên không có type cụ thể, ta bỏ trống
               },
             },
           ],

@@ -1,15 +1,31 @@
-// controllers/transactionController.js
+// backend/controllers/transactionController.js
 const Transaction = require("../models/Transaction");
 const Account = require("../models/Account");
-
 exports.createTransaction = async (req, res) => {
+  // console.log("Dữ liệu nhận được ở Backend:", req.body);
   try {
     const { name, amount, type, categoryId, accountId, date, note } = req.body;
+
+    if (!name || amount === undefined || !type || !categoryId || !accountId) {
+      return res.status(400).json({
+        error: "Dữ liệu không hợp lệ.",
+        details: "Thiếu các trường thông tin bắt buộc.",
+      });
+    }
+
+    // ✅ BƯỚC 1: Đảm bảo 'amount' là một số nguyên an toàn ngay từ đầu
+    // Chuyển đổi thành số và làm tròn thành số nguyên gần nhất để loại bỏ mọi sai số
+    const transactionAmount = Math.round(Number(amount));
+
+    // Kiểm tra xem sau khi chuyển đổi, nó có phải là một con số hợp lệ không
+    if (isNaN(transactionAmount)) {
+      return res.status(400).json({ error: "Số tiền không hợp lệ." });
+    }
 
     const newTransaction = new Transaction({
       userId: req.user.id,
       name,
-      amount,
+      amount: transactionAmount, // Dùng số tiền an toàn đã được làm tròn
       type,
       categoryId,
       accountId,
@@ -23,17 +39,35 @@ exports.createTransaction = async (req, res) => {
       _id: accountId,
       userId: req.user.id,
     });
-    if (!account)
-      return res.status(404).json({ message: "Tài khoản không tồn tại" });
 
-    if (type === "CHITIEU") account.initialBalance -= amount;
-    else if (type === "THUNHAP") account.initialBalance += amount;
+    if (!account) {
+      // Nếu tài khoản không tồn tại, ta nên cân nhắc việc xóa giao dịch vừa tạo để đảm bảo toàn vẹn dữ liệu
+      await Transaction.findByIdAndDelete(savedTransaction._id);
+      return res.status(404).json({ message: "Tài khoản không tồn tại" });
+    }
+
+    // ✅ BƯỚC 2: Sử dụng số nguyên an toàn trong phép tính số dư
+    const currentBalance = Math.round(Number(account.initialBalance));
+
+    if (type === "CHITIEU") {
+      account.initialBalance = currentBalance - transactionAmount;
+    } else if (type === "THUNHAP") {
+      account.initialBalance = currentBalance + transactionAmount;
+    }
 
     await account.save();
 
     res.status(201).json(savedTransaction);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    if (err.name === "ValidationError") {
+      return res
+        .status(400)
+        .json({ error: "Dữ liệu không hợp lệ.", details: err.message });
+    }
+    console.error("Lỗi khi tạo giao dịch:", err);
+    res
+      .status(500)
+      .json({ error: "Lỗi máy chủ nội bộ.", details: err.message });
   }
 };
 exports.getAllTransactions = async (req, res) => {
@@ -48,21 +82,21 @@ exports.getAllTransactions = async (req, res) => {
 
     const transactions = await Transaction.find({ userId })
       .populate("accountId", "name type")
-      .populate("categoryId", "name icon type") // Lấy thêm cả icon và type của category
-      .sort({ date: -1 })
+      .populate("categoryId", "name icon type")
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    // ✅ BƯỚC QUAN TRỌNG NHẤT: BIẾN ĐỔI DỮ LIỆU
     const formattedTransactions = transactions.map((t) => ({
-      id: t._id, // Đổi _id thành id
+      id: t._id,
+      createdAt: t.createdAt,
       date: t.date,
-      description: t.name, // Đổi name thành description
+      description: t.name,
       note: t.note,
       amount: t.amount,
       type: t.type,
-      category: t.categoryId, // Giữ nguyên category là object
-      paymentMethod: t.accountId, // Đổi accountId thành paymentMethod
+      category: t.categoryId,
+      paymentMethod: t.accountId,
     }));
 
     res.json({
@@ -104,13 +138,13 @@ exports.deleteTransaction = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 exports.updateTransaction = async (req, res) => {
   try {
     const { id: transactionId } = req.params;
     const userId = req.user.id;
     const { name, amount, type, categoryId, accountId, date, note } = req.body;
 
-    // 1. Tìm giao dịch cũ để hoàn lại tiền cho tài khoản cũ
     const oldTransaction = await Transaction.findOne({
       _id: transactionId,
       userId: userId,
@@ -122,7 +156,6 @@ exports.updateTransaction = async (req, res) => {
 
     const oldAccount = await Account.findById(oldTransaction.accountId);
     if (oldAccount) {
-      // Hoàn lại số tiền của giao dịch CŨ
       if (oldTransaction.type === "CHITIEU") {
         oldAccount.initialBalance += oldTransaction.amount;
       } else {
@@ -131,7 +164,6 @@ exports.updateTransaction = async (req, res) => {
       await oldAccount.save();
     }
 
-    // 2. Cập nhật giao dịch với thông tin mới
     const updatedTransaction = await Transaction.findByIdAndUpdate(
       transactionId,
       {
@@ -139,17 +171,15 @@ exports.updateTransaction = async (req, res) => {
         amount,
         type,
         categoryId,
-        accountId, // Cập nhật tài khoản mới
+        accountId,
         date,
         note,
       },
-      { new: true } // Trả về bản ghi đã được cập nhật
+      { new: true }
     );
 
-    // 3. Cập nhật số dư cho tài khoản MỚI (hoặc tài khoản cũ nếu không đổi)
     const newAccount = await Account.findById(accountId);
     if (newAccount) {
-      // Trừ đi số tiền của giao dịch MỚI
       if (type === "CHITIEU") {
         newAccount.initialBalance -= amount;
       } else {
@@ -160,11 +190,9 @@ exports.updateTransaction = async (req, res) => {
 
     res.status(200).json(updatedTransaction);
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        error: "Lỗi server khi cập nhật giao dịch.",
-        details: err.message,
-      });
+    res.status(500).json({
+      error: "Lỗi server khi cập nhật giao dịch.",
+      details: err.message,
+    });
   }
 };

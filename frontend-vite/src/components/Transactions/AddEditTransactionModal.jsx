@@ -136,6 +136,8 @@ const AddEditTransactionModal = ({
       accountId,
       date,
     };
+    //console.log("Dữ liệu gửi đi từ Frontend:", payload);
+
     const token = localStorage.getItem("token");
     const isEditMode = mode === "edit";
 
@@ -220,7 +222,7 @@ const AddEditTransactionModal = ({
             <input
               id="amount"
               type="number"
-              value={amount}
+              value={amount || ""} // Thêm || "" để đảm bảo value không bao giờ là null/undefined
               onChange={(e) => setAmount(e.target.value)}
               className={styles.formInput}
               placeholder="0"
@@ -287,14 +289,15 @@ const AddEditTransactionModal = ({
 
           <div className={styles.formGroup}>
             <label htmlFor="description" className={styles.formLabel}>
-              Ghi chú
+              Tên/Mô tả giao dịch <span className={styles.requiredStar}>*</span>
             </label>
             <textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className={styles.formInput}
-              placeholder="Nhập mô tả cho giao dịch..."
+              placeholder="Ví dụ: Lương tháng 6, Ăn trưa với đối tác..."
+              required // Thêm thuộc tính required để bắt buộc nhập
             ></textarea>
           </div>
 

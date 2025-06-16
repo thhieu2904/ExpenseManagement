@@ -26,7 +26,6 @@ const COLORS = [
 
 const formatCurrency = (value) =>
   value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
-
 const renderCustomizedLabel = ({
   cx,
   cy,
@@ -35,15 +34,27 @@ const renderCustomizedLabel = ({
   percent,
   payload,
 }) => {
-  // ... (giữ nguyên hàm này)
   const RADIAN = Math.PI / 180;
-  const labelRadius = outerRadius + 30;
+  // Giữ nguyên khoảng cách label, bạn có thể chỉnh lại nếu muốn
+  const labelRadius = outerRadius + 45;
   const x = cx + labelRadius * Math.cos(-midAngle * RADIAN);
   const y = cy + labelRadius * Math.sin(-midAngle * RADIAN);
   const icon = getIconObject(payload.icon);
 
+  // Không hiển thị label cho những phần quá nhỏ
+  if (percent < 0.01) {
+    return null;
+  }
+
+  // ✅ BẮT ĐẦU LOGIC MỚI ĐỂ SẮP XẾP LẠI ICON VÀ TEXT
+  const iconSize = 20; // Kích thước của icon
+  const textOffset = 5; // Khoảng cách giữa icon và text
+  const isLeft = x < cx; // Kiểm tra xem label nằm bên trái hay phải
+
   return (
-    <g>
+    // Sử dụng `textAnchor` để căn chỉnh toàn bộ label (icon + text)
+    <g textAnchor={isLeft ? "end" : "start"}>
+      {/* Đường kẻ không đổi */}
       <path
         d={`M${cx + (outerRadius + 5) * Math.cos(-midAngle * RADIAN)},${
           cy + (outerRadius + 5) * Math.sin(-midAngle * RADIAN)
@@ -52,24 +63,31 @@ const renderCustomizedLabel = ({
         fill="none"
         strokeWidth={1}
       />
+
+      {/* ICON được đặt ở cuối đường kẻ */}
       <foreignObject
-        x={x > cx ? x + 5 : x - 30}
-        y={y - 28}
-        width="25"
-        height="25"
+        // Căn chỉnh vị trí icon dựa trên việc nó nằm bên trái hay phải
+        x={isLeft ? x - iconSize : x}
+        y={y - iconSize / 2} // Căn giữa icon theo chiều dọc
+        width={iconSize}
+        height={iconSize}
       >
-        <FontAwesomeIcon icon={icon} size="lg" color="#333" />
+        <FontAwesomeIcon
+          icon={icon}
+          style={{ width: "100%", height: "100%", color: "#333" }}
+        />
       </foreignObject>
+
+      {/* TEXT được đặt ngay cạnh icon */}
       <text
-        x={x > cx ? x + 5 : x - 5}
-        y={y + 10}
-        textAnchor={x > cx ? "start" : "end"}
-        dominantBaseline="central"
+        x={isLeft ? x - iconSize - textOffset : x + iconSize + textOffset}
+        y={y}
+        dominantBaseline="central" // Căn giữa text theo chiều dọc
         fill="#333"
         fontSize="13"
         fontWeight="600"
       >
-        {`${(percent * 100).toFixed(2)}%`}
+        {`${(percent * 100).toFixed(1)}%`}
       </text>
     </g>
   );
@@ -88,13 +106,13 @@ const CategoryAnalysisChart = ({
   const [error, setError] = useState("");
 
   const fetchData = useCallback(async () => {
-    // ... (hàm fetchData giữ nguyên như cũ)
     if (!period || !currentDate) return;
     setLoading(true);
     setError("");
+
     try {
       const token = localStorage.getItem("token");
-      const params = { period };
+      const params = { period, type: categoryType };
       if (period === "year") params.year = currentDate.getFullYear();
       if (period === "month") {
         params.year = currentDate.getFullYear();
@@ -111,15 +129,11 @@ const CategoryAnalysisChart = ({
         }
       );
 
-      let categoriesWithTotals = response.data;
+      // ✅ LOGIC ĐƯỢC ĐƠN GIẢN HÓA TRIỆT ĐỂ
+      const apiData = response.data || [];
 
-      if (categoryType !== "ALL") {
-        categoriesWithTotals = categoriesWithTotals.filter(
-          (cat) => cat.type === categoryType
-        );
-      }
-
-      const chartData = categoriesWithTotals
+      // Frontend chỉ cần nhận và hiển thị, không cần gộp hay cắt bớt
+      const chartData = apiData
         .filter((cat) => cat.value > 0)
         .map((cat) => ({
           name: cat.name,
@@ -128,6 +142,8 @@ const CategoryAnalysisChart = ({
         }));
 
       setData(chartData);
+
+      // Tổng tiền giờ sẽ được tính từ dữ liệu mà API trả về (đã bao gồm mục "Khác")
       setTotal(chartData.reduce((sum, item) => sum + item.value, 0));
     } catch (err) {
       const errorMessage =

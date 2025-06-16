@@ -109,7 +109,7 @@ const CategoriesPage = () => {
           <div className={styles.chartContainer}>
             {/* Thêm key để biểu đồ cũng được render lại */}
             <CategoryAnalysisChart
-              key={`chart-${activeType}-${period}-${currentDate.toISOString()}`}
+              key={`chart-${refreshKey}-${activeType}-${period}-${currentDate.toISOString()}`}
               categoryType={activeType}
               period={period}
               currentDate={currentDate}
@@ -121,7 +121,7 @@ const CategoriesPage = () => {
           <div className={styles.listContainer}>
             {/* Sửa key và truyền prop mới */}
             <CategoryList
-              key={`list-${activeType}-${period}-${currentDate.toISOString()}`}
+              key={`list-${refreshKey}-${activeType}-${period}-${currentDate.toISOString()}`}
               categoryType={activeType}
               onEditCategory={handleOpenEditModal}
               onDeleteSuccess={handleDeleteSuccess} // <-- TRUYỀN PROP MỚI

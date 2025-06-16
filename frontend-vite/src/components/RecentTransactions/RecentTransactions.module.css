@@ -269,3 +269,30 @@
 .expenseAmount {
   color: #dc3545; /* Màu đỏ cho chi tiêu */
 }
+/* Container cho cả ngày và giờ để căn chỉnh */
+.dateTimeContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Căn trái cho cả ngày và giờ */
+  line-height: 1.3; /* Tăng khoảng cách giữa các dòng một chút */
+}
+
+/* Phần hiển thị ngày (không cần thay đổi nhiều) */
+.datePart {
+  font-weight: 500;
+  color: #343a40; /* Màu chữ chính */
+}
+
+/* Phần hiển thị giờ (nhỏ và mảnh hơn) */
+.timePart {
+  font-size: 0.8rem; /* Cỡ chữ nhỏ hơn */
+  font-weight: 400; /* Chữ mảnh hơn */
+  color: #6c757d; /* Màu xám nhạt */
+}
+
+/* Điều chỉnh cho màn hình mobile */
+@media (max-width: 768px) {
+  .dateTimeContainer {
+    align-items: flex-end; /* Căn phải trên mobile cho thống nhất với layout */
+  }
+}
