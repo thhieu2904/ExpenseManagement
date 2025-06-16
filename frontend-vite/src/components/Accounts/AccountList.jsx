@@ -1,120 +1,100 @@
 // src/components/Accounts/AccountList.jsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import axios from "axios";
-import styles from "./AccountList.module.css"; // File CSS riêng cho component này
+import styles from "./AccountList.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faWallet,
-  faCreditCard,
+  faLandmark,
   faEdit,
   faTrashAlt,
-  faUniversity,
-  faMoneyBill,
 } from "@fortawesome/free-solid-svg-icons";
-import ConfirmDialog from "../Common/ConfirmDialog"; // Sử dụng lại ConfirmDialog
-// AccountItem có thể được import nếu tách file, hoặc định nghĩa trực tiếp ở đây
-// import AccountItem from './AccountItem';
+import ConfirmDialog from "../Common/ConfirmDialog";
 
-// --- Hàm định dạng tiền tệ ---
 const formatCurrency = (amount) => {
   if (typeof amount !== "number") return "0 ₫";
   return amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 };
 
-// --- AccountItem Component (định nghĩa trực tiếp hoặc import) ---
-const AccountItem = ({ account, onEdit, onDeleteRequest }) => {
-  const accountIcon = account.type === "cash" ? faMoneyBill : faUniversity; // Icon phù hợp hơn
-  const accountTypeDisplay =
-    account.type === "cash" ? "Tiền mặt" : "Ngân hàng/Thẻ";
+// Hàm định dạng số tài khoản để hiển thị
+const formatAccountNumber = (number) => {
+  if (!number || number.length <= 4) {
+    return number;
+  }
+  return `•••• ${number.slice(-4)}`;
+};
+
+// --- AccountItem Component (Nội bộ) ---
+const AccountItem = ({ account, totalBalance, onEdit, onDeleteRequest }) => {
+  const accountIcon = account.type === "TIENMAT" ? faWallet : faLandmark;
+
+  const percentage =
+    totalBalance > 0 ? ((account.balance || 0) / totalBalance) * 100 : 0;
 
   return (
     <div className={styles.accountItem}>
-      <div className={styles.accountNameInfo}>
+      <div className={styles.accountInfo}>
         <FontAwesomeIcon
           icon={accountIcon}
           className={styles.accountIconItem}
         />
-        <div className={styles.accountTextDetails}>
+        <div className={styles.accountDetails}>
           <span className={styles.accountName}>{account.name}</span>
-          {account.type === "bank" &&
+          {/* HIỂN THỊ THÔNG TIN NGÂN HÀNG */}
+          {account.type === "THENGANHANG" &&
             (account.bankName || account.accountNumber) && (
               <span className={styles.accountSubDetail}>
                 {account.bankName}
-                {account.bankName && account.accountNumber ? " - " : ""}
-                {account.accountNumber}
+                {account.bankName && account.accountNumber && " - "}
+                {formatAccountNumber(account.accountNumber)}
               </span>
             )}
         </div>
       </div>
-      <div className={styles.accountTypeBadge}>
-        <span
-          className={`${styles.badge} ${
-            account.type === "cash" ? styles.badgeCash : styles.badgeBank
-          }`}
-        >
-          {accountTypeDisplay}
-        </span>
-      </div>
-      <div className={styles.accountBalance}>
-        {formatCurrency(account.balance)}
-      </div>
-      <div className={styles.accountActions}>
-        <button
-          onClick={() => onEdit(account)}
-          className={`${styles.actionButton} ${styles.editButton}`}
-          title="Sửa"
-        >
-          <FontAwesomeIcon icon={faEdit} />
-        </button>
-        <button
-          onClick={() => onDeleteRequest(account.id, account.name)}
-          className={`${styles.actionButton} ${styles.deleteButton}`}
-          title="Xóa"
-        >
-          <FontAwesomeIcon icon={faTrashAlt} />
-        </button>
+      <div className={styles.balanceAndActions}>
+        <div className={styles.balanceContainer}>
+          <span className={styles.accountBalance}>
+            {formatCurrency(account.balance)}
+          </span>
+          <div className={styles.progressBarContainer}>
+            <div
+              className={styles.progressBar}
+              style={{ width: `${percentage}%` }}
+            ></div>
+          </div>
+        </div>
+        <div className={styles.accountActions}>
+          <button
+            onClick={() => onEdit(account)}
+            className={`${styles.actionButton} ${styles.editButton}`}
+            title="Sửa"
+          >
+            <FontAwesomeIcon icon={faEdit} />
+          </button>
+          <button
+            onClick={() => onDeleteRequest(account.id, account.name)}
+            className={`${styles.actionButton} ${styles.deleteButton}`}
+            title="Xóa"
+          >
+            <FontAwesomeIcon icon={faTrashAlt} />
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
 // --- AccountList Component ---
-const AccountList = ({ onEditAccountRequest, listRefreshTrigger }) => {
-  const [accounts, setAccounts] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+const AccountList = ({
+  accounts,
+  totalBalance,
+  isLoading,
+  error,
+  onEditRequest,
+  onDeleteSuccess,
+}) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [accountToDelete, setAccountToDelete] = useState(null);
-
-  const fetchAccounts = useCallback(async () => {
-    setIsLoading(true);
-    setError("");
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("Vui lòng đăng nhập.");
-        setIsLoading(false);
-        return;
-      }
-      const response = await axios.get("http://localhost:5000/api/accounts", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.data && Array.isArray(response.data)) {
-        setAccounts(response.data);
-      } else {
-        setAccounts([]);
-      }
-    } catch (err) {
-      console.error("Lỗi khi tải danh sách nguồn tiền:", err);
-      setError("Không thể tải danh sách nguồn tiền.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchAccounts();
-  }, [fetchAccounts, listRefreshTrigger]); // Thêm listRefreshTrigger để fetch lại khi cần
 
   const requestDeleteAccount = (accountId, accountName) => {
     setAccountToDelete({ id: accountId, name: accountName });
@@ -131,12 +111,9 @@ const AccountList = ({ onEditAccountRequest, listRefreshTrigger }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      fetchAccounts(); // Tải lại danh sách
-      // Không cần alert, có thể dùng toast notification ở component cha
-      console.log(`Nguồn tiền "${accountToDelete.name}" đã được xóa.`);
+      onDeleteSuccess();
     } catch (err) {
       console.error("Lỗi khi xóa nguồn tiền:", err);
-      setError(`Lỗi khi xóa nguồn tiền "${accountToDelete.name}".`);
     } finally {
       setIsConfirmOpen(false);
       setAccountToDelete(null);
@@ -144,7 +121,7 @@ const AccountList = ({ onEditAccountRequest, listRefreshTrigger }) => {
   };
 
   if (isLoading) {
-    return <div className={styles.loadingMessage}>Đang tải nguồn tiền...</div>;
+    return <div className={styles.loadingMessage}>Đang tải danh sách...</div>;
   }
   if (error && accounts.length === 0) {
     return <div className={styles.errorMessage}>{error}</div>;
@@ -153,39 +130,29 @@ const AccountList = ({ onEditAccountRequest, listRefreshTrigger }) => {
   return (
     <>
       <div className={styles.accountListContainer}>
-        <div className={styles.listHeader}>
-          <span className={styles.headerColumnName}>Nguồn tiền</span>
-          <span className={styles.headerColumnType}>Loại</span>
-          <span className={styles.headerColumnBalance}>Số dư</span>
-          <span className={styles.headerColumnActions}>Hành động</span>
-        </div>
-        {error && accounts.length > 0 && (
-          <p className={styles.inlineError}>{error}</p>
-        )}
-        {accounts.length === 0 && !isLoading && !error && (
+        {accounts.length === 0 && !isLoading && (
           <p className={styles.noItemsMessage}>Chưa có nguồn tiền nào.</p>
         )}
-        {accounts.length > 0 && (
-          <div className={styles.listItems}>
-            {accounts.map((account) => (
-              <AccountItem
-                key={account.id || account._id}
-                account={account}
-                onEdit={onEditAccountRequest} // Truyền prop từ cha
-                onDeleteRequest={requestDeleteAccount}
-              />
-            ))}
-          </div>
-        )}
+        <div className={styles.listItems}>
+          {accounts.map((account) => (
+            <AccountItem
+              key={account.id}
+              account={account}
+              totalBalance={totalBalance}
+              onEdit={onEditRequest}
+              onDeleteRequest={requestDeleteAccount}
+            />
+          ))}
+        </div>
       </div>
       <ConfirmDialog
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleConfirmDelete}
-        title="Xác nhận xóa nguồn tiền"
-        message={`Bạn có chắc chắn muốn xóa nguồn tiền "${
+        title="Xác nhận xóa"
+        message={`Bạn có chắc muốn xóa nguồn tiền "${
           accountToDelete?.name || ""
-        }"? Tất cả giao dịch liên quan đến nguồn tiền này có thể bị ảnh hưởng hoặc xóa theo.`}
+        }" không?`}
       />
     </>
   );

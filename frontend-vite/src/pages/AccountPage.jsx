@@ -1,73 +1,48 @@
 // src/pages/AccountPage.jsx
-import React, { useState, useCallback } from "react";
-import Header from "../components/Header/Header"; // Hoặc dùng AppLayout
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+
+import Header from "../components/Header/Header";
 import Navbar from "../components/Navbar/Navbar";
 import Footer from "../components/Footer/Footer";
-
-// import AccountPageHeader from '../components/Accounts/AccountPageHeader'; // Sẽ tạo sau
-import AccountList from "../components/Accounts/AccountList";
-import AddEditAccountModal from "../components/Accounts/AddEditAccountModal"; // Sẽ tạo sau
+import AccountPageHeader from "../components/Accounts/AccountPageHeader";
 import TotalBalanceDisplay from "../components/Accounts/TotalBalanceDisplay";
-import axios from "axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; // Cho nút Thêm
-import { faPlus, faUniversity } from "@fortawesome/free-solid-svg-icons"; // faUniversity cho icon chính
+import AccountList from "../components/Accounts/AccountList";
+import AddEditAccountModal from "../components/Accounts/AddEditAccountModal";
 
-const AccountPageHeader = ({ onAddAccountClick }) => {
-  // Header đơn giản
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "20px 25px",
-        backgroundColor: "#f4f6f8",
-        borderRadius: "8px",
-        marginBottom: "20px",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <FontAwesomeIcon
-          icon={faUniversity}
-          style={{ fontSize: "1.8rem", color: "#555" }}
-        />
-        <h2
-          style={{
-            fontSize: "1.8rem",
-            color: "#2c3e50",
-            fontWeight: 600,
-            margin: 0,
-          }}
-        >
-          Quản lí nguồn tiền
-        </h2>
-      </div>
-      <button
-        onClick={onAddAccountClick}
-        style={{
-          backgroundColor: "#3f51b5",
-          color: "white",
-          border: "none",
-          padding: "10px 20px",
-          borderRadius: "6px",
-          fontSize: "0.95rem",
-          fontWeight: 500,
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-        }}
-      >
-        <FontAwesomeIcon icon={faPlus} /> Thêm nguồn tiền
-      </button>
-    </div>
-  );
-};
+import styles from "../styles/AccountPage.module.css";
 
 const AccountPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
-  const [listRefreshTrigger, setListRefreshTrigger] = useState(0); // Để trigger AccountList refresh
+  const [accounts, setAccounts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const fetchAccountsData = useCallback(async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Vui lòng đăng nhập.");
+      const response = await axios.get("http://localhost:5000/api/accounts", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // Chỉ cần gán trực tiếp dữ liệu từ API
+      setAccounts(response.data || []);
+    } catch (err) {
+      setError(err.message || "Không thể tải dữ liệu.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAccountsData();
+  }, [refreshTrigger, fetchAccountsData]);
+
+  const handleForceRefresh = () => setRefreshTrigger((prev) => prev + 1);
 
   const handleOpenAddModal = () => {
     setEditingAccount(null);
@@ -85,51 +60,72 @@ const AccountPage = () => {
   };
 
   const handleFormSubmit = async (formData) => {
-    // formData: { name, type, balance, accountNumber?, bankName? }
     const token = localStorage.getItem("token");
-    const apiUrl = editingAccount
+    const isEditing = !!editingAccount;
+
+    const apiUrl = isEditing
       ? `http://localhost:5000/api/accounts/${editingAccount.id}`
       : "http://localhost:5000/api/accounts";
-    const apiMethod = editingAccount ? "put" : "post";
 
-    // Backend có thể yêu cầu balance là số, không phải chuỗi
+    const apiMethod = isEditing ? "put" : "post";
+
     const payload = {
-      ...formData,
-      balance: parseFloat(formData.balance) || 0, // Chuyển balance sang số
+      name: formData.name,
+      type: formData.type === "cash" ? "TIENMAT" : "THENGANHANG",
+      initialBalance: parseFloat(formData.balance) || 0,
+      bankName: formData.bankName,
+      accountNumber: formData.accountNumber,
     };
+
+    if (isEditing) {
+      delete payload.initialBalance;
+      delete payload.type;
+    }
 
     try {
       await axios[apiMethod](apiUrl, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
       handleCloseModal();
-      setListRefreshTrigger((prev) => prev + 1);
+      handleForceRefresh();
     } catch (error) {
-      console.error(
-        "Lỗi khi lưu nguồn tiền:",
-        error.response?.data?.message || error.message
-      );
-      throw new Error(
-        error.response?.data?.message || "Lỗi không xác định khi lưu."
-      );
+      const errorMessage =
+        error.response?.data?.message || "Có lỗi xảy ra khi lưu.";
+      console.error("Lỗi khi lưu nguồn tiền:", errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
+  const totalBalance = accounts.reduce(
+    (sum, acc) => sum + (acc.balance || 0),
+    0
+  );
+
   return (
-    <div>
+    <div
+      style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+    >
       <Header />
       <Navbar />
-      <div style={{ padding: "20px" }}>
+      <main className={styles.pageWrapper}>
         <AccountPageHeader onAddAccountClick={handleOpenAddModal} />
-        <TotalBalanceDisplay refreshTrigger={listRefreshTrigger} />{" "}
-        {/* 3. TRUYỀN PROP */}
-        <AccountList
-          key={listRefreshTrigger}
-          onEditAccountRequest={handleOpenEditModal}
-        />
-      </div>
-
-      {isModalOpen && ( // Render Modal có điều kiện
+        <div className={styles.mainContent}>
+          <div className={styles.leftColumn}>
+            <TotalBalanceDisplay accounts={accounts} isLoading={isLoading} />
+          </div>
+          <div className={styles.rightColumn}>
+            <AccountList
+              accounts={accounts}
+              totalBalance={totalBalance}
+              isLoading={isLoading}
+              error={error}
+              onEditRequest={handleOpenEditModal}
+              onDeleteSuccess={handleForceRefresh}
+            />
+          </div>
+        </div>
+      </main>
+      {isModalOpen && (
         <AddEditAccountModal
           isOpen={isModalOpen}
           mode={editingAccount ? "edit" : "add"}

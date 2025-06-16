@@ -1,209 +1,143 @@
 /* src/components/Accounts/AccountList.module.css */
 .accountListContainer {
   background-color: #ffffff;
-  padding: 20px 25px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-  margin-top: 20px; /* Khoảng cách với AccountPageHeader */
-}
-
-.listHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 15px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
-  border-radius: 6px 6px 0 0;
-  font-weight: 600;
-  color: #495057;
-  font-size: 0.9rem;
-}
-
-.headerColumnName {
-  flex-basis: 40%;
-  text-align: left;
-}
-.headerColumnType {
-  flex-basis: 20%;
-  text-align: center;
-}
-.headerColumnBalance {
-  flex-basis: 25%;
-  text-align: right;
-  padding-right: 10px;
-}
-.headerColumnActions {
-  flex-basis: 15%;
-  text-align: center;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 15px;
 }
 
 .listItems {
-  /* max-height: 450px; */ /* Bỏ max-height để không tự cuộn nếu bạn muốn trang dài ra */
-  /* overflow-y: auto; */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .accountItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 15px;
   padding: 15px;
-  border-bottom: 1px solid #f1f3f5;
-  transition: background-color 0.15s ease-in-out;
-}
-.accountItem:last-child {
-  border-bottom: none;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  border: 1px solid #f0f2f5;
 }
 .accountItem:hover {
   background-color: #f8f9fa;
 }
 
-.accountNameInfo {
+.accountInfo {
+  flex-grow: 1;
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-basis: 40%;
+  gap: 15px;
+  min-width: 0;
 }
 
 .accountIconItem {
-  font-size: 1.5rem; /* Icon to hơn chút */
-  color: #3f51b5; /* Màu icon chung */
-  width: 30px;
-  text-align: center;
+  font-size: 1.6rem;
+  color: #3f51b5;
+  background-color: #e8eaf6;
+  padding: 10px;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-/* Tùy chỉnh màu cho từng loại icon nếu muốn */
-/* Ví dụ:
-.accountNameInfo svg[data-icon="wallet"] { color: #28a745; }
-.accountNameInfo svg[data-icon="credit-card"] { color: #007bff; }
-*/
 
-.accountTextDetails {
+.accountDetails {
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
+
 .accountName {
-  font-size: 1rem;
-  color: #343a40;
-  font-weight: 500;
+  font-size: 1.1rem;
+  color: #2c3e50;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
 .accountSubDetail {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #6c757d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.accountTypeBadge {
-  flex-basis: 20%;
-  text-align: center;
+.balanceAndActions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
 }
 
-.badge {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #fff;
-  display: inline-block;
-  min-width: 70px;
-  text-align: center;
-  text-transform: capitalize; /* Viết hoa chữ cái đầu */
+.balanceContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  width: 150px;
 }
-.badgeCash {
-  background-color: #28a745;
-} /* Xanh lá cho tiền mặt */
-.badgeBank {
-  background-color: #007bff;
-} /* Xanh dương cho ngân hàng */
 
 .accountBalance {
-  flex-basis: 25%;
   font-weight: 600;
-  text-align: right;
-  padding-right: 10px;
-  font-size: 0.95rem;
-  color: #17a2b8; /* Màu cho số dư */
+  font-size: 1.1rem;
+  color: #34495e;
+}
+
+.progressBarContainer {
+  width: 100%;
+  height: 5px;
+  background-color: #e9ecef;
+  border-radius: 2.5px;
+}
+
+.progressBar {
+  height: 100%;
+  background-color: #3f51b5;
+  border-radius: 2.5px;
+  transition: width 0.4s ease-out;
 }
 
 .accountActions {
   display: flex;
-  gap: 10px;
-  flex-basis: 15%;
-  justify-content: center;
+  gap: 8px;
 }
 
 .actionButton {
-  background: none;
+  background: transparent;
   border: none;
   cursor: pointer;
-  padding: 6px;
+  padding: 8px;
   font-size: 1rem;
-  color: #6c757d;
-  transition: color 0.2s ease;
-  border-radius: 4px;
+  color: #95a5a6;
+  transition: all 0.2s;
+  border-radius: 50%;
 }
 .actionButton:hover {
   background-color: #e9ecef;
 }
 .editButton:hover {
-  color: #ffc107;
-} /* Vàng cho sửa */
+  color: #f39c12;
+}
 .deleteButton:hover {
-  color: #dc3545;
+  color: #e74c3c;
 }
 
 .loadingMessage,
 .errorMessage,
 .noItemsMessage {
   text-align: center;
-  padding: 30px 0;
-  color: #6c757d;
-  font-size: 1rem;
-}
-.errorMessage,
-.inlineError {
-  color: #dc3545;
-}
-.inlineError {
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
-  padding: 10px 15px;
-  border-radius: 4px;
-  margin: 10px 15px;
-  text-align: center;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .listHeader {
-    /* display: none; */ /* Có thể ẩn nếu muốn */
-  }
-  .accountItem {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .accountNameInfo,
-  .accountTypeBadge,
-  .accountBalance,
-  .accountActions {
-    flex-basis: auto;
-    width: 100%;
-    text-align: left;
-    padding-right: 0; /* Reset padding cho các mục căn trái */
-  }
-  .accountActions {
-    justify-content: flex-start; /* Căn trái các nút action */
-    padding-top: 8px;
-    border-top: 1px dashed #eee;
-    margin-top: 8px;
-  }
-  .accountBalance {
-    font-size: 1.1rem; /* Cho số dư to hơn chút trên mobile */
-  }
-  .accountTypeBadge {
-    text-align: left;
-  }
-  .headerColumnBalance,
-  .accountBalance {
-    text-align: left; /* Căn trái số dư trên mobile cho nhất quán */
-  }
+  padding: 50px 20px;
+  color: #7f8c8d;
+  background-color: #f8f9fa;
+  border-radius: 8px;
 }

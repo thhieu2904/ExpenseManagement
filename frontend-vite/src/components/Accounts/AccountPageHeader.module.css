@@ -1,0 +1,49 @@
+/* src/components/Accounts/AccountPageHeader.module.css */
+.headerContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0; /* Bỏ padding ngang, để page lo */
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.titleSection {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.titleIcon {
+  font-size: 2rem;
+  color: #3f51b5;
+}
+
+.title {
+  font-size: 2rem;
+  color: #2c3e50;
+  font-weight: 700;
+  margin: 0;
+}
+
+.addButton {
+  background-color: #3f51b5;
+  color: white;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.addButton:hover {
+  background-color: #303f9f;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
