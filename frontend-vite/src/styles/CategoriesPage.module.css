@@ -1,0 +1,27 @@
+/* src/pages/CategoriesPage.module.css */
+
+.mainContentRow {
+  display: flex;
+  gap: 20px; /* Khoảng cách giữa 2 cột */
+  margin-top: 20px;
+  align-items: flex-start; /* Giữ cho 2 cột canh lề trên cùng */
+}
+
+/* Cột biểu đồ - chiếm nhiều không gian hơn */
+.chartContainer {
+  flex: 2; /* Chiếm 2 phần */
+  min-width: 0; /* Ngăn co giãn ngoài tầm kiểm soát */
+}
+
+/* Cột danh sách - chiếm ít không gian hơn */
+.listContainer {
+  flex: 1; /* Chiếm 1 phần */
+  min-width: 0; /* Ngăn co giãn ngoài tầm kiểm soát */
+}
+
+/* Xử lý cho màn hình nhỏ (máy tính bảng, điện thoại) */
+@media (max-width: 992px) {
+  .mainContentRow {
+    flex-direction: column; /* Xếp thành 2 hàng dọc */
+  }
+}

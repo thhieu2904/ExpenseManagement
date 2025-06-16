@@ -35,7 +35,7 @@
 }
 
 .listItems {
-  max-height: 450px;
+  max-height: 450px; /* Giới hạn chiều cao của danh sách */
   overflow-y: auto;
   margin-top: 5px;
 }

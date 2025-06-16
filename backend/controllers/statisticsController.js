@@ -235,29 +235,25 @@ exports.getIncomeExpenseTrend = async (req, res) => {
 };
 
 // Lấy thống kê chi tiêu theo danh mục (phiên bản nâng cấp)
-exports.getExpenseByCategory = async (req, res) => {
+exports.getStatsByCategory = async (req, res) => {
   try {
     const userId = req.user.id;
-    // Lấy các tham số từ query, bao gồm cả 'period'
-    const { period, year, month, date } = req.query;
+    const { period, year, month, date } = req.query; // Sửa 1: Bỏ điều kiện lọc cứng `type: "CHITIEU"`
 
     const matchStage = {
       userId: new mongoose.Types.ObjectId(userId),
-      type: "CHITIEU",
     };
 
-    let startDate, endDate;
+    let startDate, endDate; // Logic xử lý khoảng thời gian không đổi, đã đúng
 
-    // Xử lý việc tạo khoảng thời gian dựa trên period
     switch (period) {
       case "year":
         if (year) {
           const parsedYear = parseInt(year);
-          startDate = new Date(Date.UTC(parsedYear, 0, 1)); // 1 tháng 1
-          endDate = new Date(Date.UTC(parsedYear, 11, 31, 23, 59, 59)); // 31 tháng 12
+          startDate = new Date(Date.UTC(parsedYear, 0, 1));
+          endDate = new Date(Date.UTC(parsedYear, 11, 31, 23, 59, 59));
         }
         break;
-
       case "month":
         if (year && month) {
           const parsedYear = parseInt(year);
@@ -266,42 +262,34 @@ exports.getExpenseByCategory = async (req, res) => {
           endDate = new Date(Date.UTC(parsedYear, parsedMonth, 0, 23, 59, 59));
         }
         break;
-
       case "week":
         if (date) {
           const referenceDate = new Date(date);
-          referenceDate.setUTCHours(0, 0, 0, 0); // Chuẩn hóa về đầu ngày
-
-          // Tính ngày bắt đầu của tuần (Chủ nhật)
-          const dayOfWeek = referenceDate.getUTCDay(); // 0 = Chủ nhật, 1 = Thứ 2...
+          referenceDate.setUTCHours(0, 0, 0, 0);
+          const dayOfWeek = referenceDate.getUTCDay();
           startDate = new Date(referenceDate);
           startDate.setUTCDate(referenceDate.getUTCDate() - dayOfWeek);
-
-          // Tính ngày kết thúc của tuần (Thứ 7)
           endDate = new Date(startDate);
           endDate.setUTCDate(startDate.getUTCDate() + 6);
           endDate.setUTCHours(23, 59, 59, 999);
         }
         break;
-
       default:
-        // Nếu không có period, có thể trả về lỗi hoặc một khoảng thời gian mặc định
-        return res.status(400).json({
-          message: "Thiếu tham số 'period' hợp lệ (week, month, year).",
-        });
+        return res
+          .status(400)
+          .json({
+            message: "Thiếu tham số 'period' hợp lệ (week, month, year).",
+          });
     }
 
-    // Nếu không thể xác định khoảng thời gian, trả về lỗi
     if (!startDate || !endDate) {
       return res
         .status(400)
         .json({ message: "Thiếu các tham số ngày tháng cần thiết." });
     }
 
-    // Gán khoảng thời gian vào matchStage
     matchStage.date = { $gte: startDate, $lte: endDate };
 
-    // Phần pipeline aggregate phía sau giữ nguyên, nó đã rất tốt rồi
     const result = await Transaction.aggregate([
       { $match: matchStage },
       { $group: { _id: "$categoryId", total: { $sum: "$amount" } } },
@@ -325,6 +313,8 @@ exports.getExpenseByCategory = async (req, res) => {
                 name: "$categoryInfo.name",
                 value: "$total",
                 icon: "$categoryInfo.icon",
+                // Sửa 2: Thêm trường `type` vào kết quả trả về
+                type: "$categoryInfo.type",
               },
             },
           ],
@@ -337,6 +327,7 @@ exports.getExpenseByCategory = async (req, res) => {
                 name: "Khác",
                 value: "$total",
                 icon: "fa-question-circle",
+                // "Khác" là tổng hợp nên không có type cụ thể, ta bỏ trống
               },
             },
           ],

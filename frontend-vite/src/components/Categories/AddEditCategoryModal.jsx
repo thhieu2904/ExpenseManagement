@@ -4,7 +4,7 @@ import styles from "./AddEditCategoryModal.module.css"; // File CSS riêng
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { availableIconsForSelection, getIconObject } from "../../utils/iconMap"; // Đảm bảo đường dẫn đúng
-
+import { CATEGORY_TYPE } from "./CategoryPageHeader";
 const AddEditCategoryModal = ({
   isOpen,
   mode, // 'add' hoặc 'edit'
@@ -25,7 +25,7 @@ const AddEditCategoryModal = ({
     if (isOpen) {
       if (mode === "edit" && initialData) {
         setName(initialData.name || "");
-        setType(initialData.type || "expense");
+        setType(initialData.type || CATEGORY_TYPE.EXPENSE);
         setSelectedIcon(
           initialData.icon ||
             availableIconsForSelection[0]?.identifier ||
@@ -34,7 +34,11 @@ const AddEditCategoryModal = ({
         setError("");
       } else if (mode === "add") {
         setName("");
-        setType(initialType || "expense");
+        setType(
+          initialType === "ALL"
+            ? CATEGORY_TYPE.EXPENSE
+            : initialType || CATEGORY_TYPE.EXPENSE
+        );
         setSelectedIcon(availableIconsForSelection[0]?.identifier || "default");
         setError("");
       }
@@ -61,7 +65,6 @@ const AddEditCategoryModal = ({
     try {
       await onSubmit({
         // onSubmit được truyền từ CategoriesPage.jsx và sẽ gọi API
-        id: initialData?.id,
         name: name.trim(),
         type,
         icon: selectedIcon,
@@ -129,8 +132,8 @@ const AddEditCategoryModal = ({
                 <input
                   type="radio"
                   name="categoryType"
-                  value="expense"
-                  checked={type === "expense"}
+                  value={CATEGORY_TYPE.EXPENSE} // <-- Sửa ở đây
+                  checked={type === CATEGORY_TYPE.EXPENSE}
                   onChange={(e) => setType(e.target.value)}
                   disabled={isSubmitting}
                   className={styles.radioInput}
@@ -141,8 +144,8 @@ const AddEditCategoryModal = ({
                 <input
                   type="radio"
                   name="categoryType"
-                  value="income"
-                  checked={type === "income"}
+                  value={CATEGORY_TYPE.INCOME} // <-- Sửa ở đây
+                  checked={type === CATEGORY_TYPE.INCOME}
                   onChange={(e) => setType(e.target.value)}
                   disabled={isSubmitting}
                   className={styles.radioInput}

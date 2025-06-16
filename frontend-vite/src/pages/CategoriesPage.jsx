@@ -7,14 +7,29 @@ import CategoryPageHeader, {
   CATEGORY_TYPE,
 } from "../components/Categories/CategoryPageHeader";
 import CategoryList from "../components/Categories/CategoryList";
-import AddEditCategoryModal from "../components/Categories/AddEditCategoryModal"; // <-- IMPORT MODAL MỚI
+import AddEditCategoryModal from "../components/Categories/AddEditCategoryModal";
 import axios from "axios";
 
+import CategoryAnalysisChart from "../components/Categories/CategoryAnalysisChart";
+import styles from "../styles/CategoriesPage.module.css";
+
 const CategoriesPage = () => {
-  const [activeType, setActiveType] = useState(CATEGORY_TYPE.INCOME);
+  const [activeType, setActiveType] = useState(CATEGORY_TYPE.ALL);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [listRefreshKey, setListRefreshKey] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0); // <-- Đổi tên để dùng chung
+
+  const [period, setPeriod] = useState("month");
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  const handlePeriodChange = (newPeriod) => {
+    setPeriod(newPeriod);
+    setCurrentDate(new Date());
+  };
+
+  const handleDateChange = (newDate) => {
+    setCurrentDate(newDate);
+  };
 
   const handleCategoryTypeChange = (newType) => {
     setActiveType(newType);
@@ -32,23 +47,37 @@ const CategoriesPage = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setEditingCategory(null); // Reset khi đóng
+    setEditingCategory(null);
   };
 
+  // ✨ SỬA ĐỔI QUAN TRỌNG TẠI ĐÂY ✨
   const handleFormSubmit = async (formData) => {
     const token = localStorage.getItem("token");
-    const apiUrl = editingCategory
-      ? `http://localhost:5000/api/categories/${editingCategory.id}`
+    const isEditing = !!editingCategory;
+    const categoryId = isEditing
+      ? editingCategory._id || editingCategory.id
+      : null;
+
+    // Tự xây dựng payload để đảm bảo dữ liệu chính xác
+    const payload = {
+      name: formData.name,
+      type: formData.type,
+      icon: formData.icon,
+    };
+
+    const apiUrl = isEditing
+      ? `http://localhost:5000/api/categories/${categoryId}`
       : "http://localhost:5000/api/categories";
-    const apiMethod = editingCategory ? "put" : "post";
+
+    const apiMethod = isEditing ? "put" : "post";
 
     try {
-      await axios[apiMethod](apiUrl, formData, {
+      await axios[apiMethod](apiUrl, payload, {
+        // Gửi payload đã được làm sạch
         headers: { Authorization: `Bearer ${token}` },
       });
       handleCloseModal();
-      setListRefreshKey((prevKey) => prevKey + 1);
-      // alert(editingCategory ? 'Cập nhật danh mục thành công!' : 'Thêm danh mục thành công!'); // Có thể dùng toast
+      setRefreshKey((prevKey) => prevKey + 1); // Kích hoạt làm mới
     } catch (error) {
       console.error(
         "Lỗi khi lưu danh mục:",
@@ -60,29 +89,49 @@ const CategoriesPage = () => {
     }
   };
 
+  // ✨ THÊM HÀM NÀY ĐỂ XỬ LÝ SAU KHI XÓA THÀNH CÔNG ✨
+  const handleDeleteSuccess = () => {
+    setRefreshKey((prevKey) => prevKey + 1); // Kích hoạt làm mới
+  };
+
   return (
     <div>
       <Header />
       <Navbar />
-      <main
-        style={{
-          padding: "20px",
-          textAlign: "center",
-        }}
-      >
-        <div style={{ padding: "20px" }}>
-          <CategoryPageHeader
-            activeCategoryType={activeType}
-            onCategoryTypeChange={handleCategoryTypeChange}
-            onAddCategoryClick={handleOpenAddModal}
-          />
-          <CategoryList
-            key={listRefreshKey}
-            categoryType={activeType}
-            onEditCategory={handleOpenEditModal}
-          />
+      <main style={{ padding: "20px" }}>
+        <CategoryPageHeader
+          activeCategoryType={activeType}
+          onCategoryTypeChange={handleCategoryTypeChange}
+          onAddCategoryClick={handleOpenAddModal}
+        />
+
+        <div className={styles.mainContentRow}>
+          <div className={styles.chartContainer}>
+            {/* Thêm key để biểu đồ cũng được render lại */}
+            <CategoryAnalysisChart
+              key={`chart-${activeType}-${period}-${currentDate.toISOString()}`}
+              categoryType={activeType}
+              period={period}
+              currentDate={currentDate}
+              onPeriodChange={handlePeriodChange}
+              onDateChange={handleDateChange}
+            />
+          </div>
+
+          <div className={styles.listContainer}>
+            {/* Sửa key và truyền prop mới */}
+            <CategoryList
+              key={`list-${activeType}-${period}-${currentDate.toISOString()}`}
+              categoryType={activeType}
+              onEditCategory={handleOpenEditModal}
+              onDeleteSuccess={handleDeleteSuccess} // <-- TRUYỀN PROP MỚI
+              period={period}
+              currentDate={currentDate}
+            />
+          </div>
         </div>
-        <AddEditCategoryModal // <-- SỬ DỤNG MODAL MỚI
+
+        <AddEditCategoryModal
           isOpen={isModalOpen}
           mode={editingCategory ? "edit" : "add"}
           initialData={editingCategory}

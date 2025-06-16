@@ -76,5 +76,6 @@ const transactionController = require("../controllers/transactionController");
 router.post("/", verifyToken, transactionController.createTransaction);
 router.get("/", verifyToken, transactionController.getAllTransactions);
 router.delete("/:id", verifyToken, transactionController.deleteTransaction);
+router.put("/:id", verifyToken, transactionController.updateTransaction);
 
 module.exports = router;

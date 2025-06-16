@@ -9,7 +9,7 @@
 }
 
 .chartTitle {
-  font-size: 1.3rem; /* Giữ kích thước đồng nhất với biểu đồ kia */
+  font-size: 1.5rem; /* Giữ kích thước đồng nhất với biểu đồ kia */
   color: #2c3e50; /* Màu tiêu đề */
   margin-top: 0; /* Bỏ margin trên nếu không cần */
   margin-bottom: 20px; /* Khoảng cách với biểu đồ */

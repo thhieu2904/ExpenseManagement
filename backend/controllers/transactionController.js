@@ -104,3 +104,67 @@ exports.deleteTransaction = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+exports.updateTransaction = async (req, res) => {
+  try {
+    const { id: transactionId } = req.params;
+    const userId = req.user.id;
+    const { name, amount, type, categoryId, accountId, date, note } = req.body;
+
+    // 1. Tìm giao dịch cũ để hoàn lại tiền cho tài khoản cũ
+    const oldTransaction = await Transaction.findOne({
+      _id: transactionId,
+      userId: userId,
+    });
+
+    if (!oldTransaction) {
+      return res.status(404).json({ message: "Không tìm thấy giao dịch." });
+    }
+
+    const oldAccount = await Account.findById(oldTransaction.accountId);
+    if (oldAccount) {
+      // Hoàn lại số tiền của giao dịch CŨ
+      if (oldTransaction.type === "CHITIEU") {
+        oldAccount.initialBalance += oldTransaction.amount;
+      } else {
+        oldAccount.initialBalance -= oldTransaction.amount;
+      }
+      await oldAccount.save();
+    }
+
+    // 2. Cập nhật giao dịch với thông tin mới
+    const updatedTransaction = await Transaction.findByIdAndUpdate(
+      transactionId,
+      {
+        name,
+        amount,
+        type,
+        categoryId,
+        accountId, // Cập nhật tài khoản mới
+        date,
+        note,
+      },
+      { new: true } // Trả về bản ghi đã được cập nhật
+    );
+
+    // 3. Cập nhật số dư cho tài khoản MỚI (hoặc tài khoản cũ nếu không đổi)
+    const newAccount = await Account.findById(accountId);
+    if (newAccount) {
+      // Trừ đi số tiền của giao dịch MỚI
+      if (type === "CHITIEU") {
+        newAccount.initialBalance -= amount;
+      } else {
+        newAccount.initialBalance += amount;
+      }
+      await newAccount.save();
+    }
+
+    res.status(200).json(updatedTransaction);
+  } catch (err) {
+    res
+      .status(500)
+      .json({
+        error: "Lỗi server khi cập nhật giao dịch.",
+        details: err.message,
+      });
+  }
+};

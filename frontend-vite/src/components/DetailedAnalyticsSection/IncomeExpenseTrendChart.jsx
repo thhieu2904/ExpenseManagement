@@ -180,11 +180,21 @@ const IncomeExpenseTrendChart = ({
 
   return (
     <div className={styles.chartContainer}>
-      <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <h3 className={styles.chartTitle}>{getChartTitle()}</h3>
+      <div className={styles.headerContainer}>
+        {/* Hàng 1: Chỉ chứa tiêu đề */}
+        <h3 className={styles.chartTitle}>{getChartTitle()}</h3>
+
+        {/* Hàng 2: Chứa 2 cụm nút điều khiển */}
+        <div className={styles.controlsRow}>
+          {/* Cụm nút filter nằm bên trái */}
+
+          <div className={styles.navButtonsBox}>
+            <button onClick={handlePrev}>Trước</button>
+            <div className={styles.navDateBox}>{getDisplayBox()}</div>
+            <button onClick={handleNext}>Sau</button>
+          </div>
+          {/* Cụm nút filter nằm bên phải */}
           <div className={styles.filterButtons}>
-            {/* ✨ THAY ĐỔI 4: Nút lọc giờ gọi prop onPeriodChange */}
             <button
               onClick={() => onPeriodChange("week")}
               className={period === "week" ? styles.active : ""}
@@ -204,11 +214,6 @@ const IncomeExpenseTrendChart = ({
               Năm
             </button>
           </div>
-        </div>
-        <div className={styles.navButtonsBox}>
-          <button onClick={handlePrev}>Trước</button>
-          <div className={styles.navDateBox}>{getDisplayBox()}</div>
-          <button onClick={handleNext}>Sau</button>
         </div>
       </div>
 

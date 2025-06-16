@@ -8,7 +8,7 @@ router.get("/trend", verifyToken, statisticsController.getIncomeExpenseTrend);
 router.get(
   "/by-category",
   verifyToken,
-  statisticsController.getExpenseByCategory
+  statisticsController.getStatsByCategory
 );
 
 module.exports = router;
