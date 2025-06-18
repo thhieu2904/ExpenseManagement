@@ -32,7 +32,7 @@ const renderCustomizedLabel = ({
 }) => {
   const RADIAN = Math.PI / 180;
   // Giữ nguyên khoảng cách label, bạn có thể chỉnh lại nếu muốn
-  const labelRadius = outerRadius + 45;
+  const labelRadius = outerRadius + 40;
   const x = cx + labelRadius * Math.cos(-midAngle * RADIAN);
   const y = cy + labelRadius * Math.sin(-midAngle * RADIAN);
   const icon = getIconObject(payload.icon);
@@ -135,9 +135,26 @@ const CategoryExpenseChart = ({ period, currentDate }) => {
       );
 
       const apiData = response.data;
-      setData(apiData);
+      // ======================= BẮT ĐẦU PHẦN SỬA LỖI =======================
+      // Luôn đảm bảo dữ liệu đầu vào là một mảng
+      const dataToProcess = Array.isArray(apiData) ? apiData : [];
 
-      const totalAmount = apiData.reduce((sum, item) => sum + item.value, 0);
+      // "Làm sạch" dữ liệu để đảm bảo `value` luôn là một con số
+      const sanitizedData = dataToProcess.map((item) => ({
+        ...item,
+        // Chuyển đổi item.value thành số, nếu nó là object thì thử lấy amount, nếu không thì ép kiểu, lỗi thì trả về 0
+        value: parseFloat(item.value) || 0,
+        // Đảm bảo `name` cũng là một chuỗi để tránh lỗi tương tự
+        name: String(item.name || "Không xác định"),
+      }));
+
+      setData(sanitizedData);
+
+      // Tính tổng trên dữ liệu đã được làm sạch
+      const totalAmount = sanitizedData.reduce(
+        (sum, item) => sum + item.value,
+        0
+      );
       setTotal(totalAmount);
     } catch (err) {
       setError("Không thể tải dữ liệu.");
@@ -155,13 +172,12 @@ const CategoryExpenseChart = ({ period, currentDate }) => {
 
   return (
     <div className={styles.chartContainer}>
-      <h3 className={styles.chartTitle}>Cơ cấu chi phí</h3>
+      <div className={styles.chartTitle}>Cơ cấu chi phí</div>{" "}
       {loading && <p className={styles.loadingText}>Đang tải biểu đồ...</p>}
       {error && <p className={styles.errorText}>{error}</p>}
       {!loading && !error && data.length === 0 && (
         <p className={styles.noDataText}>Không có dữ liệu chi tiêu.</p>
       )}
-
       {!loading && !error && data.length > 0 && (
         <div style={{ position: "relative", width: "100%", height: 400 }}>
           <div className={styles.centerLabel}>

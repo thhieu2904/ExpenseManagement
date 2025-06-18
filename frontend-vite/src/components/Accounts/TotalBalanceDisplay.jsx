@@ -3,6 +3,10 @@ import React from "react";
 import styles from "./TotalBalanceDisplay.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+
+// ... các hàm formatCurrency, isColorLight, renderCustomizedLabel không đổi ...
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#AF19FF"];
 
 const formatCurrency = (amount) => {
   if (typeof amount !== "number" || isNaN(amount)) {
@@ -11,57 +15,144 @@ const formatCurrency = (amount) => {
   return amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 };
 
-// Component giờ nhận props từ trang cha
+const isColorLight = (hexColor) => {
+  const hex = hexColor.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness > 155;
+};
+
+const RADIAN = Math.PI / 180;
+const renderCustomizedLabel = ({
+  cx,
+  cy,
+  midAngle,
+  innerRadius,
+  outerRadius,
+  percent,
+  fill,
+}) => {
+  if (percent * 100 < 5) {
+    return null;
+  }
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  const textColor = isColorLight(fill) ? "#333333" : "#FFFFFF";
+  return (
+    <text
+      x={x}
+      y={y}
+      fill={textColor}
+      textAnchor="middle"
+      dominantBaseline="central"
+      fontSize={14}
+      fontWeight="bold"
+    >
+      {`${(percent * 100).toFixed(0)}%`}
+    </text>
+  );
+};
+
 const TotalBalanceDisplay = ({ accounts, isLoading }) => {
   if (isLoading) {
     return (
-      <div className={styles.totalBalanceContainer}>
-        <h3 className={styles.title}>Tổng Quan Nguồn Tiền</h3>
-        <div className={styles.loadingContainer}>
-          <FontAwesomeIcon
-            icon={faSpinner}
-            spin
-            className={styles.loadingIcon}
-          />
-          <p>Đang tải...</p>
-        </div>
+      <div className={styles.loadingContainer}>
+        <FontAwesomeIcon icon={faSpinner} spin className={styles.loadingIcon} />
       </div>
     );
   }
 
-  // Tính toán số liệu từ props
-  const totalBalance = accounts.reduce(
+  // ===== BẮT ĐẦU THAY ĐỔI LOGIC =====
+
+  // 1. Vẫn tính tổng số dư ròng để hiển thị
+  const totalNetBalance = accounts.reduce(
     (sum, acc) => sum + (acc.balance || 0),
     0
   );
-  const cashTotal = accounts
-    .filter((acc) => acc.type === "TIENMAT")
-    .reduce((sum, acc) => sum + (acc.balance || 0), 0);
-  const bankTotal = accounts
-    .filter((acc) => acc.type === "THENGANHANG")
-    .reduce((sum, acc) => sum + (acc.balance || 0), 0);
+
+  // 2. Lọc ra các tài khoản có số dư dương (tài sản)
+  const positiveAccounts = accounts.filter((acc) => acc.balance > 0);
+
+  // 3. Tính tổng của các tài khoản dương này. Đây sẽ là "100%" của biểu đồ.
+  const totalPositiveBalance = positiveAccounts.reduce(
+    (sum, acc) => sum + acc.balance,
+    0
+  );
+
+  // 4. Tạo dữ liệu cho biểu đồ DỰA TRÊN TỔNG TÀI SẢN
+  const chartData = positiveAccounts.map((acc) => ({
+    ...acc,
+    // Công thức mới: chia cho tổng tài sản thay vì tổng số dư ròng
+    percent: totalPositiveBalance > 0 ? acc.balance / totalPositiveBalance : 0,
+  }));
+
+  // ===== KẾT THÚC THAY ĐỔI LOGIC =====
 
   return (
     <div className={styles.totalBalanceContainer}>
       <h3 className={styles.title}>Tổng Quan Nguồn Tiền</h3>
-      <div className={styles.balanceSection}>
-        <div className={styles.balanceLabelAndAmount}>
-          <span className={styles.balanceLabel}>Tổng số dư:</span>
-          <span className={styles.balanceAmount}>
-            {formatCurrency(totalBalance)}
-          </span>
-        </div>
 
-        <div className={styles.subBalanceContainer}>
-          <div className={styles.subBalanceRow}>
-            <span>Tiền mặt:</span>
-            <span>{formatCurrency(cashTotal)}</span>
-          </div>
-          <div className={styles.subBalanceRow}>
-            <span>Ngân hàng / Thẻ:</span>
-            <span>{formatCurrency(bankTotal)}</span>
-          </div>
-        </div>
+      {/* Hiển thị tổng số dư ròng */}
+      <div className={styles.totalAmount}>
+        {formatCurrency(totalNetBalance)}
+      </div>
+      <p className={styles.totalLabel}>Tổng số dư</p>
+
+      <div className={styles.chartSection}>
+        <ResponsiveContainer width="100%" height={200}>
+          <PieChart>
+            <Pie
+              data={chartData} // <-- Dữ liệu đã được tính toán lại
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={80}
+              fill="#8884d8"
+              paddingAngle={5}
+              dataKey="balance"
+              nameKey="name"
+              labelLine={false}
+              label={renderCustomizedLabel}
+            >
+              {chartData.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={COLORS[index % COLORS.length]}
+                />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className={styles.legendSection}>
+        <ul className={styles.legendList}>
+          {chartData.map(
+            (
+              entry,
+              index // <-- Dùng chartData mới
+            ) => (
+              <li key={`item-${index}`} className={styles.legendItem}>
+                <span
+                  className={styles.legendIcon}
+                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                />
+                <div className={styles.legendInfo}>
+                  <span className={styles.legendText}>{entry.name}</span>
+                  <span className={styles.legendPercent}>
+                    {`(${(entry.percent * 100).toFixed(1)}%)`}
+                  </span>
+                </div>
+                <span className={styles.legendValue}>
+                  {formatCurrency(entry.balance)}
+                </span>
+              </li>
+            )
+          )}
+        </ul>
       </div>
     </div>
   );

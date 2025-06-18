@@ -1,7 +1,6 @@
 // frontend-vite/src/components/Categories/CategoryAnalysisChart.jsx
 
-import React, { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import React from "react"; // ✅ BỎ: useState, useEffect, useCallback, axios
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { getIconObject } from "../../utils/iconMap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -26,6 +25,8 @@ const COLORS = [
 
 const formatCurrency = (value) =>
   value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+
+// --- renderCustomizedLabel Component (Không thay đổi) ---
 const renderCustomizedLabel = ({
   cx,
   cy,
@@ -35,26 +36,21 @@ const renderCustomizedLabel = ({
   payload,
 }) => {
   const RADIAN = Math.PI / 180;
-  // Giữ nguyên khoảng cách label, bạn có thể chỉnh lại nếu muốn
-  const labelRadius = outerRadius + 45;
+  const labelRadius = outerRadius + 60;
   const x = cx + labelRadius * Math.cos(-midAngle * RADIAN);
   const y = cy + labelRadius * Math.sin(-midAngle * RADIAN);
   const icon = getIconObject(payload.icon);
 
-  // Không hiển thị label cho những phần quá nhỏ
   if (percent < 0.01) {
     return null;
   }
 
-  // ✅ BẮT ĐẦU LOGIC MỚI ĐỂ SẮP XẾP LẠI ICON VÀ TEXT
-  const iconSize = 20; // Kích thước của icon
-  const textOffset = 5; // Khoảng cách giữa icon và text
-  const isLeft = x < cx; // Kiểm tra xem label nằm bên trái hay phải
+  const iconSize = 20;
+  const textOffset = 5;
+  const isLeft = x < cx;
 
   return (
-    // Sử dụng `textAnchor` để căn chỉnh toàn bộ label (icon + text)
     <g textAnchor={isLeft ? "end" : "start"}>
-      {/* Đường kẻ không đổi */}
       <path
         d={`M${cx + (outerRadius + 5) * Math.cos(-midAngle * RADIAN)},${
           cy + (outerRadius + 5) * Math.sin(-midAngle * RADIAN)
@@ -63,12 +59,9 @@ const renderCustomizedLabel = ({
         fill="none"
         strokeWidth={1}
       />
-
-      {/* ICON được đặt ở cuối đường kẻ */}
       <foreignObject
-        // Căn chỉnh vị trí icon dựa trên việc nó nằm bên trái hay phải
         x={isLeft ? x - iconSize : x}
-        y={y - iconSize / 2} // Căn giữa icon theo chiều dọc
+        y={y - iconSize / 2}
         width={iconSize}
         height={iconSize}
       >
@@ -77,12 +70,10 @@ const renderCustomizedLabel = ({
           style={{ width: "100%", height: "100%", color: "#333" }}
         />
       </foreignObject>
-
-      {/* TEXT được đặt ngay cạnh icon */}
       <text
         x={isLeft ? x - iconSize - textOffset : x + iconSize + textOffset}
         y={y}
-        dominantBaseline="central" // Căn giữa text theo chiều dọc
+        dominantBaseline="central"
         fill="#333"
         fontSize="13"
         fontWeight="600"
@@ -93,73 +84,23 @@ const renderCustomizedLabel = ({
   );
 };
 
+// --- ✅ THAY ĐỔI 1: CẬP NHẬT PROPS VÀ LOẠI BỎ LOGIC FETCH ---
 const CategoryAnalysisChart = ({
+  // Props dữ liệu mới
+  data,
+  total,
+  loading,
+  error,
+  // Props bộ lọc để hiển thị
   categoryType,
   period,
   currentDate,
   onPeriodChange,
   onDateChange,
 }) => {
-  const [data, setData] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  // --- TOÀN BỘ LOGIC FETCH ĐÃ BỊ XÓA ---
 
-  const fetchData = useCallback(async () => {
-    if (!period || !currentDate) return;
-    setLoading(true);
-    setError("");
-
-    try {
-      const token = localStorage.getItem("token");
-      const params = { period, type: categoryType };
-      if (period === "year") params.year = currentDate.getFullYear();
-      if (period === "month") {
-        params.year = currentDate.getFullYear();
-        params.month = currentDate.getMonth() + 1;
-      }
-      if (period === "week")
-        params.date = currentDate.toISOString().split("T")[0];
-
-      const response = await axios.get(
-        "http://localhost:5000/api/statistics/by-category",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          params,
-        }
-      );
-
-      // ✅ LOGIC ĐƯỢC ĐƠN GIẢN HÓA TRIỆT ĐỂ
-      const apiData = response.data || [];
-
-      // Frontend chỉ cần nhận và hiển thị, không cần gộp hay cắt bớt
-      const chartData = apiData
-        .filter((cat) => cat.value > 0)
-        .map((cat) => ({
-          name: cat.name,
-          value: cat.value,
-          icon: cat.icon,
-        }));
-
-      setData(chartData);
-
-      // Tổng tiền giờ sẽ được tính từ dữ liệu mà API trả về (đã bao gồm mục "Khác")
-      setTotal(chartData.reduce((sum, item) => sum + item.value, 0));
-    } catch (err) {
-      const errorMessage =
-        err.response?.data?.message || "Không thể tải dữ liệu biểu đồ.";
-      console.error("Lỗi khi tải dữ liệu biểu đồ:", err);
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, [categoryType, period, currentDate]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // Các hàm điều khiển bộ lọc
+  // --- CÁC HÀM ĐIỀU KHIỂN BỘ LỌC (Không đổi) ---
   const handlePrev = () => {
     const newDate = new Date(currentDate);
     if (period === "week") newDate.setDate(newDate.getDate() - 7);
@@ -201,49 +142,12 @@ const CategoryAnalysisChart = ({
       : "Cơ cấu Thu chi";
 
   return (
-    <div className={customChartStyles.chartWrapper}>
-      {/* BỘ LỌC ĐƯỢC TÍCH HỢP VÀO ĐÂY */}
-      <div className={styles.headerContainer}>
-        {/* Hàng 1: Chỉ chứa tiêu đề */}
-        <h3 className={styles.chartTitle}>{chartTitle}</h3>
+    <div className={styles.chartContainer}>
+      <div className={styles.chartTitle}>{chartTitle}</div>
 
-        {/* Hàng 2: Chứa 2 cụm nút điều khiển */}
-        <div className={styles.controlsRow}>
-          {/* Cụm nút filter nằm bên trái */}
-
-          <div className={styles.filterButtons}>
-            <button
-              onClick={() => onPeriodChange("week")}
-              className={period === "week" ? styles.active : ""}
-            >
-              Tuần
-            </button>
-            <button
-              onClick={() => onPeriodChange("month")}
-              className={period === "month" ? styles.active : ""}
-            >
-              Tháng
-            </button>
-            <button
-              onClick={() => onPeriodChange("year")}
-              className={period === "year" ? styles.active : ""}
-            >
-              Năm
-            </button>
-          </div>
-          <div className={styles.navButtonsBox}>
-            <button onClick={handlePrev}>Trước</button>
-            <div className={styles.navDateBox}>{getDisplayBox()}</div>
-            <button onClick={handleNext}>Sau</button>
-          </div>
-        </div>
-
-        {/* Cụm nút điều hướng nằm bên phải */}
-      </div>
-
-      {/* PHẦN BIỂU ĐỒ */}
+      {/* ✅ THAY ĐỔI 2: PHẦN BIỂU ĐỒ RENDER DỰA TRÊN PROPS */}
       {loading && <p className={styles.loadingText}>Đang tải...</p>}
-      {error && <p className={styles.errorText}>{error}</p>}
+      {error && !loading && <p className={styles.errorText}>{error}</p>}
       {!loading && !error && data.length === 0 && (
         <p className={styles.noDataText}>Không có dữ liệu.</p>
       )}
@@ -275,7 +179,7 @@ const CategoryAnalysisChart = ({
                   />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip formatter={(value) => formatCurrency(value)} />
             </PieChart>
           </ResponsiveContainer>
         </div>

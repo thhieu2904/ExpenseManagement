@@ -1,13 +1,13 @@
 // src/components/Categories/CategoryList.jsx
-import React, { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import React, { useState } from "react"; // ✅ BỎ: useEffect, useCallback, axios
 import styles from "./CategoryList.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { getIconObject } from "../../utils/iconMap";
 import ConfirmDialog from "../Common/ConfirmDialog";
+import axios from "axios"; // ✅ Vẫn cần axios cho việc xóa
 
-// Hàm định dạng tiền tệ
+// Hàm định dạng tiền tệ (Không đổi)
 const formatCurrency = (amount) => {
   if (typeof amount !== "number") return "0 ₫";
   return amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
@@ -54,71 +54,23 @@ const CategoryItem = ({ category, onEdit, onDeleteRequest }) => {
   );
 };
 
-// --- CategoryList Component ---
-// 1. Nhận thêm period và currentDate từ props
+// --- ✅ THAY ĐỔI 1: CẬP NHẬT PROPS VÀ LOẠI BỎ LOGIC FETCH ---
 const CategoryList = ({
-  categoryType,
+  categories, // Nhận danh sách category đã được lọc
+  isLoading, // Nhận trạng thái tải
+  error, // Nhận thông báo lỗi
   onEditCategory,
-  onCategoriesUpdate,
   onDeleteSuccess,
-  period,
-  currentDate,
 }) => {
-  const [categories, setCategories] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
+  // State để quản lý lỗi xóa cục bộ
+  const [deleteError, setDeleteError] = useState("");
 
-  // 2. Thêm period và currentDate vào dependency array của useCallback
-  const fetchCategories = useCallback(async () => {
-    setIsLoading(true);
-    setError("");
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("Vui lòng đăng nhập.");
-        setIsLoading(false);
-        return;
-      }
-
-      // 3. Tạo đối tượng params và gửi nó trong yêu cầu axios
-      const params = { period };
-      if (period === "year") params.year = currentDate.getFullYear();
-      if (period === "month") {
-        params.year = currentDate.getFullYear();
-        params.month = currentDate.getMonth() + 1;
-      }
-      if (period === "week")
-        params.date = currentDate.toISOString().split("T")[0];
-
-      const response = await axios.get("http://localhost:5000/api/categories", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: params, // Gửi các tham số thời gian này đi
-      });
-
-      if (response.data && Array.isArray(response.data)) {
-        const filteredCategories =
-          categoryType === "ALL"
-            ? response.data
-            : response.data.filter((cat) => cat.type === categoryType);
-        setCategories(filteredCategories);
-      } else {
-        setCategories([]);
-      }
-    } catch (err) {
-      console.error(`Lỗi khi tải danh mục ${categoryType}:`, err);
-      setError(`Không thể tải danh mục ${categoryType}.`);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [categoryType, period, currentDate]);
-
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+  // --- LOGIC FETCH ĐÃ BỊ XÓA HOÀN TOÀN ---
 
   const requestDeleteCategory = (categoryId, categoryName) => {
+    setDeleteError(""); // Reset lỗi xóa mỗi khi mở dialog
     setCategoryToDelete({ id: categoryId, name: categoryName });
     setIsConfirmOpen(true);
   };
@@ -132,18 +84,21 @@ const CategoryList = ({
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Gọi hàm callback để báo cho component cha biết việc xóa đã thành công
+      // Gọi callback để báo cho component cha biết việc xóa thành công
+      // Component cha sẽ kích hoạt việc fetch lại dữ liệu
       if (onDeleteSuccess) {
         onDeleteSuccess();
       }
-
-      console.log(`Danh mục "${categoryToDelete.name}" đã được xóa.`);
     } catch (err) {
       console.error("Lỗi khi xóa danh mục:", err);
-      setError(`Lỗi khi xóa danh mục "${categoryToDelete.name}".`);
+      const message =
+        err.response?.data?.message ||
+        `Lỗi khi xóa danh mục "${categoryToDelete.name}".`;
+      setDeleteError(message);
     } finally {
+      // Đóng dialog dù thành công hay thất bại
       setIsConfirmOpen(false);
-      setCategoryToDelete(null);
+      // Giữ lại categoryToDelete để hiển thị lỗi nếu có
     }
   };
 
@@ -153,9 +108,12 @@ const CategoryList = ({
     }
   };
 
+  // --- ✅ THAY ĐỔI 2: CẬP NHẬT LOGIC RENDER DỰA TRÊN PROPS ---
   if (isLoading) {
     return <div className={styles.loadingMessage}>Đang tải danh mục...</div>;
   }
+
+  // Hiển thị lỗi fetch tổng quát nếu có và không có dữ liệu
   if (error && categories.length === 0) {
     return <div className={styles.errorMessage}>{error}</div>;
   }
@@ -164,15 +122,14 @@ const CategoryList = ({
     <>
       <div className={styles.categoryListContainer}>
         <div className={styles.listHeader}>
-          <span className={styles.headerColumnName}>
-            Mục {categoryType === "income" ? "thu nhập" : "chi tiêu"}
-          </span>
+          <span className={styles.headerColumnName}>Mục</span>
           <span className={styles.headerColumnTotalAmount}>Tổng tiền</span>
           <span className={styles.headerColumnActions}>Hành động</span>
         </div>
-        {error && categories.length > 0 && (
-          <p className={styles.inlineError}>{error}</p>
-        )}
+
+        {/* Hiển thị lỗi fetch ngay cả khi có dữ liệu cũ */}
+        {error && <p className={styles.inlineError}>{error}</p>}
+
         {categories.length === 0 && !isLoading && !error && (
           <p className={styles.noCategoriesMessage}>
             Không có danh mục nào để hiển thị.
@@ -196,9 +153,22 @@ const CategoryList = ({
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Xác nhận xóa danh mục"
-        message={`Bạn có chắc chắn muốn xóa danh mục "${
-          categoryToDelete?.name || ""
-        }"? Các giao dịch liên quan có thể bị ảnh hưởng.`}
+        message={
+          <>
+            <p>
+              Bạn có chắc chắn muốn xóa danh mục "
+              <strong>{categoryToDelete?.name || ""}</strong>"?
+            </p>
+            <p className={styles.warningText}>
+              Hành động này không thể hoàn tác và các giao dịch liên quan có thể
+              bị ảnh hưởng.
+            </p>
+            {/* Hiển thị lỗi xóa ngay trong dialog */}
+            {deleteError && (
+              <p className={styles.dialogErrorText}>{deleteError}</p>
+            )}
+          </>
+        }
       />
     </>
   );

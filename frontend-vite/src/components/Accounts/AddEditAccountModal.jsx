@@ -1,8 +1,12 @@
-// src/components/Accounts/AddEditAccountModal.jsx
 import React, { useState, useEffect } from "react";
 import styles from "./AddEditAccountModal.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+// ✅ THAY ĐỔI 1: Import các icon cần thiết
+import {
+  faSpinner,
+  faWallet,
+  faLandmark,
+} from "@fortawesome/free-solid-svg-icons";
 
 const AddEditAccountModal = ({
   isOpen,
@@ -11,10 +15,9 @@ const AddEditAccountModal = ({
   onClose,
   onSubmit,
 }) => {
-  // State cho các trường trong form
   const [name, setName] = useState("");
-  const [type, setType] = useState("bank"); // Mặc định là 'bank'
-  const [balance, setBalance] = useState("");
+  const [type, setType] = useState("bank");
+  const [balance, setBalance] = useState(""); // Sẽ lưu số dạng chuỗi, vd: "1000000"
   const [bankName, setBankName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [error, setError] = useState("");
@@ -24,15 +27,14 @@ const AddEditAccountModal = ({
     if (isOpen) {
       if (mode === "edit" && initialData) {
         setName(initialData.name || "");
-        // API trả về 'TIENMAT' hoặc 'THENGANHANG'
         setType(initialData.type === "TIENMAT" ? "cash" : "bank");
+        // ✅ THAY ĐỔI 2: Chuyển đổi balance từ số sang chuỗi
         setBalance(
           initialData.balance !== undefined ? String(initialData.balance) : ""
         );
         setBankName(initialData.bankName || "");
         setAccountNumber(initialData.accountNumber || "");
       } else {
-        // Chế độ 'add'
         setName("");
         setType("bank");
         setBalance("");
@@ -43,9 +45,12 @@ const AddEditAccountModal = ({
     }
   }, [isOpen, mode, initialData]);
 
-  if (!isOpen) {
-    return null;
-  }
+  // ✅ THAY ĐỔI 3: Thêm hàm xử lý và định dạng cho ô nhập số dư
+  const handleBalanceChange = (e) => {
+    const inputValue = e.target.value;
+    const rawValue = inputValue.replace(/[^0-9]/g, "");
+    setBalance(rawValue);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -53,7 +58,7 @@ const AddEditAccountModal = ({
       setError("Tên nguồn tiền không được để trống.");
       return;
     }
-    if (mode === "add" && balance.trim() === "") {
+    if (mode === "add" && !balance.trim()) {
       setError("Số dư ban đầu không được để trống.");
       return;
     }
@@ -62,12 +67,11 @@ const AddEditAccountModal = ({
     setIsSubmitting(true);
 
     try {
-      // Gửi object đầy đủ thông tin lên component cha
       await onSubmit({
         id: initialData?.id,
         name: name.trim(),
         type,
-        balance: balance, // Gửi balance dưới dạng chuỗi, cha sẽ parse
+        balance: balance, // Gửi đi chuỗi số thuần
         bankName: type === "bank" ? bankName.trim() : "",
         accountNumber: type === "bank" ? accountNumber.trim() : "",
       });
@@ -78,12 +82,19 @@ const AddEditAccountModal = ({
     }
   };
 
+  if (!isOpen) return null;
+
+  // ✅ THAY ĐỔI 4: Tạo giá trị hiển thị đã định dạng cho ô số dư
+  const displayBalance = balance
+    ? parseInt(balance, 10).toLocaleString("vi-VN")
+    : "";
+
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>
-            {mode === "add" ? "Thêm Nguồn Tiền Mới" : "Sửa Nguồn Tiền"}
+            {mode === "add" ? "Thêm Nguồn Tiền" : "Sửa Nguồn Tiền"}
           </h2>
           <button onClick={onClose} className={styles.closeButton}>
             &times;
@@ -113,8 +124,9 @@ const AddEditAccountModal = ({
             <label className={styles.formLabel}>
               Loại <span className={styles.requiredStar}>*</span>
             </label>
+            {/* ✅ THAY ĐỔI 5: Cập nhật cấu trúc radio button */}
             <div className={styles.radioGroup}>
-              <label className={styles.radioLabel}>
+              <label>
                 <input
                   type="radio"
                   name="accountType"
@@ -124,9 +136,15 @@ const AddEditAccountModal = ({
                   disabled={isSubmitting || mode === "edit"}
                   className={styles.radioInput}
                 />
-                Tiền mặt
+                <span className={`${styles.radioLabelText} ${styles.cash}`}>
+                  <FontAwesomeIcon
+                    icon={faWallet}
+                    className={styles.radioIcon}
+                  />
+                  Tiền mặt
+                </span>
               </label>
-              <label className={styles.radioLabel}>
+              <label>
                 <input
                   type="radio"
                   name="accountType"
@@ -136,7 +154,13 @@ const AddEditAccountModal = ({
                   disabled={isSubmitting || mode === "edit"}
                   className={styles.radioInput}
                 />
-                Ngân hàng/Thẻ
+                <span className={`${styles.radioLabelText} ${styles.bank}`}>
+                  <FontAwesomeIcon
+                    icon={faLandmark}
+                    className={styles.radioIcon}
+                  />
+                  Ngân hàng/Thẻ
+                </span>
               </label>
             </div>
           </div>
@@ -146,19 +170,23 @@ const AddEditAccountModal = ({
               Số dư {mode === "add" ? "ban đầu" : ""}
               {mode === "add" && <span className={styles.requiredStar}>*</span>}
             </label>
-            <input
-              type="number"
-              id="initialBalance"
-              value={balance}
-              onChange={(e) => setBalance(e.target.value)}
-              className={styles.formInput}
-              placeholder="0"
-              disabled={isSubmitting || mode === "edit"}
-              step="1000"
-            />
+            {/* ✅ THAY ĐỔI 6: Cập nhật ô nhập số dư */}
+            <div className={styles.balanceInputWrapper}>
+              <input
+                type="text"
+                inputMode="numeric"
+                id="initialBalance"
+                value={displayBalance}
+                onChange={handleBalanceChange}
+                className={styles.balanceInput}
+                placeholder="0"
+                disabled={isSubmitting || mode === "edit"}
+              />
+              <span className={styles.currencySymbol}>₫</span>
+            </div>
             {mode === "edit" && (
               <p className={styles.formHint}>
-                Số dư chỉ có thể thay đổi thông qua giao dịch.
+                Số dư được cập nhật tự động qua các giao dịch.
               </p>
             )}
           </div>
@@ -195,8 +223,6 @@ const AddEditAccountModal = ({
               </div>
             </>
           )}
-
-          <hr className={styles.formDivider} />
 
           <div className={styles.formActions}>
             <button

@@ -20,159 +20,53 @@ const formatCurrency = (value) => {
   return `${(value / 1000000).toLocaleString("vi-VN")}tr ₫`;
 };
 
-// ✨ THAY ĐỔI 1: Nhận props từ component cha
-const IncomeExpenseTrendChart = ({
-  period,
-  currentDate,
-  onPeriodChange,
-  onDateChange,
-}) => {
-  // ✨ THAY ĐỔI 2: Xóa bỏ state cục bộ, giờ sẽ dùng props. Chỉ giữ lại state của riêng component này.
+// Component giờ chỉ nhận props và hiển thị biểu đồ
+const IncomeExpenseTrendChart = ({ period, currentDate }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  // const [period, setPeriod] = useState("month"); // <-- ĐÃ XÓA
-  // const [currentDate, setCurrentDate] = useState(new Date()); // <-- ĐÃ XÓA
 
-  // ✨ THAY ĐỔI 3: Các hàm điều hướng giờ sẽ gọi props `onDateChange`
-  const handlePrev = () => {
-    const newDate = new Date(currentDate);
-    switch (period) {
-      case "week":
-        newDate.setDate(newDate.getDate() - 7);
-        break;
-      case "month":
-        newDate.setMonth(newDate.getMonth() - 1);
-        break;
-      case "year":
-        newDate.setFullYear(newDate.getFullYear() - 1);
-        break;
-      default:
-        break;
-    }
-    onDateChange(newDate); // Gọi hàm được truyền từ cha
-  };
-
-  const handleNext = () => {
-    const newDate = new Date(currentDate);
-    switch (period) {
-      case "week":
-        newDate.setDate(newDate.getDate() + 7);
-        break;
-      case "month":
-        newDate.setMonth(newDate.getMonth() + 1);
-        break;
-      case "year":
-        newDate.setFullYear(newDate.getFullYear() + 1);
-        break;
-      default:
-        break;
-    }
-    onDateChange(newDate); // Gọi hàm được truyền từ cha
-  };
-
-  // Các hàm getDisplayBox và getChartTitle không đổi, chúng sẽ tự động đúng vì đọc từ props
-  const getDisplayBox = () => {
-    // ... mã không đổi
-    switch (period) {
-      case "week":
-        const endOfWeek = new Date(currentDate);
-        endOfWeek.setDate(currentDate.getDate() + 6);
-        return `${currentDate.toLocaleDateString(
-          "vi-VN"
-        )} - ${endOfWeek.toLocaleDateString("vi-VN")}`;
-      case "month":
-        return currentDate.toLocaleDateString("vi-VN", {
-          month: "long",
-          year: "numeric",
-        });
-      case "year":
-        return `Năm ${currentDate.getFullYear()}`;
-      default:
-        return "";
-    }
-  };
-
-  const getChartTitle = () => {
-    // ... mã không đổi
-    switch (period) {
-      case "week":
-        return "Xu hướng thu chi theo tuần";
-      case "month":
-        return `Xu hướng thu chi ${currentDate.toLocaleDateString("vi-VN", {
-          month: "long",
-          year: "numeric",
-        })}`;
-      case "year":
-        return `Xu hướng thu chi năm ${currentDate.getFullYear()}`;
-      default:
-        return "Xu hướng thu chi";
-    }
-  };
-
-  // fetchData không đổi, nhưng dependency array của useCallback giờ là props
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        setError("Vui lòng đăng nhập.");
-        return;
-      }
+      if (!token) throw new Error("Vui lòng đăng nhập.");
 
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
       let apiUrl = "http://localhost:5000/api/statistics/trend";
-      let responseData;
 
-      switch (period) {
-        case "week": {
-          apiUrl += `?period=day&startDate=${
-            currentDate.toISOString().split("T")[0]
-          }&days=7`;
-          break;
-        }
-        case "month": {
-          const year = currentDate.getFullYear();
-          const month = currentDate.getMonth() + 1;
-          apiUrl += `?period=day&year=${year}&month=${month}`;
-          break;
-        }
-        case "year": {
-          const year = currentDate.getFullYear();
-          apiUrl += `?period=month&year=${year}`;
-          break;
-        }
-        default:
-          throw new Error("Invalid period");
+      if (period === "month") {
+        apiUrl += `?period=day&year=${year}&month=${month}`;
+      } else if (period === "year") {
+        apiUrl += `?period=month&year=${year}`;
+      } else if (period === "week") {
+        apiUrl += `?period=day&startDate=${
+          currentDate.toISOString().split("T")[0]
+        }&days=7`;
       }
 
       const response = await axios.get(apiUrl, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      responseData = response.data;
 
-      // Xử lý dữ liệu trả về
-      let formattedData = responseData.map((item) => ({
-        name: item.name,
+      let formattedData = response.data.map((item) => ({
+        name:
+          period === "year"
+            ? `T${parseInt(item.name.split("-")[1], 10)}`
+            : item.name.split("-")[2],
         income: item.income || 0,
         expense: item.expense || 0,
       }));
 
-      if (period === "year") {
-        formattedData = responseData.map((item) => {
-          const monthNumber = parseInt(item.name.split("-")[1], 10);
-          return { ...item, name: `Tháng ${monthNumber}` };
-        });
-      }
-
       setData(formattedData);
     } catch (err) {
-      console.error("Lỗi tải dữ liệu xu hướng:", err);
-      setError("Không thể tải dữ liệu. Vui lòng thử lại.");
+      setError("Không thể tải dữ liệu xu hướng.");
     } finally {
       setLoading(false);
     }
-  }, [period, currentDate]); // Phụ thuộc vào props
+  }, [period, currentDate]);
 
   useEffect(() => {
     fetchData();
@@ -180,44 +74,11 @@ const IncomeExpenseTrendChart = ({
 
   return (
     <div className={styles.chartContainer}>
-      <div className={styles.headerContainer}>
-        {/* Hàng 1: Chỉ chứa tiêu đề */}
-        <h3 className={styles.chartTitle}>{getChartTitle()}</h3>
-
-        {/* Hàng 2: Chứa 2 cụm nút điều khiển */}
-        <div className={styles.controlsRow}>
-          {/* Cụm nút filter nằm bên trái */}
-
-          <div className={styles.navButtonsBox}>
-            <button onClick={handlePrev}>Trước</button>
-            <div className={styles.navDateBox}>{getDisplayBox()}</div>
-            <button onClick={handleNext}>Sau</button>
-          </div>
-          {/* Cụm nút filter nằm bên phải */}
-          <div className={styles.filterButtons}>
-            <button
-              onClick={() => onPeriodChange("week")}
-              className={period === "week" ? styles.active : ""}
-            >
-              Tuần
-            </button>
-            <button
-              onClick={() => onPeriodChange("month")}
-              className={period === "month" ? styles.active : ""}
-            >
-              Tháng
-            </button>
-            <button
-              onClick={() => onPeriodChange("year")}
-              className={period === "year" ? styles.active : ""}
-            >
-              Năm
-            </button>
-          </div>
-        </div>
+      <div className={styles.chartTitle}>
+        Xu hướng thu nhập và chi tiêu{" "}
+        {period === "year" ? "theo tháng" : "theo ngày"}
       </div>
 
-      {/* Phần render biểu đồ không thay đổi */}
       {loading && <p className={styles.loadingText}>Đang tải biểu đồ...</p>}
       {error && <p className={styles.errorText}>{error}</p>}
       {!loading && !error && data.length === 0 && (

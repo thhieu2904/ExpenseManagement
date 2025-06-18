@@ -1,132 +1,110 @@
 /* src/components/Accounts/TotalBalanceDisplay.module.css */
 
 .totalBalanceContainer {
-  background-color: #f0f2f5; /* Giữ màu nền dịu mắt */
-  padding: 20px 25px;
-  border-radius: 12px; /* Tăng bo góc một chút cho mềm mại hơn */
-  margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); /* Điều chỉnh đổ bóng tinh tế hơn */
-  font-family: "Inter", sans-serif; /* Sử dụng font Inter nếu có, hoặc một font sans-serif dễ đọc */
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e9ecef;
+  text-align: center;
 }
 
 .title {
-  font-size: 1.15rem; /* Tăng nhẹ kích thước tiêu đề */
-  color: #2c3e50; /* Màu tiêu đề đậm hơn một chút */
+  font-size: 1.15rem;
+  color: #555e68;
   font-weight: 600;
-  margin-top: 0;
-  margin-bottom: 20px; /* Tăng khoảng cách dưới tiêu đề */
-  text-align: left; /* Đảm bảo tiêu đề căn trái */
+  margin: 0 0 25px 0;
+  text-align: left;
 }
 
-.balanceSection {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* Căn các mục con về bên trái */
-  gap: 12px; /* Khoảng cách giữa dòng tổng số dư và cụm chi tiết */
+.totalAmount {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
 }
 
-/* Dành cho dòng "Tổng số dư:" và số tiền tổng */
-.balanceLabelAndAmount {
-  display: flex;
-  justify-content: space-between; /* Đẩy nhãn và số tiền ra hai phía */
-  align-items: baseline; /* Căn chữ và số theo đường cơ sở */
-  width: 100%; /* Chiếm toàn bộ chiều rộng */
-  padding: 5px 0; /* Thêm chút đệm cho dòng tổng */
-}
-
-.balanceLabel {
-  font-size: 0.95rem;
-  color: #555e68; /* Màu chữ nhãn dịu hơn */
-  font-weight: 500;
-}
-
-.balanceAmount {
-  font-size: 1.9rem; /* Kích thước số dư lớn, nổi bật */
-  font-weight: 700; /* Đậm hơn */
-  color: #1a237e; /* Màu xanh đậm cho số dư */
-}
-
-/* Container bao bọc các dòng chi tiết (Tiền mặt, Ngân hàng) */
-.subBalanceContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 8px; /* Khoảng cách giữa dòng tiền mặt và ngân hàng */
-  width: 100%;
-  margin-top: 10px; /* Khoảng cách với dòng tổng ở trên */
-  border-top: 1px solid #e0e0e0; /* Thêm đường kẻ phân cách nhẹ */
-  padding-top: 12px; /* Khoảng cách sau đường kẻ */
-}
-
-.subBalanceRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center; /* Căn giữa các item theo chiều dọc */
+.totalLabel {
   font-size: 0.9rem;
-  width: 100%;
-  padding: 6px 2px; /* Thêm chút padding cho mỗi dòng, và một chút lề phải/trái nhỏ */
+  color: #6c757d;
+  margin: 4px 0 20px 0;
 }
 
-.subBalanceRow span:first-child {
-  /* Nhãn (Tiền mặt, Ngân hàng / Thẻ) */
-  color: #4a5568; /* Màu chữ đậm hơn một chút cho dễ đọc */
+.chartSection {
+  width: 100%;
+  height: 200px; /* Chiều cao cố định cho biểu đồ */
+  margin-bottom: 20px;
+}
+
+.legendSection {
+  margin-top: 15px;
+  border-top: 1px solid #e9ecef;
+  padding-top: 15px;
+}
+
+.legendList {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Cập nhật style cho mỗi mục chú thích */
+.legendItem {
+  display: flex;
+  align-items: center; /* Căn giữa theo chiều dọc */
+  font-size: 0.9rem;
+}
+
+.legendIcon {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+/* Thêm container để nhóm Tên và % */
+.legendInfo {
+  display: flex;
+  align-items: baseline; /* Căn theo dòng chữ */
+  gap: 6px; /* Khoảng cách giữa tên và % */
+  text-align: left;
+  flex-grow: 1; /* Đẩy số dư sang phải */
+}
+
+.legendText {
+  color: #343a40;
   font-weight: 500;
 }
 
-.subBalanceRow span:last-child {
-  /* Số tiền chi tiết */
-  font-weight: 600; /* Hơi đậm hơn */
-  color: #2d3748; /* Màu số tiền chi tiết */
+/* Thêm style cho text % */
+.legendPercent {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.legendValue {
+  color: #495057;
+  font-weight: 600;
+  margin-left: auto;
+  padding-left: 10px;
+  white-space: nowrap;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
 }
 
 .loadingIcon {
-  font-size: 1.6rem; /* Tăng kích thước icon loading */
+  font-size: 2rem;
   color: #3f51b5;
-  align-self: center;
-  margin: 20px 0; /* Tăng margin cho rõ ràng khi loading */
 }
 
-.errorText {
-  font-size: 0.9rem;
-  color: #c62828;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px; /* Tăng khoảng cách với icon lỗi */
-  padding: 10px 12px; /* Tăng padding */
-  background-color: #fdecea; /* Màu nền lỗi dịu hơn */
-  border: 1px solid #f5c6cb;
-  border-radius: 6px; /* Bo góc nhẹ */
-  width: 100%;
-}
-
-.errorText svg {
-  font-size: 1.1rem; /* Tăng kích thước icon lỗi */
-}
-
-/* Responsive adjustments */
-@media (max-width: 576px) {
-  .totalBalanceContainer {
-    padding: 15px 20px;
-  }
-  .title {
-    font-size: 1.05rem;
-    margin-bottom: 15px;
-  }
-  .balanceAmount {
-    font-size: 1.7rem;
-  }
-  .balanceLabel {
-    font-size: 0.9rem;
-  }
-  .subBalanceRow {
-    font-size: 0.85rem;
-    padding: 5px 0;
-  }
-  .subBalanceContainer {
-    margin-top: 8px;
-    padding-top: 10px;
-  }
-  .errorText {
-    padding: 8px 10px;
-  }
-}
+/* Bỏ class legendWrapper không cần thiết */

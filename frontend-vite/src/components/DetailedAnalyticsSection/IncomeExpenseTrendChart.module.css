@@ -1,97 +1,108 @@
 /* src/components/DetailedAnalyticsSection/IncomeExpenseTrendChart.module.css */
+
 .chartContainer {
   width: 100%;
 }
 
-/* --- PHẦN HEADER CỦA BIỂU ĐỒ --- */
+/* Container chính cho header của biểu đồ */
 .headerContainer {
   display: flex;
-  flex-direction: column; /* Xếp tiêu đề và hàng nút theo chiều dọc */
-  gap: 15px; /* Khoảng cách giữa tiêu đề và hàng nút */
-  margin-bottom: 20px;
-}
-
-.controlsRow {
-  display: flex;
-  justify-content: space-between; /* Đẩy 2 cụm nút ra 2 phía */
+  justify-content: flex-end; /* ĐẨY TOÀN BỘ CỤM ĐIỀU KHIỂN SANG PHẢI */
   align-items: center;
-  flex-wrap: wrap; /* Cho phép xuống dòng trên màn hình nhỏ */
-  gap: 20px; /* Khoảng cách nếu 2 cụm nút xuống dòng */
+  gap: 15px;
+  margin-bottom: 25px; /* Tăng khoảng cách với biểu đồ */
 }
+
+/* XÓA BỎ .controlsRow VÌ KHÔNG CẦN NỮA */
+
+/* TIÊU ĐỀ ĐÃ ĐƯỢC CHUYỂN RA COMPONENT CHA (DetailedAnalyticsSection) */
+/* .chartTitle { ... } */
+
 .chartTitle {
-  display: flex;
-  justify-content: left; /* Căn trái tiêu đề */
-  font-size: 1.8rem;
-
-  color: #2c3e50;
-
-  margin: 0;
-  font-weight: 600;
-  margin-bottom: 10px; /* Khoảng cách dưới tiêu đề */
+  padding: 0 15px; /* Giữ khoảng cách với các nút điều khiển */
+  margin-bottom: 40px; /* Khoảng cách dưới tiêu đề */
 }
 
-/* --- CÁC NÚT LỌC "TUẦN/THÁNG/NĂM" --- */
+/* Div mới để nhóm 2 cụm nút lại với nhau */
+.controlsGroup {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Khoảng cách giữa cụm "Tuần/Tháng/Năm" và "Trước/Sau" */
+  flex-wrap: wrap; /* Cho phép xuống dòng nếu không đủ không gian */
+  justify-content: flex-end;
+}
+
+/* --- NÚT LỌC "TUẦN/THÁNG/NĂM" --- */
+/* Style giống hệt với nút trên trang AccountPageHeader để đồng nhất */
 .filterButtons {
   display: flex;
-  justify-content: center; /* ĐÂY LÀ STYLE CĂN GIỮA MÀ BẠN CẦN */
-  align-items: center;
-  gap: 8px;
+  background-color: #e9ecef;
+  padding: 4px;
+  border-radius: 8px;
 }
 
 .filterButtons button {
-  background-color: #ecf0f1;
-  border: 1px solid #bdc3c7;
-  color: #34495e;
-  padding: 8px 15px;
-  border-radius: 5px;
+  background-color: transparent;
+  border: none;
+  color: #495057;
+  padding: 8px 16px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  transition: all 0.25s ease;
   font-size: 0.9rem;
-}
-
-.filterButtons button:hover {
-  background-color: #d2d6d8;
+  font-weight: 500;
 }
 
 .filterButtons button.active {
-  background-color: #3f51b5;
-  color: white;
-  border-color: #3f51b5;
+  background-color: #ffffff;
+  color: #3f51b5;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* --- CÁC NÚT ĐIỀU HƯỚNG "TRƯỚC/SAU" --- */
+/* --- NÚT ĐIỀU HƯỚNG "TRƯỚC/SAU" --- */
+/* Style giống hệt với nút trên trang AccountPageHeader để đồng nhất */
 .navButtonsBox {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-shrink: 0;
 }
 
 .navDateBox {
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 5px 12px;
-  min-width: 160px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 8px 12px;
+  min-width: 150px;
   text-align: center;
-  background: #f8f8f8;
+  background: #ffffff;
   font-weight: 500;
+  font-size: 0.9rem;
+  color: #343a40;
 }
 
 .navButtonsBox button {
-  background: #e3e6ea;
-  border: 1px solid #bfc4c9;
-  border-radius: 4px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
   padding: 8px 14px;
   cursor: pointer;
-  font-size: 0.95rem;
-  transition: background 0.2s;
+  font-size: 0.9rem;
+  color: #495057;
+  transition: background-color 0.2s;
 }
 
 .navButtonsBox button:hover {
-  background: #d2d6d8;
+  background: #e9ecef;
+}
+.chartTitle {
+  font-size: 1.5 rem; /* Giữ kích thước đồng nhất với biểu đồ kia */
+  color: #2c3e50; /* Màu tiêu đề */
+
+  font-weight: 600; /* Độ đậm chữ */
+  text-align: center; /* Căn giữa tiêu đề cho biểu đồ tròn có thể đẹp hơn */
 }
 
-/* --- CÁC THÔNG BÁO --- */
+/* Các style cho loading, error, noData giữ nguyên */
 .loadingText,
 .errorText,
 .noDataText {
@@ -105,25 +116,21 @@
   color: #c0392b;
 }
 
-/* --- RESPONSIVE CHO RIÊNG BIỂU ĐỒ NÀY --- */
+/* Responsive */
 @media (max-width: 768px) {
-  .header {
+  .headerContainer {
     flex-direction: column;
-    align-items: stretch; /* Cho các item con dãn ra toàn bộ chiều rộng */
+    align-items: stretch;
+    gap: 15px;
   }
 
-  .headerLeft {
-    justify-content: space-between;
+  .controlsGroup {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
   }
 
   .filterButtons {
-    width: 100%;
-    margin-top: 10px;
-    justify-content: space-around; /* Căn giãn đều trên mobile */
-  }
-
-  .navButtonsBox {
-    justify-content: center;
-    width: 100%;
+    justify-content: space-around;
   }
 }

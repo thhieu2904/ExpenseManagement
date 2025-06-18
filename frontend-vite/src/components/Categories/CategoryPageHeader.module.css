@@ -1,22 +1,42 @@
 /* src/components/Categories/CategoryPageHeader.module.css */
 .categoryHeaderContainer {
   display: flex;
-  justify-content: space-between; /* Đẩy leftSection và addButtonContainer ra hai bên */
-  /* Thay đổi align-items để nút "Thêm" có thể dịch xuống dưới */
-  align-items: flex-end; /* Căn các item con theo phía dưới của container */
-  padding: 30px 25px; /* Tăng padding trên dưới để khung cao hơn, ví dụ: 30px */
-  background-color: #f4f6f8;
-  border-radius: 8px;
+  justify-content: space-between; /* Đẩy 2 Section ra xa nhau */
+  align-items: center; /* Căn các section theo chiều dọc */
+  padding: 20px 25px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
   margin-bottom: 25px;
-  flex-wrap: wrap;
-  min-height: 100px; /* Đặt chiều cao tối thiểu nếu cần để đảm bảo không gian */
+  flex-wrap: wrap; /* Cho phép xuống dòng trên mobile */
+  gap: 20px;
 }
 
 .leftSection {
   display: flex;
-  flex-direction: column;
-  gap: 15px; /* Khoảng cách giữa tiêu đề và cụm tab */
-  /* Nếu align-items: flex-end ở trên làm title quá thấp, bạn có thể thêm margin-bottom cho tabButtons */
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: flex-end; /* Đảm bảo các item con dồn về bên phải */
+}
+
+/* Nút "Thêm danh mục" */
+.addCategoryButton {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  /* ... các style khác không đổi ... */
 }
 
 .titleSection {

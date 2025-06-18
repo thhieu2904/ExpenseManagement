@@ -141,3 +141,139 @@
   background-color: #f8f9fa;
   border-radius: 8px;
 }
+/* --- THÊM CÁC STYLE MỚI CHO ACCOUNT ITEM VÀO CUỐI FILE --- */
+
+/* Cập nhật lại layout chính của accountItem */
+.accountItem {
+  display: grid;
+  grid-template-columns: 2fr 3fr 2fr; /* Chia thành 3 cột với tỷ lệ linh hoạt */
+  gap: 20px;
+  align-items: center;
+}
+
+/* Bỏ style cũ không cần thiết nữa */
+.balanceContainer,
+.progressBarContainer,
+.progressBar {
+  display: none;
+}
+
+/* Cột 2: Phần activity bar và số liệu */
+.activitySection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activityBar {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  background-color: #e9ecef;
+  overflow: hidden; /* Đảm bảo các bar con bo góc theo cha */
+}
+
+.incomeBar {
+  background-color: #28a745; /* Màu xanh lá cho thu nhập */
+  height: 100%;
+  transition: width 0.3s ease-in-out;
+}
+
+.expenseBar {
+  background-color: #dc3545; /* Màu đỏ cho chi tiêu */
+  height: 100%;
+  transition: width 0.3s ease-in-out;
+}
+
+.activityFigures {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.incomeText {
+  color: #28a745;
+}
+
+.expenseText {
+  color: #dc3545;
+}
+
+/* Cột 3: Căn chỉnh lại số dư và nút */
+.balanceAndActions {
+  justify-content: flex-end; /* Đẩy về cuối bên phải */
+  gap: 15px;
+}
+
+.accountBalance {
+  text-align: right;
+  min-width: 120px; /* Đặt chiều rộng tối thiểu để không bị nhảy số */
+}
+
+.accountItem {
+  display: grid;
+  grid-template-columns: 2fr 3fr 2fr; /* Chia thành 3 cột với tỷ lệ linh hoạt */
+  gap: 20px;
+  align-items: center;
+}
+
+/* Bỏ style cũ không cần thiết nữa */
+.balanceContainer,
+.progressBarContainer,
+.progressBar {
+  display: none;
+}
+
+/* Cột 2: Phần activity bar và số liệu */
+.activitySection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activityBar {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  background-color: #e9ecef;
+  overflow: hidden; /* Đảm bảo các bar con bo góc theo cha */
+}
+
+.incomeBar {
+  background-color: #28a745; /* Màu xanh lá cho thu nhập */
+  height: 100%;
+  transition: width 0.3s ease-in-out;
+}
+
+.expenseBar {
+  background-color: #dc3545; /* Màu đỏ cho chi tiêu */
+  height: 100%;
+  transition: width 0.3s ease-in-out;
+}
+
+.activityFigures {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.incomeText {
+  color: #28a745;
+}
+
+.expenseText {
+  color: #dc3545;
+}
+
+/* Cột 3: Căn chỉnh lại số dư và nút */
+.balanceAndActions {
+  justify-content: flex-end; /* Đẩy về cuối bên phải */
+  gap: 15px;
+}
+
+.accountBalance {
+  text-align: right;
+  min-width: 120px; /* Đặt chiều rộng tối thiểu để không bị nhảy số */
+}

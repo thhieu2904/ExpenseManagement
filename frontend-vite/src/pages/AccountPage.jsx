@@ -1,11 +1,13 @@
 // src/pages/AccountPage.jsx
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import { startOfMonth, endOfMonth, format } from "date-fns";
 
 import Header from "../components/Header/Header";
 import Navbar from "../components/Navbar/Navbar";
 import Footer from "../components/Footer/Footer";
 import AccountPageHeader from "../components/Accounts/AccountPageHeader";
+import DateRangeNavigator from "../components/Common/DateRangeNavigator"; // ✅ 1. Import component mới
 import TotalBalanceDisplay from "../components/Accounts/TotalBalanceDisplay";
 import AccountList from "../components/Accounts/AccountList";
 import AddEditAccountModal from "../components/Accounts/AddEditAccountModal";
@@ -13,6 +15,7 @@ import AddEditAccountModal from "../components/Accounts/AddEditAccountModal";
 import styles from "../styles/AccountPage.module.css";
 
 const AccountPage = () => {
+  // --- State quản lý chung ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
   const [accounts, setAccounts] = useState([]);
@@ -20,23 +23,44 @@ const AccountPage = () => {
   const [error, setError] = useState("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+  // ✅ 2. THAY ĐỔI STATE QUẢN LÝ THỜI GIAN
+  // Bỏ state `currentDate` cũ, thay bằng `dateRange`
+  const [dateRange, setDateRange] = useState({
+    startDate: startOfMonth(new Date()),
+    endDate: endOfMonth(new Date()),
+  });
+  const [period, setPeriod] = useState("month"); // Thêm state để biết preset nào đang được chọn
+
+  // ✅ 3. CẬP NHẬT HÀM GỌI API
   const fetchAccountsData = useCallback(async () => {
     setIsLoading(true);
     setError("");
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Vui lòng đăng nhập.");
+
+      // Xây dựng params cho API
+      const params = {};
+      if (dateRange.startDate && dateRange.endDate) {
+        // Định dạng ngày thành chuỗi YYYY-MM-DD
+        params.startDate = format(dateRange.startDate, "yyyy-MM-dd");
+        params.endDate = format(dateRange.endDate, "yyyy-MM-dd");
+      }
+
       const response = await axios.get("http://localhost:5000/api/accounts", {
         headers: { Authorization: `Bearer ${token}` },
+        params: params, // Gửi params đi
       });
-      // Chỉ cần gán trực tiếp dữ liệu từ API
+
       setAccounts(response.data || []);
     } catch (err) {
-      setError(err.message || "Không thể tải dữ liệu.");
+      setError(
+        err.response?.data?.message || "Không thể tải dữ liệu nguồn tiền."
+      );
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [dateRange]); // Phụ thuộc vào `dateRange`
 
   useEffect(() => {
     fetchAccountsData();
@@ -44,6 +68,7 @@ const AccountPage = () => {
 
   const handleForceRefresh = () => setRefreshTrigger((prev) => prev + 1);
 
+  // --- Các hàm xử lý Modal (không đổi) ---
   const handleOpenAddModal = () => {
     setEditingAccount(null);
     setIsModalOpen(true);
@@ -96,6 +121,7 @@ const AccountPage = () => {
     }
   };
 
+  // Tính tổng số dư từ danh sách tài khoản đã được API trả về
   const totalBalance = accounts.reduce(
     (sum, acc) => sum + (acc.balance || 0),
     0
@@ -108,12 +134,27 @@ const AccountPage = () => {
       <Header />
       <Navbar />
       <main className={styles.pageWrapper}>
+        {/* ✅ 4. THAY ĐỔI HEADER */}
         <AccountPageHeader onAddAccountClick={handleOpenAddModal} />
+
+        {/* Thêm component DateRangeNavigator ngay dưới Header */}
+        <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+          <DateRangeNavigator
+            dateRange={dateRange}
+            onDateChange={setDateRange}
+            period={period}
+            onPeriodChange={setPeriod}
+          />
+        </div>
+
         <div className={styles.mainContent}>
           <div className={styles.leftColumn}>
             <TotalBalanceDisplay accounts={accounts} isLoading={isLoading} />
           </div>
           <div className={styles.rightColumn}>
+            {/* Sửa lại file AccountList để hiển thị thanh activity bar 
+                          thay vì progress bar cũ.
+                        */}
             <AccountList
               accounts={accounts}
               totalBalance={totalBalance}

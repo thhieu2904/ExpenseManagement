@@ -1,27 +1,39 @@
-/* src/pages/CategoriesPage.module.css */
+/* src/styles/CategoriesPage.module.css */
 
-.mainContentRow {
+/* Container bao bọc toàn bộ trang, tạo khoảng đệm */
+.pageContainer {
+  padding: 20px;
+}
+
+/* Container cho toàn bộ khu vực phân tích (khối trắng lớn) */
+.analyticsSection {
   display: flex;
-  gap: 20px; /* Khoảng cách giữa 2 cột */
-  margin-top: 20px;
-  align-items: flex-start; /* Giữ cho 2 cột canh lề trên cùng */
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 25px; /* Khoảng cách với header ở trên */
+  padding: 25px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e9ecef;
 }
 
-/* Cột biểu đồ - chiếm nhiều không gian hơn */
+/* ✅ SỬA LẠI TÊN CLASS Ở ĐÂY */
+/* Container chứa 2 cột biểu đồ và danh sách */
+.contentRow {
+  display: flex;
+  gap: 24px; /* Tăng khoảng cách cho đẹp hơn */
+  align-items: flex-start; /* Căn các cột theo đỉnh */
+}
+
+/* Cột chứa biểu đồ */
 .chartContainer {
-  flex: 2; /* Chiếm 2 phần */
-  min-width: 0; /* Ngăn co giãn ngoài tầm kiểm soát */
+  flex: 1; /* Chiếm 50% */
+  min-width: 0; /* Cần thiết để flexbox hoạt động đúng */
 }
 
-/* Cột danh sách - chiếm ít không gian hơn */
+/* Cột chứa danh sách */
 .listContainer {
-  flex: 1; /* Chiếm 1 phần */
-  min-width: 0; /* Ngăn co giãn ngoài tầm kiểm soát */
-}
-
-/* Xử lý cho màn hình nhỏ (máy tính bảng, điện thoại) */
-@media (max-width: 992px) {
-  .mainContentRow {
-    flex-direction: column; /* Xếp thành 2 hàng dọc */
-  }
+  flex: 1; /* Chiếm 50% */
+  min-width: 0;
 }

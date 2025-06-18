@@ -4,14 +4,14 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(34, 47, 62, 0.6);
+  background-color: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1050;
-  padding: 15px;
-  backdrop-filter: blur(3px);
-  animation: fadeInOverlay 0.2s ease;
+  padding: 1rem;
+  animation: fadeInOverlay 0.2s ease-out;
 }
 
 @keyframes fadeInOverlay {
@@ -24,53 +24,48 @@
 }
 
 .modalContent {
-  background-color: #fcfdff;
-  padding: 25px 30px;
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  background-color: #ffffff;
+  padding: 0; /* Bỏ padding cũ để header chiếm toàn bộ chiều rộng */
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 500px;
+  max-width: 480px;
   max-height: 90vh;
-  overflow-y: auto;
-  border-top: 4px solid #3f51b5;
-  transform: translateY(-20px) scale(0.98);
+  overflow: hidden; /* Ẩn overflow để bo góc header */
+  display: flex; /* Dùng flexbox cho layout tổng */
+  flex-direction: column;
+  transform: scale(0.95);
   opacity: 0;
-  animation: slideInModal 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation: slideInModal 0.3s ease-out forwards;
 }
 
 @keyframes slideInModal {
   to {
-    transform: translateY(0) scale(1);
+    transform: scale(1);
     opacity: 1;
   }
 }
 
+/* ✅ === Header Nổi Bật Hơn === */
 .modalHeader {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.modalHeader::before {
-  /* Spacer để cân bằng với nút đóng */
-  content: "";
-  width: 32px; /* Bằng chiều rộng của nút đóng */
-  flex-shrink: 0;
+  padding: 1rem 1.5rem; /* Padding cho header */
+  background-color: #f9fafb; /* Thêm nền cho header */
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0; /* Không cho header co lại */
 }
 
 .modalTitle {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #2c3e50;
-  flex-grow: 1; /* Cho phép tiêu đề chiếm không gian ở giữa */
-  text-align: center; /* Căn giữa nội dung tiêu đề */
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #4f46e5; /* ✅ Đổi màu tiêu đề sang màu primary */
 }
 
 .closeButton {
-  flex-shrink: 0; /* Ngăn nút đóng bị co lại */
-  background: #f1f3f5;
+  background: transparent;
   border: none;
   border-radius: 50%;
   width: 32px;
@@ -78,45 +73,50 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
-  color: #6c757d;
+  font-size: 1.5rem;
+  color: #6b7280;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s, color 0.2s;
 }
 
 .closeButton:hover {
-  background-color: #e9ecef;
-  transform: rotate(90deg);
+  background-color: #f0f0f0;
+  color: #111827;
+}
+
+/* === Form Styles === */
+.transactionForm {
+  padding: 1.5rem; /* Padding cho riêng phần form */
+  overflow-y: auto; /* Cho phép cuộn nếu nội dung dài */
 }
 
 .formGroup {
-  margin-bottom: 1.1rem;
-  text-align: left; /* Đổi thành căn trái cho các label */
+  margin-bottom: 1.25rem; /* Tăng nhẹ khoảng cách */
+  text-align: left;
 }
 
 .formLabel {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: #495057;
-  font-size: 0.9rem;
+  color: #374151;
+  font-size: 0.875rem;
 }
 
 .formInput {
   display: block;
   width: 100%;
-  padding: 12px 15px;
+  padding: 0.75rem 1rem;
   font-size: 1rem;
-  color: #212529;
-  border: 1px solid #ced4da;
-  border-radius: 6px;
-  box-sizing: border-box;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
+
 .formInput:focus {
-  border-color: #3f51b5;
+  border-color: #4f46e5;
   outline: 0;
-  box-shadow: 0 0 0 4px rgba(63, 81, 181, 0.1);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
 }
 
 textarea.formInput {
@@ -124,19 +124,44 @@ textarea.formInput {
   resize: vertical;
 }
 
-/* ✅ CSS đã được làm lại cho các nút Radio */
-.radioGroup {
+/* ✅ === Ô Nhập Tiền Nổi Bật Hơn === */
+.amountInputWrapper {
+  position: relative;
   display: flex;
-  gap: 8px;
-  border-radius: 8px;
-  padding: 5px;
-  background-color: #e9ecef;
-  justify-content: center;
+  align-items: center;
 }
 
-.radioLabel {
-  flex: 1;
-  position: relative;
+.amountInput {
+  font-size: 1.75rem; /* Tăng độ lớn của số tiền */
+  font-weight: 600; /* Đậm hơn */
+  color: #111827;
+  padding: 0.75rem 2.5rem 0.75rem 1rem; /* Tăng padding để có chỗ cho ký hiệu */
+  text-align: right;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.amountInput:focus {
+  border-color: #4f46e5;
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.currencySymbol {
+  position: absolute;
+  right: 1rem;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #6b7280;
+  pointer-events: none; /* Cho phép click xuyên qua */
+}
+
+/* ✅ === Radio Button Trực Quan Hơn === */
+.radioGroup {
+  display: grid; /* Dùng grid để 2 nút luôn bằng nhau */
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
 }
 
 .radioInput {
@@ -147,89 +172,97 @@ textarea.formInput {
 }
 
 .radioLabelText {
-  display: block;
-  padding: 10px;
+  display: flex; /* Dùng flex để căn chỉnh icon và text */
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
   text-align: center;
-  border-radius: 6px;
+  border-radius: 0.5rem;
   cursor: pointer;
-  transition: all 0.25s ease;
-  font-weight: 500;
-  color: #495057;
-}
-
-.radioInput:checked + .radioLabelText {
-  background-color: #ffffff;
-  color: #3f51b5;
+  transition: all 0.2s ease-in-out;
   font-weight: 600;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-.radioLabelText {
-  width: 100%;
-  padding: 10px;
-  border-radius: 6px;
-  transition: all 0.25s;
+  border: 1px solid #e5e7eb;
 }
 
+.radioIcon {
+  font-size: 0.8rem;
+}
+
+/* Style cho nút không được chọn */
+.expense,
+.income {
+  color: #4b5563;
+  background-color: #f9fafb;
+}
+.expense:hover,
+.income:hover {
+  border-color: #d1d5db;
+}
+
+/* Style khi được chọn */
+.radioInput:checked + .expense {
+  background-color: #fee2e2; /* Nền đỏ nhạt */
+  color: #ef4444; /* Chữ đỏ */
+  border-color: #fecaca; /* Viền đỏ */
+}
+
+.radioInput:checked + .income {
+  background-color: #dbeafe; /* Nền xanh nhạt */
+  color: #3b82f6; /* Chữ xanh */
+  border-color: #bfdbfe; /* Viền xanh */
+}
+
+/* === Form Actions & Error Message === */
 .formActions {
   display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 25px;
-  padding-top: 20px;
-  border-top: 1px solid #e9ecef;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background-color: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  flex-shrink: 0;
 }
 
 .formButton {
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 1rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid transparent;
   transition: all 0.2s ease-in-out;
 }
-.formButton:hover:not(:disabled) {
-  transform: translateY(-2px); /* Mới: Hiệu ứng nhấc lên khi hover */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
 .cancelButton {
-  background-color: transparent;
-  color: #495057;
-  border-color: #ced4da;
+  background-color: #ffffff;
+  color: #374151;
+  border-color: #d1d5db;
 }
-.cancelButton:hover {
-  background-color: #f1f3f5;
+.cancelButton:hover:not(:disabled) {
+  background-color: #f3f4f6;
 }
-
 .submitButton {
-  background-color: #3f51b5;
+  background-color: #4f46e5;
   color: white;
-  border-color: #3f51b5;
+  border-color: #4f46e5;
 }
-.submitButton:hover {
-  background-color: #303f9f;
+.submitButton:hover:not(:disabled) {
+  background-color: #4338ca;
+  border-color: #4338ca;
 }
-
 .formButton:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .errorMessage {
-  color: #c62828;
-  background-color: #ffebee;
-  border: 1px solid #ef9a9a;
-  padding: 12px;
-  margin-bottom: 1.25rem;
-  border-radius: 6px;
+  color: #be123c;
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0.375rem;
   text-align: center;
   font-weight: 500;
-}
-
-.transactionForm {
-  text-align: center;
-}
-.transactionForm .formInput {
-  text-align: left;
+  font-size: 0.9rem;
 }

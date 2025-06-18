@@ -1,209 +1,272 @@
-/* src/components/Categories/AddEditCategoryModal.module.css */
+/* === General Modal Styles === */
 .modalOverlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* Nền mờ */
+  background-color: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1050; /* Cao hơn các phần tử khác */
-  padding: 15px;
+  z-index: 1050;
+  padding: 1rem;
+  animation: fadeInOverlay 0.2s ease-out;
+}
+
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modalContent {
-  background-color: #f9f9f9; /* Màu nền hơi ngà giống ảnh */
-  padding: 20px 25px;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  background-color: #ffffff;
+  padding: 0;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 500px; /* Giới hạn chiều rộng modal */
-  position: relative; /* Cho nút đóng tuyệt đối */
+  max-width: 500px; /* Tăng nhẹ để có không gian cho icon grid */
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.95);
+  opacity: 0;
+  animation: slideInModal 0.3s ease-out forwards;
 }
 
+@keyframes slideInModal {
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* === Modal Header === */
 .modalHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 1rem 1.5rem;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
 }
 
 .modalTitle {
-  font-size: 1.5rem; /* Kích thước tiêu đề giống ảnh */
-  font-weight: bold; /* Đậm hơn */
-  color: #333;
-  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #4f46e5;
 }
 
 .closeButton {
-  background: none;
-  border: 1px solid #ccc; /* Viền cho nút X giống ảnh */
-  color: #888;
-  font-size: 1.2rem; /* Kích thước chữ X */
-  font-weight: bold;
-  padding: 2px 8px; /* Padding để nút dễ nhấn hơn */
-  line-height: 1;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #6b7280;
   cursor: pointer;
-  border-radius: 4px;
-}
-.closeButton:hover {
-  color: #000;
-  background-color: #f0f0f0;
+  transition: background-color 0.2s, color 0.2s;
 }
 
+.closeButton:hover {
+  background-color: #f0f0f0;
+  color: #111827;
+}
+
+/* === Form Styles === */
 .categoryForm {
-  display: flex;
-  flex-direction: column;
+  padding: 1.5rem;
+  overflow-y: auto;
 }
 
 .formGroup {
-  margin-bottom: 18px; /* Khoảng cách giữa các group */
+  margin-bottom: 1.25rem;
+  text-align: left;
 }
 
 .formLabel {
   display: block;
-  font-size: 0.95rem; /* Kích thước label */
-  color: #333;
-  margin-bottom: 6px;
-  font-weight: 500; /* Đậm hơn chút */
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.875rem;
 }
 
 .requiredStar {
-  color: red;
-  margin-left: 2px;
+  color: #ef4444;
 }
 
 .formInput {
+  display: block;
   width: 100%;
-  padding: 10px 12px; /* Padding cho input */
-  border: 1px solid #ccc; /* Border giống ảnh */
-  border-radius: 4px;
-  font-size: 0.95rem;
-  box-sizing: border-box; /* Quan trọng để padding không làm tăng kích thước */
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
+
 .formInput:focus {
-  border-color: #3f51b5; /* Màu focus */
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
+  border-color: #4f46e5;
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
 }
 
+/* === Custom Radio Buttons (Matching Transaction Modal) === */
 .radioGroup {
-  display: flex;
-  gap: 20px; /* Khoảng cách giữa các radio button */
-  margin-top: 5px;
-}
-
-.radioLabel {
-  display: flex;
-  align-items: center;
-  font-size: 0.95rem;
-  color: #333;
-  cursor: pointer;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
 }
 
 .radioInput {
-  margin-right: 6px;
-  /* Bạn có thể tùy chỉnh thêm style cho radio input nếu muốn */
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
 
+.radioLabelText {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  text-align: center;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-weight: 600;
+  border: 1px solid #e5e7eb;
+}
+
+.radioIcon {
+  font-size: 0.8rem;
+}
+
+.expense,
+.income {
+  color: #4b5563;
+  background-color: #f9fafb;
+}
+.expense:hover,
+.income:hover {
+  border-color: #d1d5db;
+}
+
+.radioInput:checked + .expense {
+  background-color: #fee2e2;
+  color: #ef4444;
+  border-color: #fecaca;
+}
+
+.radioInput:checked + .income {
+  background-color: #dbeafe;
+  color: #3b82f6;
+  border-color: #bfdbfe;
+}
+
+/* === Icon Selection Grid Styles === */
 .iconSelectionGrid {
   display: grid;
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(40px, 1fr)
-  ); /* Responsive grid cho icon */
-  gap: 8px;
-  padding: 10px;
-  border: 1px solid #ccc; /* Border giống ảnh */
-  border-radius: 4px;
-  background-color: #fff; /* Nền trắng cho khu vực chọn icon */
-  max-height: 150px; /* Giới hạn chiều cao, cho phép cuộn */
+  grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  max-height: 160px;
   overflow-y: auto;
 }
 
 .iconButton {
-  background-color: #f0f0f0;
-  border: 1px solid transparent; /* Để có hiệu ứng border khi selected */
-  border-radius: 4px;
-  padding: 8px;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem; /* Kích thước icon */
-  color: #555;
-  transition: background-color 0.2s, border-color 0.2s;
+  font-size: 1.5rem;
+  color: #4b5563;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .iconButton:hover {
-  background-color: #e0e0e0;
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
 }
 
 .iconButtonSelected {
-  background-color: #d6e4ff; /* Màu nền khi icon được chọn */
-  border-color: #3f51b5; /* Màu viền khi icon được chọn */
-  color: #3f51b5;
+  background-color: #eef2ff; /* Nền màu primary nhạt */
+  border-color: #4f46e5; /* Viền màu primary */
+  color: #4f46e5; /* Icon màu primary */
 }
 
-.formDivider {
-  border: 0;
-  border-top: 1px solid #e0e0e0;
-  margin: 25px 0; /* Khoảng cách cho đường kẻ */
-}
-
+/* === Form Actions & Error Message === */
 .formActions {
   display: flex;
-  justify-content: flex-end; /* Đẩy nút về bên phải */
-  gap: 10px; /* Khoảng cách giữa các nút */
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  margin-top: 0.5rem;
+  background-color: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  flex-shrink: 0;
 }
 
 .formButton {
-  padding: 10px 20px;
-  border-radius: 4px;
-  font-size: 0.95rem;
-  font-weight: 500;
+  padding: 0.6rem 1.25rem;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  border: 1px solid transparent; /* Thêm border để kích thước nhất quán */
-  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border: 1px solid transparent;
+  transition: all 0.2s ease-in-out;
 }
-
 .cancelButton {
-  background-color: #f0f0f0; /* Nền xám nhạt giống ảnh */
-  color: #333;
-  border-color: #ccc; /* Border xám giống ảnh */
+  background-color: #ffffff;
+  color: #374151;
+  border-color: #d1d5db;
 }
-.cancelButton:hover {
-  background-color: #e0e0e0;
+.cancelButton:hover:not(:disabled) {
+  background-color: #f3f4f6;
 }
-
 .submitButton {
-  background-color: #3f51b5; /* Màu xanh dương cho nút Thêm/Lưu */
+  background-color: #4f46e5;
   color: white;
-  border-color: #3f51b5;
+  border-color: #4f46e5;
 }
-.submitButton:hover {
-  background-color: #303f9f;
-  border-color: #303f9f;
+.submitButton:hover:not(:disabled) {
+  background-color: #4338ca;
+  border-color: #4338ca;
 }
-
 .formButton:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .errorMessage {
-  background-color: #ffebee;
-  color: #c62828;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 15px;
+  color: #be123c;
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0.375rem;
+  text-align: center;
+  font-weight: 500;
   font-size: 0.9rem;
-  border: 1px solid #ef9a9a;
 }

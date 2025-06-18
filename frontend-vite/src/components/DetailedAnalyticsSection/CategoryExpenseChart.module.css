@@ -2,17 +2,15 @@
 
 .chartContainer {
   width: 100%;
-  /* background-color: #f9f9f9; */ /* Tùy chọn: màu nền nhẹ cho khu vực biểu đồ */
-  /* padding: 15px; */ /* Tùy chọn: padding nếu không được cung cấp bởi container cha */
-  /* border-radius: 8px; */ /* Tùy chọn: bo góc */
-  /* box-shadow: 0 1px 3px rgba(0,0,0,0.05); */ /* Tùy chọn: bóng đổ nhẹ */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .chartTitle {
-  font-size: 1.5rem; /* Giữ kích thước đồng nhất với biểu đồ kia */
+  font-size: 0.9rem; /* Giữ kích thước đồng nhất với biểu đồ kia */
   color: #2c3e50; /* Màu tiêu đề */
-  margin-top: 0; /* Bỏ margin trên nếu không cần */
-  margin-bottom: 20px; /* Khoảng cách với biểu đồ */
+
   font-weight: 600; /* Độ đậm chữ */
   text-align: center; /* Căn giữa tiêu đề cho biểu đồ tròn có thể đẹp hơn */
 }
@@ -71,7 +69,7 @@
 
 .centerLabel strong {
   display: block;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #2c3e50;
 }

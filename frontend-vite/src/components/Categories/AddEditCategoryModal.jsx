@@ -1,18 +1,24 @@
-// src/components/Categories/AddEditCategoryModal.jsx
 import React, { useState, useEffect } from "react";
-import styles from "./AddEditCategoryModal.module.css"; // File CSS riêng
+import styles from "./AddEditCategoryModal.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { availableIconsForSelection, getIconObject } from "../../utils/iconMap"; // Đảm bảo đường dẫn đúng
+// ✅ THAY ĐỔI 1: Import thêm icon
+import {
+  faSpinner,
+  faArrowDown,
+  faArrowUp,
+} from "@fortawesome/free-solid-svg-icons";
+import { availableIconsForSelection, getIconObject } from "../../utils/iconMap";
 import { CATEGORY_TYPE } from "./CategoryPageHeader";
+
 const AddEditCategoryModal = ({
   isOpen,
-  mode, // 'add' hoặc 'edit'
+  mode,
   categoryType: initialType,
   initialData,
   onClose,
-  onSubmit, // Hàm này sẽ gọi API
+  onSubmit,
 }) => {
+  // ...Phần state và useEffect không thay đổi...
   const [name, setName] = useState("");
   const [type, setType] = useState(initialType || "expense");
   const [selectedIcon, setSelectedIcon] = useState(
@@ -45,10 +51,7 @@ const AddEditCategoryModal = ({
     }
   }, [isOpen, mode, initialData, initialType]);
 
-  if (!isOpen) {
-    return null;
-  }
-
+  // ...Phần logic xử lý (handleSubmit, handleClose) không thay đổi...
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) {
@@ -64,13 +67,10 @@ const AddEditCategoryModal = ({
 
     try {
       await onSubmit({
-        // onSubmit được truyền từ CategoriesPage.jsx và sẽ gọi API
         name: name.trim(),
         type,
         icon: selectedIcon,
       });
-      // Việc đóng modal và reset form nên được xử lý bởi component cha (CategoriesPage)
-      // sau khi onSubmit thành công, thông qua việc gọi onClose và cập nhật state.
     } catch (apiError) {
       console.error("Lỗi khi submit form trong modal:", apiError);
       setError(apiError.message || "Có lỗi xảy ra khi lưu danh mục.");
@@ -80,12 +80,13 @@ const AddEditCategoryModal = ({
   };
 
   const handleClose = () => {
-    // Reset lỗi khi đóng thủ công, nhưng không reset các trường input
-    // vì người dùng có thể muốn giữ lại dữ liệu đã nhập nếu chỉ đóng tạm.
-    // Việc reset form hoàn toàn sẽ do useEffect xử lý khi modal mở lại ở mode 'add'.
     setError("");
     onClose();
   };
+
+  if (!isOpen) {
+    return null;
+  }
 
   const modalTitle = mode === "add" ? "Thêm Danh Mục Mới" : "Sửa Danh Mục";
   const submitButtonText = mode === "add" ? "Thêm Danh Mục" : "Lưu Thay Đổi";
@@ -128,29 +129,42 @@ const AddEditCategoryModal = ({
               Loại danh mục <span className={styles.requiredStar}>*</span>
             </label>
             <div className={styles.radioGroup}>
-              <label className={styles.radioLabel}>
+              {/* ✅ THAY ĐỔI 2: Cập nhật cấu trúc radio button */}
+              <label>
                 <input
                   type="radio"
                   name="categoryType"
-                  value={CATEGORY_TYPE.EXPENSE} // <-- Sửa ở đây
+                  value={CATEGORY_TYPE.EXPENSE}
                   checked={type === CATEGORY_TYPE.EXPENSE}
                   onChange={(e) => setType(e.target.value)}
                   disabled={isSubmitting}
                   className={styles.radioInput}
                 />
-                Chi tiêu
+                <span className={`${styles.radioLabelText} ${styles.expense}`}>
+                  <FontAwesomeIcon
+                    icon={faArrowDown}
+                    className={styles.radioIcon}
+                  />
+                  Chi tiêu
+                </span>
               </label>
-              <label className={styles.radioLabel}>
+              <label>
                 <input
                   type="radio"
                   name="categoryType"
-                  value={CATEGORY_TYPE.INCOME} // <-- Sửa ở đây
+                  value={CATEGORY_TYPE.INCOME}
                   checked={type === CATEGORY_TYPE.INCOME}
                   onChange={(e) => setType(e.target.value)}
                   disabled={isSubmitting}
                   className={styles.radioInput}
                 />
-                Thu nhập
+                <span className={`${styles.radioLabelText} ${styles.income}`}>
+                  <FontAwesomeIcon
+                    icon={faArrowUp}
+                    className={styles.radioIcon}
+                  />
+                  Thu nhập
+                </span>
               </label>
             </div>
           </div>
@@ -178,8 +192,6 @@ const AddEditCategoryModal = ({
               ))}
             </div>
           </div>
-
-          <hr className={styles.formDivider} />
 
           <div className={styles.formActions}>
             <button

@@ -16,7 +16,6 @@ const formatCurrency = (amount) => {
   return amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 };
 
-// Hàm định dạng số tài khoản để hiển thị
 const formatAccountNumber = (number) => {
   if (!number || number.length <= 4) {
     return number;
@@ -25,14 +24,24 @@ const formatAccountNumber = (number) => {
 };
 
 // --- AccountItem Component (Nội bộ) ---
-const AccountItem = ({ account, totalBalance, onEdit, onDeleteRequest }) => {
+const AccountItem = ({ account, onEdit, onDeleteRequest }) => {
   const accountIcon = account.type === "TIENMAT" ? faWallet : faLandmark;
 
-  const percentage =
-    totalBalance > 0 ? ((account.balance || 0) / totalBalance) * 100 : 0;
+  // ✅ LOGIC MỚI: Tính toán cho thanh hoạt động
+  const totalActivity =
+    (account.monthlyIncome || 0) + (account.monthlyExpense || 0);
+  const incomePercentage =
+    totalActivity > 0
+      ? ((account.monthlyIncome || 0) / totalActivity) * 100
+      : 0;
+  const expensePercentage =
+    totalActivity > 0
+      ? ((account.monthlyExpense || 0) / totalActivity) * 100
+      : 0;
 
   return (
     <div className={styles.accountItem}>
+      {/* Cột 1: Thông tin tài khoản */}
       <div className={styles.accountInfo}>
         <FontAwesomeIcon
           icon={accountIcon}
@@ -40,7 +49,6 @@ const AccountItem = ({ account, totalBalance, onEdit, onDeleteRequest }) => {
         />
         <div className={styles.accountDetails}>
           <span className={styles.accountName}>{account.name}</span>
-          {/* HIỂN THỊ THÔNG TIN NGÂN HÀNG */}
           {account.type === "THENGANHANG" &&
             (account.bankName || account.accountNumber) && (
               <span className={styles.accountSubDetail}>
@@ -51,18 +59,34 @@ const AccountItem = ({ account, totalBalance, onEdit, onDeleteRequest }) => {
             )}
         </div>
       </div>
-      <div className={styles.balanceAndActions}>
-        <div className={styles.balanceContainer}>
-          <span className={styles.accountBalance}>
-            {formatCurrency(account.balance)}
-          </span>
-          <div className={styles.progressBarContainer}>
-            <div
-              className={styles.progressBar}
-              style={{ width: `${percentage}%` }}
-            ></div>
-          </div>
+
+      {/* ✅ Cột 2: Thanh hoạt động và số liệu thu/chi */}
+      <div className={styles.activitySection}>
+        <div className={styles.activityBar}>
+          <div
+            className={styles.incomeBar}
+            style={{ width: `${incomePercentage}%` }}
+          ></div>
+          <div
+            className={styles.expenseBar}
+            style={{ width: `${expensePercentage}%` }}
+          ></div>
         </div>
+        <div className={styles.activityFigures}>
+          <span className={styles.incomeText}>
+            + {formatCurrency(account.monthlyIncome || 0)}
+          </span>
+          <span className={styles.expenseText}>
+            - {formatCurrency(account.monthlyExpense || 0)}
+          </span>
+        </div>
+      </div>
+
+      {/* Cột 3: Số dư cuối và nút hành động */}
+      <div className={styles.balanceAndActions}>
+        <span className={styles.accountBalance}>
+          {formatCurrency(account.balance)}
+        </span>
         <div className={styles.accountActions}>
           <button
             onClick={() => onEdit(account)}
@@ -84,10 +108,9 @@ const AccountItem = ({ account, totalBalance, onEdit, onDeleteRequest }) => {
   );
 };
 
-// --- AccountList Component ---
+// --- AccountList Component (Phần chính không đổi) ---
 const AccountList = ({
   accounts,
-  totalBalance,
   isLoading,
   error,
   onEditRequest,
@@ -138,7 +161,6 @@ const AccountList = ({
             <AccountItem
               key={account.id}
               account={account}
-              totalBalance={totalBalance}
               onEdit={onEditRequest}
               onDeleteRequest={requestDeleteAccount}
             />

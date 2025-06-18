@@ -1,11 +1,15 @@
-// src/components/Transactions/AddEditTransactionModal.jsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "./AddEditTransactionModal.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+// ✅ THAY ĐỔI 1: Import thêm icon cần thiết
+import {
+  faSpinner,
+  faArrowDown,
+  faArrowUp,
+} from "@fortawesome/free-solid-svg-icons";
 
-// ✅ Hàm tiện ích để chuyển đổi Date object thành chuỗi 'YYYY-MM-DD'
+// Hàm tiện ích để chuyển đổi Date object thành chuỗi 'YYYY-MM-DD'
 const formatDateForInput = (date) => {
   const d = new Date(date);
   const year = d.getFullYear();
@@ -14,7 +18,6 @@ const formatDateForInput = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-// ✅ Component giờ đây nhận thêm `mode` và `initialData`
 const AddEditTransactionModal = ({
   isOpen,
   onClose,
@@ -24,6 +27,7 @@ const AddEditTransactionModal = ({
 }) => {
   // State cho các trường trong form
   const [type, setType] = useState("CHITIEU");
+  // ✅ THAY ĐỔI 1: State `amount` sẽ lưu giá trị số thuần (dưới dạng chuỗi), không có dấu chấm.
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -39,7 +43,6 @@ const AddEditTransactionModal = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // ✅ useEffect chính được viết lại để xử lý cả 2 mode
   useEffect(() => {
     if (!isOpen) return;
 
@@ -49,7 +52,6 @@ const AddEditTransactionModal = ({
       const token = localStorage.getItem("token");
 
       try {
-        // Lấy dữ liệu cần thiết cho các dropdown
         const [categoriesRes, accountsRes] = await Promise.all([
           axios.get("http://localhost:5000/api/categories", {
             headers: { Authorization: `Bearer ${token}` },
@@ -64,24 +66,21 @@ const AddEditTransactionModal = ({
         setCategories(allCategories);
         setAccounts(allAccounts);
 
-        // Kiểm tra mode để điền dữ liệu hoặc reset form
         if (mode === "edit" && initialData) {
-          // Điền dữ liệu có sẵn vào form
           const initialType = initialData.type || "CHITIEU";
           setType(initialType);
-          setAmount(initialData.amount || "");
+          // ✅ THAY ĐỔI 2: Chuyển đổi amount từ số sang chuỗi khi ở chế độ sửa
+          setAmount(String(initialData.amount || ""));
           setDescription(initialData.description || "");
           setDate(formatDateForInput(initialData.date));
           setAccountId(initialData.paymentMethod?._id || "");
 
-          // Lọc danh mục theo type của giao dịch đang sửa và set giá trị
           const catsForType = allCategories.filter(
             (c) => c.type === initialType
           );
           setFilteredCategories(catsForType);
           setCategoryId(initialData.category?._id || "");
         } else {
-          // Đặt lại form cho chế độ "Thêm mới"
           const initialCats = allCategories.filter((c) => c.type === "CHITIEU");
           setFilteredCategories(initialCats);
           setType("CHITIEU");
@@ -102,24 +101,28 @@ const AddEditTransactionModal = ({
     fetchDataAndPopulateForm();
   }, [isOpen, mode, initialData]);
 
-  // Lọc lại danh mục khi người dùng thay đổi loại Thu/Chi
   useEffect(() => {
-    // Chỉ chạy khi categories đã được tải
     if (categories.length > 0) {
       const filtered = categories.filter((cat) => cat.type === type);
       setFilteredCategories(filtered);
-
-      // Nếu không phải đang edit, hoặc đang edit nhưng đổi type, thì chọn mặc định item đầu tiên
       if (mode === "add" || (mode === "edit" && type !== initialData?.type)) {
         setCategoryId(filtered[0]?._id || "");
       }
     }
   }, [type, categories, mode, initialData]);
 
-  // ✅ Hàm handleSubmit được nâng cấp để xử lý cả POST (thêm) và PUT (sửa)
+  // ✅ THAY ĐỔI 3: Hàm xử lý riêng cho việc nhập số tiền
+  const handleAmountChange = (e) => {
+    const inputValue = e.target.value;
+    // Chỉ giữ lại các ký tự số, loại bỏ dấu chấm và các ký tự khác
+    const rawValue = inputValue.replace(/[^0-9]/g, "");
+    setAmount(rawValue);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!amount || !categoryId || !accountId) {
+    // ✅ THAY ĐỔI 4: Bổ sung kiểm tra cho trường `description` và `amount`
+    if (!amount || !categoryId || !accountId || !description.trim()) {
       setError("Vui lòng điền đầy đủ các trường bắt buộc.");
       return;
     }
@@ -129,14 +132,13 @@ const AddEditTransactionModal = ({
 
     const payload = {
       type,
-      amount: parseFloat(amount),
-      name: description,
-      note: description,
+      amount: parseFloat(amount), // Chuyển đổi chuỗi số thuần thành số thực
+      name: description.trim(),
+      note: description.trim(),
       categoryId,
       accountId,
       date,
     };
-    //console.log("Dữ liệu gửi đi từ Frontend:", payload);
 
     const token = localStorage.getItem("token");
     const isEditMode = mode === "edit";
@@ -150,7 +152,7 @@ const AddEditTransactionModal = ({
       await axios[httpMethod](url, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      onSubmitSuccess(); // Báo cho cha biết đã thành công
+      onSubmitSuccess();
     } catch (apiError) {
       setError(
         apiError.response?.data?.message ||
@@ -163,9 +165,13 @@ const AddEditTransactionModal = ({
 
   if (!isOpen) return null;
 
-  // ✅ Tiêu đề và nút bấm sẽ thay đổi tùy theo mode
   const modalTitle = mode === "add" ? "Thêm Giao Dịch" : "Sửa Giao Dịch";
   const submitButtonText = mode === "add" ? "Lưu Giao Dịch" : "Lưu Thay Đổi";
+
+  // ✅ THAY ĐỔI 5: Tạo giá trị hiển thị đã được định dạng cho ô input
+  const displayAmount = amount
+    ? parseInt(amount, 10).toLocaleString("vi-VN")
+    : "";
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -177,13 +183,12 @@ const AddEditTransactionModal = ({
           </button>
         </div>
         <form onSubmit={handleSubmit} className={styles.transactionForm}>
-          {/* Phần JSX của form không có nhiều thay đổi */}
-          {/* ... Toàn bộ các thẻ input, select, textarea của bạn ... */}
           {error && <p className={styles.errorMessage}>{error}</p>}
-          {/* ... */}
+
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>Loại giao dịch</label>
             <div className={styles.radioGroup}>
+              {/* ✅ THAY ĐỔI 2: Thêm icon vào radio button Chi tiêu */}
               <label>
                 <input
                   className={styles.radioInput}
@@ -192,12 +197,15 @@ const AddEditTransactionModal = ({
                   checked={type === "CHITIEU"}
                   onChange={(e) => setType(e.target.value)}
                 />
-                <span
-                  className={`${styles.radioLabel} ${styles.radioLabelText}`}
-                >
+                <span className={`${styles.radioLabelText} ${styles.expense}`}>
+                  <FontAwesomeIcon
+                    icon={faArrowDown}
+                    className={styles.radioIcon}
+                  />
                   Chi tiêu
                 </span>
               </label>
+              {/* ✅ THAY ĐỔI 3: Thêm icon vào radio button Thu nhập */}
               <label>
                 <input
                   className={styles.radioInput}
@@ -206,9 +214,11 @@ const AddEditTransactionModal = ({
                   checked={type === "THUNHAP"}
                   onChange={(e) => setType(e.target.value)}
                 />
-                <span
-                  className={`${styles.radioLabel} ${styles.radioLabelText}`}
-                >
+                <span className={`${styles.radioLabelText} ${styles.income}`}>
+                  <FontAwesomeIcon
+                    icon={faArrowUp}
+                    className={styles.radioIcon}
+                  />
                   Thu nhập
                 </span>
               </label>
@@ -219,17 +229,24 @@ const AddEditTransactionModal = ({
             <label htmlFor="amount" className={styles.formLabel}>
               Số tiền *
             </label>
-            <input
-              id="amount"
-              type="number"
-              value={amount || ""} // Thêm || "" để đảm bảo value không bao giờ là null/undefined
-              onChange={(e) => setAmount(e.target.value)}
-              className={styles.formInput}
-              placeholder="0"
-              required
-            />
+            {/* ✅ THAY ĐỔI 4: Bọc input trong một div để thêm ký hiệu tiền tệ */}
+            <div className={styles.amountInputWrapper}>
+              <input
+                id="amount"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={displayAmount}
+                onChange={handleAmountChange}
+                className={styles.amountInput}
+                placeholder="0"
+                required
+              />
+              <span className={styles.currencySymbol}>₫</span>
+            </div>
           </div>
 
+          {/* ... các form group khác không thay đổi ... */}
           <div className={styles.formGroup}>
             <label htmlFor="category" className={styles.formLabel}>
               Danh mục *
@@ -253,7 +270,6 @@ const AddEditTransactionModal = ({
               ))}
             </select>
           </div>
-
           <div className={styles.formGroup}>
             <label htmlFor="account" className={styles.formLabel}>
               Tài khoản *
@@ -272,7 +288,6 @@ const AddEditTransactionModal = ({
               ))}
             </select>
           </div>
-
           <div className={styles.formGroup}>
             <label htmlFor="date" className={styles.formLabel}>
               Ngày *
@@ -286,7 +301,6 @@ const AddEditTransactionModal = ({
               required
             />
           </div>
-
           <div className={styles.formGroup}>
             <label htmlFor="description" className={styles.formLabel}>
               Tên/Mô tả giao dịch <span className={styles.requiredStar}>*</span>
@@ -297,7 +311,7 @@ const AddEditTransactionModal = ({
               onChange={(e) => setDescription(e.target.value)}
               className={styles.formInput}
               placeholder="Ví dụ: Lương tháng 6, Ăn trưa với đối tác..."
-              required // Thêm thuộc tính required để bắt buộc nhập
+              required
             ></textarea>
           </div>
 
