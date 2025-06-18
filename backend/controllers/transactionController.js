@@ -2,7 +2,6 @@
 const Transaction = require("../models/Transaction");
 const Account = require("../models/Account");
 exports.createTransaction = async (req, res) => {
-  // console.log("Dữ liệu nhận được ở Backend:", req.body);
   try {
     const { name, amount, type, categoryId, accountId, date, note } = req.body;
 
@@ -13,11 +12,8 @@ exports.createTransaction = async (req, res) => {
       });
     }
 
-    // ✅ BƯỚC 1: Đảm bảo 'amount' là một số nguyên an toàn ngay từ đầu
-    // Chuyển đổi thành số và làm tròn thành số nguyên gần nhất để loại bỏ mọi sai số
     const transactionAmount = Math.round(Number(amount));
 
-    // Kiểm tra xem sau khi chuyển đổi, nó có phải là một con số hợp lệ không
     if (isNaN(transactionAmount)) {
       return res.status(400).json({ error: "Số tiền không hợp lệ." });
     }
@@ -25,7 +21,7 @@ exports.createTransaction = async (req, res) => {
     const newTransaction = new Transaction({
       userId: req.user.id,
       name,
-      amount: transactionAmount, // Dùng số tiền an toàn đã được làm tròn
+      amount: transactionAmount,
       type,
       categoryId,
       accountId,
@@ -35,27 +31,8 @@ exports.createTransaction = async (req, res) => {
 
     const savedTransaction = await newTransaction.save();
 
-    const account = await Account.findOne({
-      _id: accountId,
-      userId: req.user.id,
-    });
-
-    if (!account) {
-      // Nếu tài khoản không tồn tại, ta nên cân nhắc việc xóa giao dịch vừa tạo để đảm bảo toàn vẹn dữ liệu
-      await Transaction.findByIdAndDelete(savedTransaction._id);
-      return res.status(404).json({ message: "Tài khoản không tồn tại" });
-    }
-
-    // ✅ BƯỚC 2: Sử dụng số nguyên an toàn trong phép tính số dư
-    const currentBalance = Math.round(Number(account.initialBalance));
-
-    if (type === "CHITIEU") {
-      account.initialBalance = currentBalance - transactionAmount;
-    } else if (type === "THUNHAP") {
-      account.initialBalance = currentBalance + transactionAmount;
-    }
-
-    await account.save();
+    // ✅ BỎ HOÀN TOÀN LOGIC CẬP NHẬT ACCOUNT.INITIALBALANCE
+    // Đoạn code cập nhật account.initialBalance đã được xóa khỏi đây
 
     res.status(201).json(savedTransaction);
   } catch (err) {
@@ -70,6 +47,8 @@ exports.createTransaction = async (req, res) => {
       .json({ error: "Lỗi máy chủ nội bộ.", details: err.message });
   }
 };
+
+// Lấy tất cả giao dịch của người dùng với phân trang
 exports.getAllTransactions = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -108,7 +87,6 @@ exports.getAllTransactions = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 exports.deleteTransaction = async (req, res) => {
   try {
     const transaction = await Transaction.findOne({
@@ -118,18 +96,7 @@ exports.deleteTransaction = async (req, res) => {
     if (!transaction)
       return res.status(404).json({ message: "Không tìm thấy giao dịch" });
 
-    const account = await Account.findOne({
-      _id: transaction.accountId,
-      userId: req.user.id,
-    });
-
-    if (account) {
-      if (transaction.type === "CHITIEU")
-        account.initialBalance += transaction.amount;
-      else if (transaction.type === "THUNHAP")
-        account.initialBalance -= transaction.amount;
-      await account.save();
-    }
+    // ✅ BỎ HOÀN TOÀN LOGIC CẬP NHẬT LẠI SỐ DƯ KHI XÓA
 
     await Transaction.deleteOne({ _id: transaction._id });
 
@@ -145,24 +112,7 @@ exports.updateTransaction = async (req, res) => {
     const userId = req.user.id;
     const { name, amount, type, categoryId, accountId, date, note } = req.body;
 
-    const oldTransaction = await Transaction.findOne({
-      _id: transactionId,
-      userId: userId,
-    });
-
-    if (!oldTransaction) {
-      return res.status(404).json({ message: "Không tìm thấy giao dịch." });
-    }
-
-    const oldAccount = await Account.findById(oldTransaction.accountId);
-    if (oldAccount) {
-      if (oldTransaction.type === "CHITIEU") {
-        oldAccount.initialBalance += oldTransaction.amount;
-      } else {
-        oldAccount.initialBalance -= oldTransaction.amount;
-      }
-      await oldAccount.save();
-    }
+    // ✅ BỎ HOÀN TOÀN LOGIC HOÀN TRẢ SỐ DƯ CŨ VÀ CẬP NHẬT SỐ DƯ MỚI
 
     const updatedTransaction = await Transaction.findByIdAndUpdate(
       transactionId,
@@ -175,17 +125,11 @@ exports.updateTransaction = async (req, res) => {
         date,
         note,
       },
-      { new: true }
+      { new: true, runValidators: true } // Thêm runValidators để đảm bảo dữ liệu mới hợp lệ
     );
 
-    const newAccount = await Account.findById(accountId);
-    if (newAccount) {
-      if (type === "CHITIEU") {
-        newAccount.initialBalance -= amount;
-      } else {
-        newAccount.initialBalance += amount;
-      }
-      await newAccount.save();
+    if (!updatedTransaction) {
+      return res.status(404).json({ message: "Không tìm thấy giao dịch." });
     }
 
     res.status(200).json(updatedTransaction);

@@ -266,3 +266,37 @@ textarea.formInput {
   font-weight: 500;
   font-size: 0.9rem;
 }
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.requiredStar {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+.formLoading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  font-size: 1.1rem;
+  color: #4f46e5;
+  gap: 10px;
+}
+
+/* Responsive cho màn hình nhỏ */
+@media (max-width: 500px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 0; /* Bỏ gap trên mobile để các formGroup tự có margin-bottom */
+  }
+}

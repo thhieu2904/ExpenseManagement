@@ -7,106 +7,79 @@ const toISODateString = (date) => {
   if (!date) return "N/A";
   return new Date(date).toISOString().split("T")[0];
 };
-
+const toFloat = (value) => {
+  if (value == null) return 0;
+  if (typeof value === "number") return value;
+  if (typeof value === "object" && value.toString) {
+    return parseFloat(value.toString());
+  }
+  const num = parseFloat(value);
+  return isNaN(num) ? 0 : num;
+};
 exports.getAccounts = async (req, res) => {
   try {
     const userId = new mongoose.Types.ObjectId(req.user.id);
-    let { startDate, endDate } = req.query;
+    const { startDate, endDate } = req.query;
 
-    // Nếu không có ngày, mặc định là không lọc thời gian (cho kết quả mới nhất)
+    // 1. Lấy danh sách tài khoản
+    const accounts = await Account.find({ userId }).lean();
+    if (accounts.length === 0) {
+      return res.json([]);
+    }
+
     const isTimeFilterActive = startDate && endDate;
 
-    // 1. Lấy tất cả tài khoản của người dùng
-    const accounts = await Account.find({ userId }).lean();
+    // 2. Lấy TOÀN BỘ giao dịch của người dùng một lần duy nhất
+    const allTransactions = await Transaction.find({ userId }).lean();
 
-    // 2. Sử dụng Aggregation để tính toán hiệu quả
-    const accountCalculations = accounts.map(async (account) => {
-      const accountId = account._id;
+    // 3. Xử lý và tính toán ở phía server (thay vì nhiều truy vấn DB)
+    const formattedAccounts = accounts.map((account) => {
+      const accountIdStr = account._id.toString();
 
-      // --- Tính toán số dư tại `endDate` ---
-      // Nếu không có bộ lọc thời gian, số dư chính là initialBalance (số dư hiện tại)
-      let balanceAtEndDate = account.initialBalance;
-      if (isTimeFilterActive) {
-        const balanceResult = await Transaction.aggregate([
-          {
-            $match: {
-              accountId: accountId,
-              // Chỉ lấy các giao dịch từ đầu đến `endDate`
-              date: { $lte: new Date(endDate) },
-            },
-          },
-          {
-            $group: {
-              _id: "$type",
-              total: { $sum: "$amount" },
-            },
-          },
-        ]);
+      // Lọc giao dịch cho từng tài khoản
+      const accountTransactions = allTransactions.filter(
+        (t) => t.accountId.toString() === accountIdStr
+      );
 
-        const incomeUntilEndDate =
-          balanceResult.find((r) => r._id === "THUNHAP")?.total || 0;
-        const expenseUntilEndDate =
-          balanceResult.find((r) => r._id === "CHITIEU")?.total || 0;
-
-        // Số dư tại endDate = Số dư ban đầu CỦA TÀI KHOẢN (khi mới tạo) + tổng thu - tổng chi TÍNH TỚI ENDDATE
-        // Chú ý: `initialBalance` trong model của bạn đang được cập nhật liên tục, nên nó chính là số dư hiện tại.
-        // Cách tính đúng phải dựa trên `initialBalance` gốc hoặc tính lại từ đầu.
-        // Tuy nhiên, để đơn giản hóa cho phù hợp với cấu trúc hiện tại, chúng ta sẽ tính toán dựa trên số dư hiện tại và các giao dịch sau endDate.
-        // Đây là một điểm cần cải tiến trong tương lai: không nên cập nhật `initialBalance` mà nên tính toán động.
-
-        // Logic tạm thời để phù hợp cấu trúc hiện tại:
-        // Lấy số dư hiện tại và điều chỉnh với các giao dịch xảy ra sau endDate
-        const adjustments = await Transaction.aggregate([
-          {
-            $match: {
-              accountId: accountId,
-              date: { $gt: new Date(endDate) }, // Giao dịch SAU endDate
-            },
-          },
-          {
-            $group: {
-              _id: "$type",
-              total: { $sum: "$amount" },
-            },
-          },
-        ]);
-
-        const incomeAfterEndDate =
-          adjustments.find((r) => r._id === "THUNHAP")?.total || 0;
-        const expenseAfterEndDate =
-          adjustments.find((r) => r._id === "CHITIEU")?.total || 0;
-
-        // Số dư tại endDate = Số dư hiện tại - (thu sau endDate) + (chi sau endDate)
-        balanceAtEndDate =
-          account.initialBalance - incomeAfterEndDate + expenseAfterEndDate;
-      }
-
-      // --- Tính toán thu/chi trong khoảng [startDate, endDate] ---
       let incomeInRange = 0;
       let expenseInRange = 0;
-      if (isTimeFilterActive) {
-        const rangeResult = await Transaction.aggregate([
-          {
-            $match: {
-              accountId: accountId,
-              date: {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate),
-              },
-            },
-          },
-          {
-            $group: {
-              _id: "$type",
-              total: { $sum: "$amount" },
-            },
-          },
-        ]);
-        incomeInRange =
-          rangeResult.find((r) => r._id === "THUNHAP")?.total || 0;
-        expenseInRange =
-          rangeResult.find((r) => r._id === "CHITIEU")?.total || 0;
+      let totalIncomeUntilEnd = 0;
+      let totalExpenseUntilEnd = 0;
+
+      for (const t of accountTransactions) {
+        const transactionDate = new Date(t.date);
+
+        // Tính thu/chi TRONG KỲ
+        if (isTimeFilterActive) {
+          if (
+            transactionDate >= new Date(startDate) &&
+            transactionDate <= new Date(endDate)
+          ) {
+            if (t.type === "THUNHAP") {
+              incomeInRange += t.amount;
+            } else if (t.type === "CHITIEU") {
+              expenseInRange += t.amount;
+            }
+          }
+        }
+
+        // Tính số dư CUỐI KỲ
+        // Nếu có filter, tính đến endDate. Nếu không, tính đến hiện tại.
+        const endPointDate = isTimeFilterActive
+          ? new Date(endDate)
+          : new Date();
+        if (transactionDate <= endPointDate) {
+          if (t.type === "THUNHAP") {
+            totalIncomeUntilEnd += t.amount;
+          } else if (t.type === "CHITIEU") {
+            totalExpenseUntilEnd += t.amount;
+          }
+        }
       }
+
+      // Số dư cuối kỳ = Số dư ban đầu CỐ ĐỊNH + tổng thu - tổng chi
+      const balanceAtEndDate =
+        account.initialBalance + totalIncomeUntilEnd - totalExpenseUntilEnd;
 
       return {
         id: account._id,
@@ -116,23 +89,19 @@ exports.getAccounts = async (req, res) => {
         accountNumber: account.accountNumber,
         createdAt: account.createdAt,
         balance: balanceAtEndDate,
-        // Giữ tên key `monthly...` để frontend không phải sửa nhiều
         monthlyIncome: incomeInRange,
         monthlyExpense: expenseInRange,
       };
     });
 
-    const formattedAccounts = await Promise.all(accountCalculations);
-
     res.json(formattedAccounts);
   } catch (err) {
-    console.error(`Lỗi khi lấy danh sách tài khoản:`, err);
+    console.error("Lỗi khi lấy danh sách tài khoản:", err);
     res
       .status(500)
       .json({ error: "Lỗi máy chủ nội bộ.", details: err.message });
   }
 };
-
 exports.createAccount = async (req, res) => {
   // Logic tạo tài khoản của bạn ở đây
   try {

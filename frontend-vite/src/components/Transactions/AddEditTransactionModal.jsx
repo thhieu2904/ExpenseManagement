@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "./AddEditTransactionModal.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// ✅ THAY ĐỔI 1: Import thêm icon cần thiết
 import {
   faSpinner,
   faArrowDown,
@@ -27,12 +26,12 @@ const AddEditTransactionModal = ({
 }) => {
   // State cho các trường trong form
   const [type, setType] = useState("CHITIEU");
-  // ✅ THAY ĐỔI 1: State `amount` sẽ lưu giá trị số thuần (dưới dạng chuỗi), không có dấu chấm.
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [accountId, setAccountId] = useState("");
   const [date, setDate] = useState(formatDateForInput(new Date()));
+  const [note, setNote] = useState(""); // Thêm state cho Ghi chú
 
   // State để lưu danh sách từ API
   const [categories, setCategories] = useState([]);
@@ -66,30 +65,64 @@ const AddEditTransactionModal = ({
         setCategories(allCategories);
         setAccounts(allAccounts);
 
+        // --- BẮT ĐẦU PHẦN LOGIC SỬA LỖI ---
         if (mode === "edit" && initialData) {
           const initialType = initialData.type || "CHITIEU";
           setType(initialType);
-          // ✅ THAY ĐỔI 2: Chuyển đổi amount từ số sang chuỗi khi ở chế độ sửa
           setAmount(String(initialData.amount || ""));
           setDescription(initialData.description || "");
+          setNote(initialData.note || ""); // Cập nhật ghi chú
           setDate(formatDateForInput(initialData.date));
-          setAccountId(initialData.paymentMethod?._id || "");
 
+          // Gán accountId
+          const accountIdToSet =
+            initialData.paymentMethod?.id ||
+            initialData.paymentMethod?._id ||
+            "";
+          setAccountId(accountIdToSet);
+
+          // Lọc và gán categoryId
           const catsForType = allCategories.filter(
             (c) => c.type === initialType
           );
           setFilteredCategories(catsForType);
-          setCategoryId(initialData.category?._id || "");
+          const categoryIdToSet =
+            initialData.category?.id || initialData.category?._id || "";
+          setCategoryId(categoryIdToSet);
         } else {
-          const initialCats = allCategories.filter((c) => c.type === "CHITIEU");
+          // Chế độ "add"
+          // Mặc định là 'Chi tiêu'
+          const initialType = "CHITIEU";
+          setType(initialType);
+
+          // Lọc danh mục theo loại mặc định
+          const initialCats = allCategories.filter(
+            (c) => c.type === initialType
+          );
           setFilteredCategories(initialCats);
-          setType("CHITIEU");
+
+          // Reset các trường
           setAmount("");
           setDescription("");
+          setNote("");
           setDate(formatDateForInput(new Date()));
-          setCategoryId(initialCats[0]?._id || "");
-          setAccountId(allAccounts[0]?._id || "");
+
+          // ✅ THAY ĐỔI QUAN TRỌNG: Gán giá trị mặc định cho state
+          // Sau khi có dữ liệu, lấy ID của mục đầu tiên và gán vào state
+          if (initialCats.length > 0) {
+            setCategoryId(initialCats[0]._id);
+          } else {
+            setCategoryId(""); // Nếu không có danh mục nào thì set rỗng
+          }
+
+          if (allAccounts.length > 0) {
+            // Lưu ý: API accounts của bạn trả về `id` chứ không phải `_id`
+            setAccountId(allAccounts[0].id);
+          } else {
+            setAccountId(""); // Nếu không có tài khoản nào thì set rỗng
+          }
         }
+        // --- KẾT THÚC PHẦN SỬA LỖI ---
       } catch (err) {
         setError("Không thể tải dữ liệu cho form.");
         console.error(err);
@@ -101,27 +134,28 @@ const AddEditTransactionModal = ({
     fetchDataAndPopulateForm();
   }, [isOpen, mode, initialData]);
 
+  // Cập nhật danh sách danh mục khi loại giao dịch thay đổi
   useEffect(() => {
     if (categories.length > 0) {
       const filtered = categories.filter((cat) => cat.type === type);
       setFilteredCategories(filtered);
+
+      // Chỉ tự động chọn danh mục đầu tiên nếu không phải đang ở chế độ sửa
+      // hoặc nếu người dùng đã chuyển loại (type) trong chế độ sửa
       if (mode === "add" || (mode === "edit" && type !== initialData?.type)) {
         setCategoryId(filtered[0]?._id || "");
       }
     }
   }, [type, categories, mode, initialData]);
 
-  // ✅ THAY ĐỔI 3: Hàm xử lý riêng cho việc nhập số tiền
   const handleAmountChange = (e) => {
     const inputValue = e.target.value;
-    // Chỉ giữ lại các ký tự số, loại bỏ dấu chấm và các ký tự khác
     const rawValue = inputValue.replace(/[^0-9]/g, "");
     setAmount(rawValue);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // ✅ THAY ĐỔI 4: Bổ sung kiểm tra cho trường `description` và `amount`
     if (!amount || !categoryId || !accountId || !description.trim()) {
       setError("Vui lòng điền đầy đủ các trường bắt buộc.");
       return;
@@ -132,9 +166,9 @@ const AddEditTransactionModal = ({
 
     const payload = {
       type,
-      amount: parseFloat(amount), // Chuyển đổi chuỗi số thuần thành số thực
+      amount: parseFloat(amount),
       name: description.trim(),
-      note: description.trim(),
+      note: note.trim(), // Thêm note vào payload
       categoryId,
       accountId,
       date,
@@ -168,7 +202,6 @@ const AddEditTransactionModal = ({
   const modalTitle = mode === "add" ? "Thêm Giao Dịch" : "Sửa Giao Dịch";
   const submitButtonText = mode === "add" ? "Lưu Giao Dịch" : "Lưu Thay Đổi";
 
-  // ✅ THAY ĐỔI 5: Tạo giá trị hiển thị đã được định dạng cho ô input
   const displayAmount = amount
     ? parseInt(amount, 10).toLocaleString("vi-VN")
     : "";
@@ -183,12 +216,16 @@ const AddEditTransactionModal = ({
           </button>
         </div>
         <form onSubmit={handleSubmit} className={styles.transactionForm}>
+          {isLoading && (
+            <div className={styles.formLoading}>
+              <FontAwesomeIcon icon={faSpinner} spin /> Đang tải...
+            </div>
+          )}
           {error && <p className={styles.errorMessage}>{error}</p>}
 
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>Loại giao dịch</label>
             <div className={styles.radioGroup}>
-              {/* ✅ THAY ĐỔI 2: Thêm icon vào radio button Chi tiêu */}
               <label>
                 <input
                   className={styles.radioInput}
@@ -196,6 +233,7 @@ const AddEditTransactionModal = ({
                   value="CHITIEU"
                   checked={type === "CHITIEU"}
                   onChange={(e) => setType(e.target.value)}
+                  disabled={isLoading}
                 />
                 <span className={`${styles.radioLabelText} ${styles.expense}`}>
                   <FontAwesomeIcon
@@ -205,7 +243,6 @@ const AddEditTransactionModal = ({
                   Chi tiêu
                 </span>
               </label>
-              {/* ✅ THAY ĐỔI 3: Thêm icon vào radio button Thu nhập */}
               <label>
                 <input
                   className={styles.radioInput}
@@ -213,6 +250,7 @@ const AddEditTransactionModal = ({
                   value="THUNHAP"
                   checked={type === "THUNHAP"}
                   onChange={(e) => setType(e.target.value)}
+                  disabled={isLoading}
                 />
                 <span className={`${styles.radioLabelText} ${styles.income}`}>
                   <FontAwesomeIcon
@@ -226,93 +264,121 @@ const AddEditTransactionModal = ({
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="amount" className={styles.formLabel}>
-              Số tiền *
+            <label htmlFor="description" className={styles.formLabel}>
+              Tên/Mô tả giao dịch <span className={styles.requiredStar}>*</span>
             </label>
-            {/* ✅ THAY ĐỔI 4: Bọc input trong một div để thêm ký hiệu tiền tệ */}
+            <input
+              id="description"
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className={styles.formInput}
+              placeholder="Ví dụ: Lương tháng 6, Ăn trưa..."
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="amount" className={styles.formLabel}>
+              Số tiền <span className={styles.requiredStar}>*</span>
+            </label>
             <div className={styles.amountInputWrapper}>
               <input
                 id="amount"
                 type="text"
                 inputMode="numeric"
-                pattern="[0-9]*"
                 value={displayAmount}
                 onChange={handleAmountChange}
                 className={styles.amountInput}
                 placeholder="0"
                 required
+                disabled={isLoading}
               />
               <span className={styles.currencySymbol}>₫</span>
             </div>
           </div>
 
-          {/* ... các form group khác không thay đổi ... */}
-          <div className={styles.formGroup}>
-            <label htmlFor="category" className={styles.formLabel}>
-              Danh mục *
-            </label>
-            <select
-              id="category"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className={styles.formInput}
-              required
-            >
-              {filteredCategories.length === 0 && (
-                <option disabled value="">
-                  Không có danh mục
-                </option>
-              )}
-              {filteredCategories.map((cat) => (
-                <option key={cat._id} value={cat._id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
+          <div className={styles.formGrid}>
+            <div className={styles.formGroup}>
+              <label htmlFor="category" className={styles.formLabel}>
+                Danh mục <span className={styles.requiredStar}>*</span>
+              </label>
+              <select
+                id="category"
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                className={styles.formInput}
+                required
+                disabled={isLoading || filteredCategories.length === 0}
+              >
+                {filteredCategories.length === 0 ? (
+                  <option value="">Không có danh mục</option>
+                ) : (
+                  filteredCategories.map((cat) => (
+                    <option key={cat._id} value={cat._id}>
+                      {cat.name}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="account" className={styles.formLabel}>
+                Tài khoản <span className={styles.requiredStar}>*</span>
+              </label>
+              <select
+                id="account"
+                value={accountId}
+                onChange={(e) => setAccountId(e.target.value)}
+                className={styles.formInput}
+                required
+                disabled={isLoading || accounts.length === 0}
+              >
+                {accounts.length === 0 ? (
+                  <option value="">Không có tài khoản</option>
+                ) : (
+                  accounts.map((acc) => (
+                    <option key={acc.id} value={acc.id}>
+                      {acc.name}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
           </div>
-          <div className={styles.formGroup}>
-            <label htmlFor="account" className={styles.formLabel}>
-              Tài khoản *
-            </label>
-            <select
-              id="account"
-              value={accountId}
-              onChange={(e) => setAccountId(e.target.value)}
-              className={styles.formInput}
-              required
-            >
-              {accounts.map((acc) => (
-                <option key={acc._id} value={acc._id}>
-                  {acc.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className={styles.formGroup}>
-            <label htmlFor="date" className={styles.formLabel}>
-              Ngày *
-            </label>
-            <input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className={styles.formInput}
-              required
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label htmlFor="description" className={styles.formLabel}>
-              Tên/Mô tả giao dịch <span className={styles.requiredStar}>*</span>
-            </label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className={styles.formInput}
-              placeholder="Ví dụ: Lương tháng 6, Ăn trưa với đối tác..."
-              required
-            ></textarea>
+
+          <div className={styles.formGrid}>
+            <div className={styles.formGroup}>
+              <label htmlFor="date" className={styles.formLabel}>
+                Ngày <span className={styles.requiredStar}>*</span>
+              </label>
+              <input
+                id="date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className={styles.formInput}
+                required
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="note" className={styles.formLabel}>
+                Ghi chú
+              </label>
+              <input
+                id="note"
+                type="text"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className={styles.formInput}
+                placeholder="Thêm ghi chú nếu cần..."
+                disabled={isLoading}
+              />
+            </div>
           </div>
 
           <div className={styles.formActions}>

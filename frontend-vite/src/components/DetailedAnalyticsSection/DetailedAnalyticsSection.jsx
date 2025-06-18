@@ -6,6 +6,7 @@ import styles from "./DetailedAnalyticsSection.module.css";
 
 // Tái sử dụng CSS của biểu đồ đường cho các nút
 import chartStyles from "./IncomeExpenseTrendChart.module.css";
+import { startOfWeek, endOfWeek } from "date-fns";
 
 const DetailedAnalyticsSection = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -37,12 +38,13 @@ const DetailedAnalyticsSection = () => {
   };
 
   const getDisplayBox = () => {
+    // ✅ BƯỚC 2: SỬA LẠI LOGIC HIỂN THỊ CHO TUẦN
     if (period === "week") {
-      const endOfWeek = new Date(currentDate);
-      endOfWeek.setDate(currentDate.getDate() + 6);
-      return `${currentDate.toLocaleDateString(
+      const start = startOfWeek(currentDate, { weekStartsOn: 1 }); // Lấy ngày thứ 2
+      const end = endOfWeek(currentDate, { weekStartsOn: 1 }); // Lấy ngày Chủ Nhật
+      return `${start.toLocaleDateString("vi-VN")} - ${end.toLocaleDateString(
         "vi-VN"
-      )} - ${endOfWeek.toLocaleDateString("vi-VN")}`;
+      )}`;
     }
     if (period === "month")
       return currentDate.toLocaleDateString("vi-VN", {
@@ -52,6 +54,11 @@ const DetailedAnalyticsSection = () => {
     if (period === "year") return `Năm ${currentDate.getFullYear()}`;
     return "";
   };
+
+  const chartStartDate =
+    period === "week"
+      ? startOfWeek(currentDate, { weekStartsOn: 1 })
+      : currentDate;
 
   const getDynamicTitle = () => {
     // Logic này không đổi
@@ -109,10 +116,13 @@ const DetailedAnalyticsSection = () => {
       {/* 2. Div cha mới để bọc CẢ HAI biểu đồ */}
       <div className={styles.chartsRow}>
         <div className={styles.trendChartContainer}>
-          <IncomeExpenseTrendChart period={period} currentDate={currentDate} />
+          <IncomeExpenseTrendChart
+            period={period}
+            currentDate={chartStartDate}
+          />
         </div>
         <div className={styles.categoryChartContainer}>
-          <CategoryExpenseChart period={period} currentDate={currentDate} />
+          <CategoryExpenseChart period={period} currentDate={chartStartDate} />
         </div>
       </div>
     </div>

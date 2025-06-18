@@ -6,6 +6,7 @@ import { faPlus, faTag } from "@fortawesome/free-solid-svg-icons";
 
 // ✅ Import style của các nút điều khiển để dùng chung
 import controlStyles from "../DetailedAnalyticsSection/IncomeExpenseTrendChart.module.css";
+import { startOfWeek, endOfWeek } from "date-fns";
 
 export const CATEGORY_TYPE = {
   ALL: "ALL",
@@ -45,12 +46,13 @@ const CategoryPageHeader = ({
   };
 
   const getDisplayBox = () => {
+    // ✅ SỬA LẠI LOGIC HIỂN THỊ CHO TUẦN
     if (period === "week") {
-      const endOfWeek = new Date(currentDate);
-      endOfWeek.setDate(currentDate.getDate() + 6);
-      return `${currentDate.toLocaleDateString(
+      const start = startOfWeek(currentDate, { weekStartsOn: 1 });
+      const end = endOfWeek(currentDate, { weekStartsOn: 1 });
+      return `${start.toLocaleDateString("vi-VN")} - ${end.toLocaleDateString(
         "vi-VN"
-      )} - ${endOfWeek.toLocaleDateString("vi-VN")}`;
+      )}`;
     }
     if (period === "month")
       return currentDate.toLocaleDateString("vi-VN", {

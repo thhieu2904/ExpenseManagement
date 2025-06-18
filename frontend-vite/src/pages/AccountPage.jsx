@@ -39,17 +39,25 @@ const AccountPage = () => {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Vui lòng đăng nhập.");
 
-      // Xây dựng params cho API
+      // Xây dựng params cho API một cách chính xác
       const params = {};
       if (dateRange.startDate && dateRange.endDate) {
-        // Định dạng ngày thành chuỗi YYYY-MM-DD
-        params.startDate = format(dateRange.startDate, "yyyy-MM-dd");
-        params.endDate = format(dateRange.endDate, "yyyy-MM-dd");
+        // Đảm bảo startDate là đầu ngày
+        const start = new Date(dateRange.startDate);
+        start.setHours(0, 0, 0, 0);
+
+        // Đảm bảo endDate là cuối ngày
+        const end = new Date(dateRange.endDate);
+        end.setHours(23, 59, 59, 999);
+
+        // Gửi dưới dạng chuỗi ISO để backend có thể đọc chính xác cả ngày và giờ
+        params.startDate = start.toISOString();
+        params.endDate = end.toISOString();
       }
 
       const response = await axios.get("http://localhost:5000/api/accounts", {
         headers: { Authorization: `Bearer ${token}` },
-        params: params, // Gửi params đi
+        params: params, // Gửi params đã được chuẩn hóa
       });
 
       setAccounts(response.data || []);
