@@ -1,20 +1,17 @@
-// src/components/StatsOverview/StatsOverview.jsx
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import styles from "./StatsOverview.module.css";
+// Mở và THAY THẾ TOÀN BỘ file: src/components/StatsOverview/StatsOverview.jsx
 
+import React, { useState } from "react";
+import styles from "./StatsOverview.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlus,
   faArrowDown,
   faArrowUp,
-  faWallet,
-  faChartLine, // Icon cho tiêu đề "Tổng quan chi tiêu"
+  faChartLine,
 } from "@fortawesome/free-solid-svg-icons";
-import AddTransactionModal from "../Transactions/AddEditTransactionModal";
+import AddEditTransactionModal from "../Transactions/AddEditTransactionModal"; // Sửa lại tên component Modal
 
-// Hàm tiện ích định dạng tiền tệ (ví dụ: 1000000 -> "1.000.000 ₫")
+// Hàm tiện ích định dạng tiền tệ
 const formatCurrency = (amount) => {
   if (typeof amount !== "number") {
     return "0 ₫";
@@ -22,80 +19,30 @@ const formatCurrency = (amount) => {
   return amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 };
 
-// Hàm tiện ích để lấy tháng/năm hiện tại cho tiêu đề card
-const getCurrentMonthYearLabel = (apiMonthYear) => {
-  if (
-    apiMonthYear &&
-    typeof apiMonthYear === "string" &&
-    apiMonthYear.includes("/")
-  ) {
-    return apiMonthYear; // Sử dụng dữ liệu từ API nếu có và đúng định dạng
-  }
-  const date = new Date();
-  return `Tháng ${date.getMonth() + 1}/${date.getFullYear()}`;
-};
-
-const StatsOverview = () => {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  //state để mở modal thêm giao dịch
+// Component nhận props từ cha, không tự fetch dữ liệu
+const StatsOverview = ({ stats, loading }) => {
+  // <--- NHẬN PROPS stats và loading
   const [isModalOpen, setIsModalOpen] = useState(false);
-  useEffect(() => {
-    const fetchStatsOverview = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        // ... logic fetch của bạn giữ nguyên
-        const token = localStorage.getItem("token");
-        if (!token) {
-          setError("Bạn chưa đăng nhập. Vui lòng đăng nhập để xem thông tin.");
-          setLoading(false);
-          return;
-        }
-        const response = await axios.get(
-          "http://localhost:5000/api/statistics/overview",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setStats(response.data);
-      } catch (err) {
-        // ... logic catch lỗi của bạn giữ nguyên
-        console.error("Lỗi khi tải dữ liệu tổng quan:", err);
-        setError("Không thể tải dữ liệu tổng quan. Vui lòng thử lại sau.");
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchStatsOverview();
-  }, []); // Thêm mảng phụ thuộc rỗng để useEffect chỉ chạy một lần sau khi mount
-
-  const handleAddTransaction = () => {
-    setIsModalOpen(true);
-  };
-
+  // Hàm này giờ cần được xử lý ở component cha, nhưng tạm thời giữ lại để nút "Thêm" hoạt động
   const handleTransactionAdded = () => {
-    setIsModalOpen(false); // Đóng modal
-    window.location.reload(); // Cách đơn giản nhất để làm mới toàn bộ dữ liệu trang
+    setIsModalOpen(false);
+    window.location.reload(); // Tạm thời reload để cập nhật
   };
 
   if (loading) {
     return <div className={styles.loading}>Đang tải dữ liệu tổng quan...</div>;
   }
 
-  if (error) {
-    return <div className={styles.error}>{error}</div>;
-  }
-
+  // Nếu không loading và không có stats, hiển thị thông báo
   if (!stats) {
     return <div className={styles.noData}>Không có dữ liệu để hiển thị.</div>;
   }
 
-  // Sử dụng hàm getCurrentMonthYearLabel để có nhãn tháng/năm
-  const currentMonthYearLabel = getCurrentMonthYearLabel(
-    stats.currentMonthYear
-  );
+  // Dữ liệu tháng/năm giờ sẽ được API trả về trong object stats
+  const currentMonthYearLabel =
+    stats.currentMonthYear ||
+    `Tháng ${new Date().getMonth() + 1}/${new Date().getFullYear()}`;
 
   return (
     <div className={styles.statsOverviewContainer}>
@@ -105,7 +52,7 @@ const StatsOverview = () => {
           Tổng quan chi tiêu
         </h2>
         <button
-          onClick={handleAddTransaction}
+          onClick={() => setIsModalOpen(true)}
           className={styles.addTransactionButton}
         >
           <FontAwesomeIcon icon={faPlus} /> Thêm giao dịch
@@ -115,12 +62,11 @@ const StatsOverview = () => {
       <div className={styles.statsCards}>
         {/* Card Thu nhập */}
         <div className={`${styles.statCard} ${styles.incomeCard}`}>
+          {/* ... phần JSX của card thu nhập giữ nguyên ... */}
           <div
             className={styles.cardIconWrapper}
             style={{ backgroundColor: "rgba(76, 175, 80, 0.1)" }}
           >
-            {" "}
-            {/* Nền nhạt hơn cho icon */}
             <FontAwesomeIcon
               icon={faArrowDown}
               className={styles.cardIcon}
@@ -161,8 +107,10 @@ const StatsOverview = () => {
             )}
           </div>
         </div>
+
         {/* Card Chi tiêu */}
         <div className={`${styles.statCard} ${styles.expenseCard}`}>
+          {/* ... phần JSX của card chi tiêu giữ nguyên ... */}
           <div
             className={styles.cardIconWrapper}
             style={{ backgroundColor: "rgba(244, 67, 54, 0.1)" }}
@@ -191,7 +139,6 @@ const StatsOverview = () => {
                     : styles.negativeChange
                 }`}
               >
-                {/* Biểu tượng mũi tên cho chi tiêu thường ngược lại với ý nghĩa tăng/giảm của số liệu */}
                 <FontAwesomeIcon
                   icon={
                     (stats.expense?.percentageChange || 0) >= 0
@@ -209,8 +156,10 @@ const StatsOverview = () => {
           </div>
         </div>
       </div>
+
       {/* Modal thêm giao dịch */}
-      <AddTransactionModal
+      {/* Lưu ý: Tên component modal là AddEditTransactionModal */}
+      <AddEditTransactionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmitSuccess={handleTransactionAdded}

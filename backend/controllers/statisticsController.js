@@ -356,3 +356,74 @@ exports.getStatsByCategory = async (req, res) => {
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 };
+
+// lấy thống kê theo tháng
+
+exports.getMonthlyTransactionsForCalendar = async (req, res) => {
+  try {
+    const userId = new mongoose.Types.ObjectId(req.user.id);
+    const year = parseInt(req.query.year, 10);
+    const month = parseInt(req.query.month, 10);
+
+    if (!year || !month) {
+      return res
+        .status(400)
+        .json({ message: "Thiếu thông tin năm hoặc tháng." });
+    }
+
+    const startDate = new Date(Date.UTC(year, month - 1, 1));
+    const endDate = new Date(Date.UTC(year, month, 0, 23, 59, 59));
+
+    const transactions = await Transaction.aggregate([
+      {
+        $match: {
+          userId: userId,
+          date: { $gte: startDate, $lte: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            date: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+            type: "$type",
+          },
+          totalAmount: { $sum: "$amount" },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id.date",
+          income: {
+            $sum: {
+              $cond: [{ $eq: ["$_id.type", "THUNHAP"] }, "$totalAmount", 0],
+            },
+          },
+          expense: {
+            $sum: {
+              $cond: [{ $eq: ["$_id.type", "CHITIEU"] }, "$totalAmount", 0],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          date: "$_id",
+          income: "$income",
+          expense: "$expense",
+        },
+      },
+    ]);
+
+    // Chuyển đổi mảng thành object để frontend dễ sử dụng
+    const result = transactions.reduce((acc, day) => {
+      acc[day.date] = { income: day.income, expense: day.expense };
+      return acc;
+    }, {});
+
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("Lỗi khi lấy dữ liệu cho lịch:", err);
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+};

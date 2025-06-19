@@ -1,4 +1,5 @@
 // backend/controllers/transactionController.js
+const mongoose = require("mongoose");
 const Transaction = require("../models/Transaction");
 const Account = require("../models/Account");
 exports.createTransaction = async (req, res) => {
@@ -51,21 +52,68 @@ exports.createTransaction = async (req, res) => {
 // Lấy tất cả giao dịch của người dùng với phân trang
 exports.getAllTransactions = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
-    const skip = (page - 1) * limit;
+    const userId = new mongoose.Types.ObjectId(req.user.id);
 
-    const totalTransactions = await Transaction.countDocuments({ userId });
-    const totalPages = Math.ceil(totalTransactions / limit);
+    // Lấy các tham số từ query
+    const {
+      page = 1,
+      limit = 10,
+      keyword,
+      type,
+      categoryId,
+      accountId,
+      year, // Thêm year và month để lọc theo tháng của DateNavigator
+      month,
+    } = req.query;
 
-    const transactions = await Transaction.find({ userId })
-      .populate("accountId", "name type")
-      .populate("categoryId", "name icon type")
-      .sort({ createdAt: -1 })
+    const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+
+    // --- Xây dựng bộ lọc (match criteria) ---
+    const matchCriteria = { userId };
+
+    // 1. Lọc theo tháng/năm từ DateNavigator
+    if (year && month) {
+      const startDate = new Date(
+        Date.UTC(parseInt(year, 10), parseInt(month, 10) - 1, 1)
+      );
+      const endDate = new Date(
+        Date.UTC(parseInt(year, 10), parseInt(month, 10), 0, 23, 59, 59)
+      );
+      matchCriteria.date = { $gte: startDate, $lte: endDate };
+    }
+
+    // 2. Lọc theo từ khóa (tên/mô tả giao dịch)
+    if (keyword) {
+      matchCriteria.name = { $regex: keyword, $options: "i" }; // "i" để không phân biệt hoa thường
+    }
+
+    // 3. Lọc theo loại giao dịch
+    if (type && type !== "ALL") {
+      matchCriteria.type = type;
+    }
+
+    // 4. Lọc theo danh mục
+    if (categoryId && categoryId !== "ALL") {
+      matchCriteria.categoryId = new mongoose.Types.ObjectId(categoryId);
+    }
+
+    // 5. Lọc theo tài khoản
+    if (accountId && accountId !== "ALL") {
+      matchCriteria.accountId = new mongoose.Types.ObjectId(accountId);
+    }
+
+    // --- Thực hiện truy vấn ---
+    const totalTransactions = await Transaction.countDocuments(matchCriteria);
+    const totalPages = Math.ceil(totalTransactions / parseInt(limit, 10));
+
+    const transactions = await Transaction.find(matchCriteria)
+      .populate({ path: "accountId", select: "name type" }) // Sử dụng object để chỉ định rõ
+      .populate({ path: "categoryId", select: "name icon type" })
+      .sort({ date: -1, createdAt: -1 }) // Ưu tiên sắp xếp theo ngày giao dịch
       .skip(skip)
-      .limit(limit);
+      .limit(parseInt(limit, 10));
 
+    // Format lại dữ liệu trả về (giữ nguyên)
     const formattedTransactions = transactions.map((t) => ({
       id: t._id,
       createdAt: t.createdAt,
@@ -75,16 +123,18 @@ exports.getAllTransactions = async (req, res) => {
       amount: t.amount,
       type: t.type,
       category: t.categoryId,
-      paymentMethod: t.accountId,
+      paymentMethod: t.accountId, // Giữ tên paymentMethod cho nhất quán với RecentTransactions
     }));
 
     res.json({
       data: formattedTransactions,
-      currentPage: page,
+      currentPage: parseInt(page, 10),
       totalPages: totalPages,
+      totalCount: totalTransactions,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Lỗi khi lấy danh sách giao dịch:", err);
+    res.status(500).json({ error: "Lỗi máy chủ", details: err.message });
   }
 };
 exports.deleteTransaction = async (req, res) => {
@@ -140,3 +190,5 @@ exports.updateTransaction = async (req, res) => {
     });
   }
 };
+
+// Hiển thị lich giao dịch theo tháng

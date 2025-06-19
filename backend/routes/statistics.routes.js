@@ -10,5 +10,10 @@ router.get(
   verifyToken,
   statisticsController.getStatsByCategory
 );
+router.get(
+  "/calendar",
+  verifyToken,
+  statisticsController.getMonthlyTransactionsForCalendar
+);
 
 module.exports = router;

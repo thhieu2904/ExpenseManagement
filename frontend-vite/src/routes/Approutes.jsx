@@ -6,6 +6,7 @@ import Login from "../pages/Login";
 import HomePage from "../pages/HomePage";
 import CategoriesPage from "../pages/CategoriesPage";
 import AccountPage from "../pages/AccountPage";
+import TransactionsPage from "../pages/TransactionsPage";
 export default function AppRoutes() {
   return (
     <Routes>
@@ -14,8 +15,8 @@ export default function AppRoutes() {
       <Route path="/register" element={<Register />} />
       <Route path="/HomePage" element={<HomePage />} />
       <Route path="/CategoriesPage" element={<CategoriesPage />} />
-
       <Route path="/AccountPage" element={<AccountPage />} />
+      <Route path="/TransactionsPage" element={<TransactionsPage />} />
     </Routes>
   );
 }

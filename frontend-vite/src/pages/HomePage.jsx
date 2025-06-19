@@ -1,4 +1,7 @@
+// Mở và THAY THẾ file: frontend-vite/src/pages/HomePage.jsx
+
 import React, { useState, useEffect } from "react";
+import axios from "axios"; // Import axios
 import Header from "../components/Header/Header";
 import Navbar from "../components/Navbar/Navbar";
 import StatsOverview from "../components/StatsOverview/StatsOverview";
@@ -7,22 +10,25 @@ import RecentTransactions from "../components/RecentTransactions/RecentTransacti
 import Footer from "../components/Footer/Footer";
 
 const HomePage = () => {
+  // State cho thông tin người dùng
   const [userData, setUserData] = useState({ name: "", avatarUrl: null });
 
+  // ✅ BƯỚC 1: Thêm state để lưu dữ liệu cho StatsOverview
+  const [statsData, setStatsData] = useState(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+
+  // useEffect để lấy thông tin người dùng (giữ nguyên)
   useEffect(() => {
-    // Lấy thông tin người dùng từ localStorage khi component được mount
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
         const account = JSON.parse(storedUser);
-        // Giả sử object 'account' có các trường 'username' (hoặc 'fullName', 'name') và 'avatarUrl' (hoặc 'profilePicture')
-        // Điều chỉnh các key này cho phù hợp với cấu trúc object 'account' thực tế của bạn
         setUserData({
           name:
             account.username ||
             account.fullName ||
             account.name ||
-            "Người dùng", // Ưu tiên các trường phổ biến
+            "Người dùng",
           avatarUrl: account.avatarUrl || account.profilePicture || null,
         });
       } catch (error) {
@@ -30,26 +36,46 @@ const HomePage = () => {
           "Lỗi khi parse thông tin người dùng từ localStorage:",
           error
         );
-        // Xử lý lỗi nếu dữ liệu trong localStorage không hợp lệ
       }
     }
-  }, []); // Mảng rỗng đảm bảo useEffect chỉ chạy một lần sau khi component mount
+  }, []);
+
+  // ✅ BƯỚC 2: Thêm useEffect để fetch dữ liệu cho StatsOverview
+  useEffect(() => {
+    const fetchStats = async () => {
+      setIsLoadingStats(true);
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          // Xử lý trường hợp không có token
+          setIsLoadingStats(false);
+          return;
+        }
+
+        // API này sẽ tự động lấy tháng/năm hiện tại ở backend
+        const response = await axios.get(
+          "http://localhost:5000/api/statistics/overview",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setStatsData(response.data);
+      } catch (err) {
+        console.error("Lỗi khi tải dữ liệu tổng quan cho HomePage:", err);
+      } finally {
+        setIsLoadingStats(false);
+      }
+    };
+
+    fetchStats();
+  }, []); // Mảng rỗng để chỉ chạy một lần
 
   return (
-    // <div className={styles.homePageContainer}>
     <div>
-      <Header
-        userName={userData.name}
-        userAvatar={userData.avatarUrl} // Header sẽ dùng avatar mặc định nếu avatarUrl là null
-      />
+      <Header userName={userData.name} userAvatar={userData.avatarUrl} />
       <Navbar />
-      <main
-        style={{
-          padding: "20px",
-          textAlign: "center",
-        }}
-      >
-        <StatsOverview />
+      <main style={{ padding: "20px" }}>
+        {/* ✅ BƯỚC 3: Truyền props xuống cho StatsOverview */}
+        <StatsOverview stats={statsData} loading={isLoadingStats} />
+
         <DetailedAnalyticsSection />
         <RecentTransactions />
       </main>
