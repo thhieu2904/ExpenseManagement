@@ -41,3 +41,5 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // app.use("/api/stats", statsRoutes);
 const statisticsRoutes = require("./routes/statistics.routes");
 app.use("/api/statistics", statisticsRoutes);
+
+app.use("/api/goals", require("./routes/goalRoutes"));

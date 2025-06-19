@@ -70,3 +70,15 @@
 .confirmButton:hover {
   background-color: #c82333;
 }
+/* THÊM VÀO CUỐI FILE: src/components/Common/ConfirmDialog.module.css */
+
+.errorMessage {
+  color: #dc3545; /* Màu đỏ */
+  background-color: #f8d7da; /* Nền đỏ nhạt */
+  border: 1px solid #f5c6cb;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: -10px; /* Dịch lên một chút */
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}

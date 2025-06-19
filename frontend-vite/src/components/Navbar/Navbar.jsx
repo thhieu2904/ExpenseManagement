@@ -9,8 +9,8 @@ const Navbar = () => {
     { name: "Trang chủ", path: "/HomePage" }, // Hoặc '/' nếu bạn muốn trang chủ là root
     { name: "Danh mục", path: "/CategoriesPage" },
     { name: "Tài khoản", path: "/AccountPage" },
-    { name: "Mục tiêu", path: "/goals" },
-    { name: "Ngân sách", path: "/budgets" },
+    { name: "Mục tiêu", path: "/GoalsPage" },
+    // { name: "Ngân sách", path: "/budgets" },
     { name: "Giao dịch", path: "/TransactionsPage" },
     { name: "Thống kê", path: "/statistics" },
     { name: "Cá nhân", path: "/PersonInfo" },
