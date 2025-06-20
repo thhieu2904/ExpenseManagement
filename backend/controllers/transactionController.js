@@ -48,8 +48,8 @@ exports.createTransaction = async (req, res) => {
       .json({ error: "Lỗi máy chủ nội bộ.", details: err.message });
   }
 };
+// THAY THẾ TOÀN BỘ HÀM CŨ `getAllTransactions` bằng hàm mới này
 
-// Lấy tất cả giao dịch của người dùng với phân trang
 exports.getAllTransactions = async (req, res) => {
   try {
     const userId = new mongoose.Types.ObjectId(req.user.id);
@@ -62,8 +62,9 @@ exports.getAllTransactions = async (req, res) => {
       type,
       categoryId,
       accountId,
-      year, // Thêm year và month để lọc theo tháng của DateNavigator
-      month,
+      // ✅ BỔ SUNG THAM SỐ LỌC THEO KHOẢNG NGÀY
+      startDate,
+      endDate,
     } = req.query;
 
     const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
@@ -71,20 +72,18 @@ exports.getAllTransactions = async (req, res) => {
     // --- Xây dựng bộ lọc (match criteria) ---
     const matchCriteria = { userId };
 
-    // 1. Lọc theo tháng/năm từ DateNavigator
-    if (year && month) {
-      const startDate = new Date(
-        Date.UTC(parseInt(year, 10), parseInt(month, 10) - 1, 1)
-      );
-      const endDate = new Date(
-        Date.UTC(parseInt(year, 10), parseInt(month, 10), 0, 23, 59, 59)
-      );
-      matchCriteria.date = { $gte: startDate, $lte: endDate };
+    // 1. ✅ LOGIC LỌC THỜI GIAN ĐƯỢC ƯU TIÊN
+    if (startDate && endDate) {
+      // Ưu tiên lọc theo khoảng ngày nếu được cung cấp
+      matchCriteria.date = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
     }
 
     // 2. Lọc theo từ khóa (tên/mô tả giao dịch)
     if (keyword) {
-      matchCriteria.name = { $regex: keyword, $options: "i" }; // "i" để không phân biệt hoa thường
+      matchCriteria.name = { $regex: keyword, $options: "i" };
     }
 
     // 3. Lọc theo loại giao dịch
@@ -107,9 +106,9 @@ exports.getAllTransactions = async (req, res) => {
     const totalPages = Math.ceil(totalTransactions / parseInt(limit, 10));
 
     const transactions = await Transaction.find(matchCriteria)
-      .populate({ path: "accountId", select: "name type" }) // Sử dụng object để chỉ định rõ
+      .populate({ path: "accountId", select: "name type" })
       .populate({ path: "categoryId", select: "name icon type" })
-      .sort({ date: -1, createdAt: -1 }) // Ưu tiên sắp xếp theo ngày giao dịch
+      .sort({ date: -1, createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit, 10));
 
@@ -123,7 +122,7 @@ exports.getAllTransactions = async (req, res) => {
       amount: t.amount,
       type: t.type,
       category: t.categoryId,
-      paymentMethod: t.accountId, // Giữ tên paymentMethod cho nhất quán với RecentTransactions
+      paymentMethod: t.accountId,
     }));
 
     res.json({
@@ -137,17 +136,74 @@ exports.getAllTransactions = async (req, res) => {
     res.status(500).json({ error: "Lỗi máy chủ", details: err.message });
   }
 };
+
+// XÓA GIAO DỊCH
 exports.deleteTransaction = async (req, res) => {
   try {
     const transaction = await Transaction.findOne({
       _id: req.params.id,
       userId: req.user.id,
-    });
+    })
+      .populate("categoryId")
+      .exec();
+
     if (!transaction)
       return res.status(404).json({ message: "Không tìm thấy giao dịch" });
 
-    // ✅ BỎ HOÀN TOÀN LOGIC CẬP NHẬT LẠI SỐ DƯ KHI XÓA
+    // Kiểm tra nếu là giao dịch nạp vào mục tiêu
+    const isGoalFund =
+      transaction.categoryId &&
+      (transaction.categoryId.isGoalFund === true ||
+        transaction.categoryId.name === "Tiết kiệm Mục tiêu");
 
+    if (isGoalFund) {
+      // 1. Hoàn tiền về tài khoản nguồn
+      const account = await Account.findById(transaction.accountId);
+      if (account) {
+        account.balance += transaction.amount;
+        await account.save();
+      }
+
+      // 2. Trừ số tiền đã nạp khỏi mục tiêu
+      // Ưu tiên dùng goalId nếu có
+      let goal = null;
+      if (transaction.goalId) {
+        goal = await require("../models/Goal").findOne({
+          _id: transaction.goalId,
+          user: req.user.id,
+        });
+      } else {
+        // Fallback: tìm theo tên mục tiêu như cũ
+        let goalName = null;
+        if (
+          transaction.name &&
+          transaction.name.startsWith("Nạp tiền cho mục tiêu:")
+        ) {
+          goalName = transaction.name
+            .replace('Nạp tiền cho mục tiêu: "', "")
+            .replace('"', "");
+        }
+        if (goalName) {
+          goal = await require("../models/Goal").findOne({
+            user: req.user.id,
+            name: goalName,
+          });
+        }
+      }
+      if (goal) {
+        goal.currentAmount -= transaction.amount;
+        if (goal.currentAmount < 0) goal.currentAmount = 0;
+        if (
+          goal.currentAmount < goal.targetAmount &&
+          goal.status === "completed"
+        ) {
+          goal.status = "in_progress";
+        }
+        await goal.save();
+      }
+    }
+
+    // Xóa transaction
     await Transaction.deleteOne({ _id: transaction._id });
 
     res.json({ message: "Xóa giao dịch thành công" });
@@ -162,27 +218,82 @@ exports.updateTransaction = async (req, res) => {
     const userId = req.user.id;
     const { name, amount, type, categoryId, accountId, date, note } = req.body;
 
-    // ✅ BỎ HOÀN TOÀN LOGIC HOÀN TRẢ SỐ DƯ CŨ VÀ CẬP NHẬT SỐ DƯ MỚI
-
-    const updatedTransaction = await Transaction.findByIdAndUpdate(
-      transactionId,
-      {
-        name,
-        amount,
-        type,
-        categoryId,
-        accountId,
-        date,
-        note,
-      },
-      { new: true, runValidators: true } // Thêm runValidators để đảm bảo dữ liệu mới hợp lệ
-    );
-
-    if (!updatedTransaction) {
+    const transaction = await Transaction.findOne({
+      _id: transactionId,
+      userId,
+    })
+      .populate("categoryId")
+      .exec();
+    if (!transaction) {
       return res.status(404).json({ message: "Không tìm thấy giao dịch." });
     }
 
-    res.status(200).json(updatedTransaction);
+    // Kiểm tra nếu là giao dịch nạp vào mục tiêu
+    const isGoalFund =
+      transaction.categoryId &&
+      (transaction.categoryId.isGoalFund === true ||
+        transaction.categoryId.name === "Tiết kiệm Mục tiêu");
+
+    if (isGoalFund) {
+      // 1. Nếu đổi tài khoản nguồn
+      if (String(accountId) !== String(transaction.accountId)) {
+        // Hoàn lại số tiền cũ vào tài khoản cũ
+        const oldAccount = await Account.findById(transaction.accountId);
+        if (oldAccount) {
+          oldAccount.balance += transaction.amount;
+          await oldAccount.save();
+        }
+        // Trừ số tiền mới ở tài khoản mới
+        const newAccount = await Account.findById(accountId);
+        if (newAccount) {
+          newAccount.balance -= amount;
+          await newAccount.save();
+        }
+      } else if (amount !== transaction.amount) {
+        // Nếu chỉ đổi số tiền (không đổi tài khoản)
+        const diff = amount - transaction.amount;
+        const account = await Account.findById(accountId);
+        if (account) {
+          account.balance -= diff;
+          await account.save();
+        }
+      }
+
+      // 2. Cập nhật lại số tiền đã nạp vào mục tiêu
+      let goal = null;
+      if (transaction.goalId) {
+        goal = await require("../models/Goal").findOne({
+          _id: transaction.goalId,
+          user: userId,
+        });
+      }
+      if (goal) {
+        goal.currentAmount = goal.currentAmount - transaction.amount + amount;
+        if (goal.currentAmount < 0) goal.currentAmount = 0;
+        if (
+          goal.currentAmount < goal.targetAmount &&
+          goal.status === "completed"
+        ) {
+          goal.status = "in_progress";
+        }
+        if (goal.currentAmount >= goal.targetAmount) {
+          goal.status = "completed";
+        }
+        await goal.save();
+      }
+    }
+
+    // Cập nhật transaction
+    transaction.name = name;
+    transaction.amount = amount;
+    transaction.type = type;
+    transaction.categoryId = categoryId;
+    transaction.accountId = accountId;
+    transaction.date = date;
+    transaction.note = note;
+    await transaction.save();
+
+    res.status(200).json(transaction);
   } catch (err) {
     res.status(500).json({
       error: "Lỗi server khi cập nhật giao dịch.",

@@ -8,7 +8,6 @@ import {
   faMoneyBillWave,
   faGift,
   faPiggyBank,
-  faBriefcase,
   faBus,
   faTshirt,
   faGasPump,
@@ -31,18 +30,13 @@ import {
   faCreditCard,
   faLandmark,
   faTools,
-  faLightbulb,
   faBolt,
   faWifi,
   faMobileAlt,
-  faTv,
-  faBaby,
   faGlassCheers,
   faStore,
   faTree,
   faSeedling,
-  // Thêm các icon bạn thấy cần thiết từ @fortawesome/free-solid-svg-icons
-  // và @fortawesome/free-brands-svg-icons (nếu cần)
 } from "@fortawesome/free-solid-svg-icons";
 
 export const iconMap = {
@@ -50,7 +44,7 @@ export const iconMap = {
   "fa-money-bill-wave": faMoneyBillWave, // Lương
   "fa-gift": faGift, // Quà tặng, Thưởng
   "fa-hand-holding-usd": faHandHoldingUsd, // Thu nhập khác, Đầu tư
-  "fa-piggy-bank": faPiggyBank, // Tiết kiệm (nếu coi là một dạng "thu" vào tiết kiệm)
+  "fa-piggy-bank": faPiggyBank, // Tiết kiệm
 
   // Chi tiêu - Ăn uống
   "fa-utensils": faUtensils, // Ăn uống, Nhà hàng
@@ -92,7 +86,7 @@ export const iconMap = {
 
   // Giao dịch & Tài khoản
   "fa-receipt": faReceipt, // Giao dịch, Hóa đơn chung
-  "fa-wallet": faWallet, // Ví tiền
+  "fa-wallet": faWallet, // Ví tiền/quỹ
   "fa-credit-card": faCreditCard, // Thẻ tín dụng/ghi nợ
   "fa-landmark": faLandmark, // Ngân hàng
 
@@ -100,6 +94,7 @@ export const iconMap = {
   "fa-plus-circle": faPlusCircle, // Thêm mới
   "fa-minus-circle": faMinusCircle, // Bớt, Xóa
   default: faQuestionCircle, // Icon mặc định
+  "fa-bank": faLandmark, // Ngân hàng/quỹ
   // ... bạn có thể thêm nhiều icon khác từ thư viện FontAwesome
 };
 
@@ -122,5 +117,8 @@ export const availableIconsForSelection = [
   { name: "Giải trí", identifier: "fa-film" },
   { name: "Ví tiền", identifier: "fa-wallet" },
   { name: "Thẻ", identifier: "fa-credit-card" },
+  // Các icon cho funds/quỹ/tiết kiệm (chỉ giữ icon chắc chắn có)
+  { name: "Ngân hàng", identifier: "fa-bank" },
+  { name: "Ống heo tiết kiệm", identifier: "fa-piggy-bank" },
   // ... thêm các icon bạn muốn người dùng có thể chọn
 ];

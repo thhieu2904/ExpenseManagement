@@ -11,7 +11,7 @@ const AccountPageHeader = ({ onAddAccountClick }) => {
         <FontAwesomeIcon icon={faWallet} className={styles.titleIcon} />
         <h2 className={styles.title}>Quản Lý Nguồn Tiền</h2>
       </div>
-      <button onClick={onAddAccountClick} className={styles.addButton}>
+      <button onClick={onAddAccountClick} className={`${styles.primaryButton}`}>
         <FontAwesomeIcon icon={faPlus} />
         <span>Thêm Nguồn Tiền</span>
       </button>

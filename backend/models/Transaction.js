@@ -22,6 +22,12 @@ const TransactionSchema = new mongoose.Schema(
     type: { type: String, enum: ["THUNHAP", "CHITIEU"], required: true },
     note: { type: String },
     date: { type: Date, default: Date.now },
+    icon: { type: String },
+    goalId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Goal",
+      required: false,
+    },
   },
   { timestamps: true }
 );

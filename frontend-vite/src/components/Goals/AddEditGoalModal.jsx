@@ -1,7 +1,7 @@
 // src/components/Goals/AddEditGoalModal.jsx
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { createGoal, updateGoal } from "../../api/goalService"; //
 import styles from "./AddEditGoalModal.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
@@ -78,22 +78,21 @@ export default function AddEditGoalModal({
     if (deadline) {
       payload.deadline = deadline;
     }
-    const token = localStorage.getItem("token");
-    const isEditMode = mode === "edit";
-    const url = isEditMode
-      ? `http://localhost:5000/api/goals/${initialData._id}`
-      : "http://localhost:5000/api/goals";
-    const httpMethod = isEditMode ? "put" : "post";
+
     try {
-      await axios[httpMethod](url, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      if (mode === "edit") {
+        // Gọi hàm cập nhật từ service
+        await updateGoal(initialData._id, payload);
+      } else {
+        // Gọi hàm tạo mới từ service
+        await createGoal(payload);
+      }
       onSubmitSuccess();
       onClose();
     } catch (apiError) {
       setError(
         apiError.response?.data?.message ||
-          `Lỗi khi ${isEditMode ? "cập nhật" : "tạo"} mục tiêu.`
+          `Lỗi khi ${mode === "edit" ? "cập nhật" : "tạo"} mục tiêu.`
       );
     } finally {
       setIsLoading(false);

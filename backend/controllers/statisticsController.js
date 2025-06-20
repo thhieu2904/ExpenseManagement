@@ -311,6 +311,7 @@ exports.getStatsByCategory = async (req, res) => {
             {
               $project: {
                 _id: 0,
+                id: "$categoryInfo._id",
                 name: "$categoryInfo.name",
                 value: "$total",
                 icon: "$categoryInfo.icon",
@@ -424,6 +425,60 @@ exports.getMonthlyTransactionsForCalendar = async (req, res) => {
     res.status(200).json(result);
   } catch (err) {
     console.error("Lỗi khi lấy dữ liệu cho lịch:", err);
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+};
+// THÊM VÀO CUỐI FILE: backend/controllers/statisticsController.js
+
+// Lấy các số liệu thống kê chính (tổng thu, tổng chi, dòng tiền)
+exports.getSummaryStats = async (req, res) => {
+  try {
+    const userId = new mongoose.Types.ObjectId(req.user.id);
+    const { startDate, endDate } = req.query;
+
+    // Kiểm tra tính hợp lệ của ngày tháng
+    if (!startDate || !endDate || !new Date(startDate) || !new Date(endDate)) {
+      return res
+        .status(400)
+        .json({ message: "Ngày bắt đầu và kết thúc không hợp lệ." });
+    }
+
+    const matchStage = {
+      userId: userId,
+      date: {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      },
+    };
+
+    const result = await Transaction.aggregate([
+      { $match: matchStage },
+      {
+        $group: {
+          _id: "$type", // Nhóm theo loại 'THUNHAP' hoặc 'CHITIEU'
+          totalAmount: { $sum: "$amount" },
+        },
+      },
+    ]);
+
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    result.forEach((item) => {
+      if (item._id === "THUNHAP") {
+        totalIncome = item.totalAmount;
+      } else if (item._id === "CHITIEU") {
+        totalExpense = item.totalAmount;
+      }
+    });
+
+    res.status(200).json({
+      totalIncome,
+      totalExpense,
+      cashFlow: totalIncome - totalExpense,
+    });
+  } catch (err) {
+    console.error("Lỗi khi lấy thống kê tóm tắt:", err);
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 };

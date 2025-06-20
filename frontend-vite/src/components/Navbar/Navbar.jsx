@@ -12,7 +12,7 @@ const Navbar = () => {
     { name: "Mục tiêu", path: "/GoalsPage" },
     // { name: "Ngân sách", path: "/budgets" },
     { name: "Giao dịch", path: "/TransactionsPage" },
-    { name: "Thống kê", path: "/statistics" },
+    { name: "Thống kê", path: "/StatisticsPage" },
     { name: "Cá nhân", path: "/PersonInfo" },
   ];
 

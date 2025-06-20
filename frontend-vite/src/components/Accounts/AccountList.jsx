@@ -8,6 +8,7 @@ import {
   faLandmark,
   faEdit,
   faTrashAlt,
+  faExclamationTriangle,
 } from "@fortawesome/free-solid-svg-icons";
 import ConfirmDialog from "../Common/ConfirmDialog";
 
@@ -39,8 +40,25 @@ const AccountItem = ({ account, onEdit, onDeleteRequest }) => {
       ? ((account.monthlyExpense || 0) / totalActivity) * 100
       : 0;
 
+  // ✅ Nếu số dư âm, thêm class và badge cảnh báo
+  const isNegative = account.balance < 0;
+
   return (
-    <div className={styles.accountItem}>
+    <div
+      className={`${styles.accountItem} ${
+        isNegative ? styles.negativeBalance : ""
+      }`}
+    >
+      {/* Badge cảnh báo số dư âm */}
+      {isNegative && (
+        <div className={styles.negativeBadge} title="Số dư âm!">
+          <FontAwesomeIcon
+            icon={faExclamationTriangle}
+            className={styles.negativeIcon}
+          />
+          <span>Số dư âm</span>
+        </div>
+      )}
       {/* Cột 1: Thông tin tài khoản */}
       <div className={styles.accountInfo}>
         <FontAwesomeIcon
@@ -62,7 +80,12 @@ const AccountItem = ({ account, onEdit, onDeleteRequest }) => {
 
       {/* ✅ Cột 2: Thanh hoạt động và số liệu thu/chi */}
       <div className={styles.activitySection}>
-        <div className={styles.activityBar}>
+        <div
+          className={styles.activityBar}
+          title={`Tổng thu: +${formatCurrency(
+            account.monthlyIncome || 0
+          )} | Tổng chi: -${formatCurrency(account.monthlyExpense || 0)}`}
+        >
           <div
             className={styles.incomeBar}
             style={{ width: `${incomePercentage}%` }}

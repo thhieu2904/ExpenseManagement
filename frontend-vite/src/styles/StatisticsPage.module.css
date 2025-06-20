@@ -1,0 +1,226 @@
+/* TẠO FILE MỚI: frontend-vite/src/styles/StatisticsPage.module.css */
+
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f4f6f8;
+}
+
+.pageWrapper {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex-grow: 1;
+}
+
+.headerSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.pageTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+}
+
+.statCard {
+  padding: 20px 24px;
+  border-radius: 12px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.cardTitle {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+
+.cardAmount {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+.income {
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+} /* Xanh lá cây dịu */
+.expense {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+} /* Đỏ dịu */
+.cashFlow {
+  background: linear-gradient(135deg, #2196f3, #1976d2);
+} /* Xanh dương dịu */
+
+.analysisSection {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px; /* Giảm padding một chút */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 2px solid #e9ecef;
+  margin-bottom: 20px;
+}
+
+.tabs button {
+  padding: 12px 20px;
+  border: none;
+  background: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #6c757d;
+  position: relative;
+  bottom: -2px;
+  transition: color 0.2s ease;
+}
+
+.tabs .activeTab {
+  color: #3f51b5;
+  border-bottom: 2px solid #3f51b5;
+}
+
+.tabContent {
+  min-height: 300px; /* Điều chỉnh độ cao tối thiểu */
+  display: flex;
+  flex-direction: column; /* Sắp xếp dọc */
+  align-items: stretch; /* Kéo giãn các phần tử con theo chiều ngang */
+  justify-content: flex-start; /* Bắt đầu từ trên xuống */
+  padding: 20px; /* Thêm padding bên trong tab content */
+}
+
+.loadingPlaceholder {
+  color: #6c757d;
+  font-size: 1rem;
+  font-style: italic;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #34495e;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.structureChartContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.subTabs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.subTabs button {
+  background: #f8f9fa; /* Màu nền nhạt hơn */
+  border: 1px solid #dee2e6;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.subTabs .activeSubTab {
+  background-color: #007bff; /* Màu xanh dương dịu hơn */
+  color: white;
+  border-color: #007bff;
+}
+
+.subTabs button:hover {
+  background-color: #e9ecef;
+}
+/* THÊM VÀO CUỐI FILE: frontend-vite/src/styles/StatisticsPage.module.css */
+
+.listHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sectionTitle {
+  margin: 0; /* Ghi đè margin mặc định của h2 */
+}
+
+.clearFilterButton {
+  background-color: #eef2ff;
+  color: #4f46e5;
+  border: 1px solid #c7d2fe;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clearFilterButton:hover {
+  background-color: #c7d2fe;
+  color: #4338ca;
+}
+/* THÊM VÀO CUỐI FILE: frontend-vite/src/styles/StatisticsPage.module.css */
+
+.structureLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Chia thành 2 cột bằng nhau */
+  gap: 24px;
+  align-items: flex-start; /* Căn các cột theo đỉnh */
+  width: 100%;
+}
+
+.chartColumn {
+  /* Có thể thêm style riêng nếu cần */
+  position: sticky; /* Giúp biểu đồ đứng yên khi cuộn danh sách dài */
+  top: 20px;
+}
+
+.listColumn {
+  /* Thêm style để giới hạn chiều cao và cho phép cuộn nếu danh sách quá dài */
+  max-height: 450px; /* Chiều cao tối đa bằng với biểu đồ */
+  overflow-y: auto;
+}
+
+/* Responsive cho màn hình nhỏ */
+@media (max-width: 1024px) {
+  .structureLayout {
+    grid-template-columns: 1fr; /* Chuyển về 1 cột */
+  }
+
+  .chartColumn {
+    position: static; /* Bỏ sticky trên mobile */
+  }
+
+  .listColumn {
+    max-height: none; /* Bỏ giới hạn chiều cao trên mobile */
+  }
+}

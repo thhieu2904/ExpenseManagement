@@ -123,9 +123,10 @@ const addFundsToGoal = asyncHandler(async (req, res) => {
   });
   if (!savingsCategory) {
     savingsCategory = await Category.create({
-      name: "Tiết kiệm Mục tiêu",
+      name: "Tiết kiệm cho mục tiêu ",
       type: "CHITIEU", // Đảm bảo type này khớp với schema của bạn
       userId: req.user.id,
+      icon: "fa-piggy-bank",
     });
   }
 
@@ -139,6 +140,8 @@ const addFundsToGoal = asyncHandler(async (req, res) => {
     accountId: accountId,
     categoryId: savingsCategory._id, // Sử dụng ID của category
     note: `Nạp vào mục tiêu tiết kiệm.`, // Thêm note (tùy chọn nhưng nên có)
+    icon: "fa-piggy-bank",
+    goalId: goal._id,
   });
 
   // ... phần cập nhật goal giữ nguyên ...

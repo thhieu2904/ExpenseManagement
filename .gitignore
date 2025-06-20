@@ -26,3 +26,5 @@ yarn-error.log*
 *.zip
 node_modules/
 .cache/
+
+.env

@@ -14,12 +14,26 @@ const formatCurrency = (amount) => {
 };
 
 // --- CategoryItem Component (Không thay đổi) ---
-const CategoryItem = ({ category, onEdit, onDeleteRequest }) => {
+const CategoryItem = ({
+  category,
+  onEdit,
+  onDeleteRequest,
+  selected,
+  onSelect,
+}) => {
   const amountStyle =
     category.type === "THUNHAP" ? styles.incomeAmount : styles.expenseAmount;
 
   return (
-    <div className={styles.categoryItem}>
+    <div
+      className={`${styles.categoryItem} ${selected ? styles.selected : ""}`}
+      onClick={(e) => {
+        // Nếu click vào nút edit/delete thì không gọi onSelect
+        if (e.target.closest("button")) return;
+        if (onSelect) onSelect(category);
+      }}
+      style={{ cursor: "pointer" }}
+    >
       <div className={styles.categoryInfo}>
         <FontAwesomeIcon
           icon={getIconObject(category.icon)}
@@ -34,16 +48,20 @@ const CategoryItem = ({ category, onEdit, onDeleteRequest }) => {
       </div>
       <div className={styles.categoryActions}>
         <button
-          onClick={() => onEdit(category)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(category);
+          }}
           className={`${styles.actionButton} ${styles.editButton}`}
           title="Sửa"
         >
           <FontAwesomeIcon icon={faEdit} />
         </button>
         <button
-          onClick={() =>
-            onDeleteRequest(category._id || category.id, category.name)
-          }
+          onClick={(e) => {
+            e.stopPropagation();
+            onDeleteRequest(category._id || category.id, category.name);
+          }}
           className={`${styles.actionButton} ${styles.deleteButton}`}
           title="Xóa"
         >
@@ -61,13 +79,17 @@ const CategoryList = ({
   error, // Nhận thông báo lỗi
   onEditCategory,
   onDeleteSuccess,
+  activeCategoryId,
 }) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   // State để quản lý lỗi xóa cục bộ
   const [deleteError, setDeleteError] = useState("");
 
-  // --- LOGIC FETCH ĐÃ BỊ XÓA HOÀN TOÀN ---
+  // Tìm category đang active trong list
+  const activeCategory = activeCategoryId
+    ? categories.find((cat) => (cat._id || cat.id) === activeCategoryId)
+    : null;
 
   const requestDeleteCategory = (categoryId, categoryName) => {
     setDeleteError(""); // Reset lỗi xóa mỗi khi mở dialog
@@ -121,14 +143,17 @@ const CategoryList = ({
   return (
     <>
       <div className={styles.categoryListContainer}>
-        <div className={styles.listHeader}>
-          <span className={styles.headerColumnName}>Mục</span>
-          <span className={styles.headerColumnTotalAmount}>Tổng tiền</span>
-          <span className={styles.headerColumnActions}>Hành động</span>
-        </div>
+        <div></div>
 
         {/* Hiển thị lỗi fetch ngay cả khi có dữ liệu cũ */}
         {error && <p className={styles.inlineError}>{error}</p>}
+
+        {/* Hiển thị tên category đang được chọn */}
+        {activeCategory && (
+          <div className={styles.activeCategoryNameDisplay}>
+            Đang chọn: {activeCategory.name}
+          </div>
+        )}
 
         {categories.length === 0 && !isLoading && !error && (
           <p className={styles.noCategoriesMessage}>
@@ -136,15 +161,73 @@ const CategoryList = ({
           </p>
         )}
         {categories.length > 0 && (
-          <div className={styles.listItems}>
-            {categories.map((category) => (
-              <CategoryItem
-                key={category._id || category.id}
-                category={category}
-                onEdit={handleEditCategory}
-                onDeleteRequest={requestDeleteCategory}
-              />
-            ))}
+          <div className={styles.tableScroll}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Mục</th>
+                  <th>Tổng tiền</th>
+                  <th>Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                {categories.map((category, idx) => (
+                  <tr
+                    key={category._id || category.id || idx}
+                    className={`${styles.row} ${
+                      activeCategory &&
+                      (category._id || category.id) === activeCategoryId
+                        ? styles.highlight
+                        : ""
+                    }`}
+                  >
+                    <td>
+                      <FontAwesomeIcon
+                        icon={getIconObject(category.icon)}
+                        className={styles.categoryIcon}
+                      />
+                      <span className={styles.categoryName}>
+                        {category.name}
+                      </span>
+                    </td>
+                    <td
+                      className={
+                        category.type === "THUNHAP"
+                          ? styles.incomeAmount
+                          : styles.expenseAmount
+                      }
+                    >
+                      {formatCurrency(category.totalAmount)}
+                    </td>
+                    <td>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditCategory(category);
+                        }}
+                        className={`${styles.actionButton} ${styles.editButton}`}
+                        title="Sửa"
+                      >
+                        <FontAwesomeIcon icon={faEdit} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          requestDeleteCategory(
+                            category._id || category.id,
+                            category.name
+                          );
+                        }}
+                        className={`${styles.actionButton} ${styles.deleteButton}`}
+                        title="Xóa"
+                      >
+                        <FontAwesomeIcon icon={faTrashAlt} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

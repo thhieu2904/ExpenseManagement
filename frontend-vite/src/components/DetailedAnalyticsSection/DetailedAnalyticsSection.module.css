@@ -36,8 +36,8 @@
 /* CONTAINER CHỨA 2 BIỂU ĐỒ */
 .chartsRow {
   display: flex;
-  flex-wrap: wrap;
   gap: 20px;
+  margin-top: 20px;
 }
 
 .trendChartContainer {
@@ -58,4 +58,26 @@
   .chartsRow {
     flex-direction: column;
   }
+}
+
+/* Thêm CSS cho header mới */
+.headerWithLink {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px; /* Thêm khoảng cách với phần controls bên dưới */
+}
+
+.detailsLink {
+  font-size: 0.9rem;
+  color: var(--primary-color, #007bff);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.detailsLink:hover {
+  color: var(--primary-dark-color, #0056b3);
+  text-decoration: underline;
+  transform: translateX(2px);
 }

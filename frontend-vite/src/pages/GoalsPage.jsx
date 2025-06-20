@@ -1,7 +1,12 @@
 // src/pages/GoalsPage.jsx
 
+// ✅ BỎ: KHÔNG CẦN useState và useEffect cho việc fetch dữ liệu nữa
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+
+// ✅ 1. IMPORT CÁC "SIÊU NĂNG LỰC" TỪ REACT QUERY
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { getGoals, deleteGoal } from "../api/goalService";
 import GoalsList from "../components/Goals/GoalsList";
 import AddEditGoalModal from "../components/Goals/AddEditGoalModal";
 import styles from "../styles/GoalsPage.module.css";
@@ -11,66 +16,58 @@ import Header from "../components/Header/Header";
 import Navbar from "../components/Navbar/Navbar";
 import Footer from "../components/Footer/Footer";
 import AddFundsModal from "../components/Goals/AddFundsModal";
-
-// ✅ 1. IMPORT COMPONENT CONFIRMDIALOG CỦA BẠN
 import ConfirmDialog from "../components/Common/ConfirmDialog";
 
 export default function GoalsPage() {
-  // Các state cũ giữ nguyên
-  const [isAddFundsModalOpen, setIsAddFundsModalOpen] = useState(false);
-  const [goals, setGoals] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // ✅ 2. KHỞI TẠO QUERY CLIENT ĐỂ TƯƠNG TÁC VỚI REACT QUERY
+  const queryClient = useQueryClient();
+
+  // === CÁC STATE CŨ VẪN CẦN CHO VIỆC ĐIỀU KHIỂN UI (MODAL, FORM) ===
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editMode, setEditMode] = useState("add");
-  const [currentGoal, setCurrentGoal] = useState(null);
-  const [userData, setUserData] = useState({ name: "", avatarUrl: null });
-
-  // ✅ 2. THÊM STATE MỚI CHO HỘP THOẠI XÁC NHẬN
+  const [isAddFundsModalOpen, setIsAddFundsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [goalToDelete, setGoalToDelete] = useState(null); // Lưu id của goal sắp xóa
+  const [currentGoal, setCurrentGoal] = useState(null);
+  const [goalToDelete, setGoalToDelete] = useState(null);
+  const [editMode, setEditMode] = useState("add");
+  const [userData, setUserData] = useState({ name: "", avatarUrl: null });
+  // =============================================================
 
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState(null);
-  // Hàm fetchGoals giữ nguyên
-  const fetchGoals = async () => {
-    setIsLoading(true);
-    setError(null);
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setError("Bạn cần đăng nhập để xem mục tiêu.");
-      setIsLoading(false);
-      return;
-    }
-    try {
-      const response = await axios.get("http://localhost:5000/api/goals", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setGoals(response.data);
-    } catch (err) {
-      setError("Không thể tải danh sách mục tiêu. Vui lòng thử lại.");
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // ✅ 3. THAY THẾ TOÀN BỘ LOGIC FETCH CŨ BẰNG `useQuery`
+  // `useQuery` sẽ tự động quản lý `isLoading`, `error`, và `data` cho bạn.
+  const {
+    data: goals = [], // Dùng `data` thay cho state `goals`, đặt giá trị mặc định là []
+    isLoading, // Thay cho state `isLoading`
+    error, // Thay cho state `error`
+  } = useQuery({
+    queryKey: ["goals"], // Đây là "tên định danh" cho dữ liệu này. Rất quan trọng!
+    queryFn: getGoals, // Hàm để fetch dữ liệu. React Query sẽ tự gọi nó.
+    select: (response) => response.data, // Chỉ lấy phần data từ response của axios, giúp component gọn hơn.
+  });
 
-  useEffect(() => {
-    fetchGoals();
-  }, []);
+  // ✅ 4. THAY THẾ LOGIC XÓA BẰNG `useMutation`
+  // `useMutation` dùng cho các hành động thay đổi dữ liệu (POST, PUT, DELETE).
+  const deleteMutation = useMutation({
+    mutationFn: deleteGoal, // Hàm thực hiện hành động xóa.
+    onSuccess: () => {
+      // KHI XÓA THÀNH CÔNG:
+      // Báo cho React Query biết dữ liệu với key "goals" đã cũ và cần được tải lại.
+      // React Query sẽ tự động gọi lại `useQuery` ở trên. KHÔNG CẦN GỌI `fetchGoals()` THỦ CÔNG!
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      handleCloseConfirmDialog(); // Đóng dialog xác nhận
+    },
+  });
 
+  // ✅ 5. BỎ HOÀN TOÀN HÀM `fetchGoals` và `useEffect` GỌI NÓ. CHÚNG KHÔNG CÒN CẦN THIẾT.
+
+  // useEffect để lấy thông tin user vẫn giữ nguyên vì nó là client state, không phải server state
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
         const account = JSON.parse(storedUser);
         setUserData({
-          name:
-            account.username ||
-            account.fullName ||
-            account.name ||
-            "Người dùng",
-          avatarUrl: account.avatarUrl || account.profilePicture || null,
+          name: account.name || "Người dùng",
+          avatarUrl: account.avatarUrl || null,
         });
       } catch (error) {
         console.error(
@@ -81,63 +78,41 @@ export default function GoalsPage() {
     }
   }, []);
 
-  const handleOpenAddFundsModal = (goal) => {
-    setCurrentGoal(goal); // Lưu lại mục tiêu đang được thao tác
-    setIsAddFundsModalOpen(true);
-  };
-
+  // ✅ 6. HÀM NÀY GIỜ CHỈ CẦN LÀM MỚI DỮ LIỆU VÀ ĐÓNG MODAL
   const handleActionSuccess = () => {
-    fetchGoals();
-    setIsModalOpen(false); // Đóng modal thêm/sửa
-    setIsAddFundsModalOpen(false); // Đóng modal nạp tiền
+    queryClient.invalidateQueries({ queryKey: ["goals"] });
+    setIsModalOpen(false);
+    setIsAddFundsModalOpen(false);
   };
 
+  // ✅ 7. HÀM XÁC NHẬN XÓA GIỜ SIÊU ĐƠN GIẢN
+  const handleConfirmDelete = () => {
+    if (!goalToDelete) return;
+    deleteMutation.mutate(goalToDelete); // Chỉ cần gọi hàm mutate!
+  };
+
+  // Các hàm mở/đóng modal khác không thay đổi
   const handleOpenAddModal = () => {
     setEditMode("add");
     setCurrentGoal(null);
     setIsModalOpen(true);
   };
-
   const handleOpenEditModal = (goal) => {
     setEditMode("edit");
     setCurrentGoal(goal);
     setIsModalOpen(true);
   };
-
+  const handleOpenAddFundsModal = (goal) => {
+    setCurrentGoal(goal);
+    setIsAddFundsModalOpen(true);
+  };
   const handleRequestDelete = (goalId) => {
     setGoalToDelete(goalId);
-    setDeleteError(null); // Xóa lỗi cũ trước khi mở dialog
     setIsConfirmOpen(true);
   };
-
-  const handleConfirmDelete = async () => {
-    if (!goalToDelete) return;
-
-    setIsDeleting(true); // Bắt đầu xử lý
-    setDeleteError(null); // Xóa lỗi cũ
-
-    const token = localStorage.getItem("token");
-    try {
-      await axios.delete(`http://localhost:5000/api/goals/${goalToDelete}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchGoals();
-      setIsConfirmOpen(false); // Đóng dialog nếu thành công
-    } catch (err) {
-      console.error("Lỗi khi xóa mục tiêu:", err);
-      // Gán lỗi để hiển thị trong dialog
-      setDeleteError(
-        err.response?.data?.message || "Lỗi không xác định, vui lòng thử lại."
-      );
-    } finally {
-      setIsDeleting(false); // Kết thúc xử lý
-    }
-  };
-
   const handleCloseConfirmDialog = () => {
     setIsConfirmOpen(false);
     setGoalToDelete(null);
-    setDeleteError(null);
   };
 
   return (
@@ -145,8 +120,6 @@ export default function GoalsPage() {
       <Header userName={userData.name} userAvatar={userData.avatarUrl} />
       <Navbar />
       <main className={styles.pageWrapper}>
-        {" "}
-        {/* Dùng main để bọc nội dung chính */}
         <div className={styles.header}>
           <h1 className={styles.pageTitle}>Mục tiêu của tôi</h1>
           <button onClick={handleOpenAddModal} className={styles.addButton}>
@@ -155,14 +128,19 @@ export default function GoalsPage() {
           </button>
         </div>
         <div className={styles.content}>
+          {/* ✅ 8. SỬ DỤNG CÁC TRẠNG THÁI TỪ `useQuery` */}
           {isLoading && (
             <div className={styles.loading}>Đang tải dữ liệu...</div>
           )}
-          {error && <div className={styles.error}>{error}</div>}
+          {error && (
+            <div className={styles.error}>
+              {"Đã có lỗi xảy ra: " + error.message}
+            </div>
+          )}
 
           {!isLoading && !error && (
             <GoalsList
-              goals={goals}
+              goals={goals} // `goals` bây giờ đến từ `useQuery`
               onEdit={handleOpenEditModal}
               onDelete={handleRequestDelete}
               onAddFunds={handleOpenAddFundsModal}
@@ -171,7 +149,7 @@ export default function GoalsPage() {
         </div>
       </main>
 
-      {/* Các modal vẫn nằm ngoài main để có thể overlay toàn bộ trang */}
+      {/* Các Modal vẫn giữ nguyên, nhưng giờ chúng sẽ gọi `handleActionSuccess` để tự động cập nhật list */}
       {isModalOpen && (
         <AddEditGoalModal
           isOpen={isModalOpen}
@@ -185,12 +163,15 @@ export default function GoalsPage() {
       {isConfirmOpen && (
         <ConfirmDialog
           isOpen={isConfirmOpen}
-          onClose={handleCloseConfirmDialog}
+          onClose={() =>
+            deleteMutation.isPending ? null : handleCloseConfirmDialog()
+          }
           onConfirm={handleConfirmDelete}
           title="Xác nhận Xóa Mục tiêu"
           message="Bạn có chắc chắn muốn xóa mục tiêu này? Hành động này không thể hoàn tác."
-          isProcessing={isDeleting}
-          errorMessage={deleteError}
+          // ✅ 9. SỬ DỤNG TRẠNG THÁI LOADING VÀ ERROR TỪ `useMutation`
+          isProcessing={deleteMutation.isPending}
+          errorMessage={deleteMutation.error?.response?.data?.message}
           confirmText="Xóa"
         />
       )}

@@ -206,3 +206,94 @@
 .dropdownMenu .deleteButton:hover {
   background-color: #fee2e2;
 }
+
+.completed {
+  background: linear-gradient(120deg, #eafff2 60%, #fffbe0 100%);
+  border: 2px solid #1abc9c;
+  position: relative;
+  box-shadow: 0 0 10px 1px #b6f5c6;
+  animation: glow 1.5s infinite alternate;
+}
+@keyframes glow {
+  from {
+    box-shadow: 0 0 6px 0 #b6f5c6;
+  }
+  to {
+    box-shadow: 0 0 14px 2px #1abc9c;
+  }
+}
+.completedBanner {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #fffbe0;
+  color: #e67e22;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 16px;
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  z-index: 2;
+  box-shadow: 0 2px 8px #f9e79f80;
+  font-size: 0.92rem;
+  letter-spacing: 0.2px;
+}
+.trophyIcon {
+  color: #f1c40f;
+  font-size: 0.95em;
+}
+.congratsText {
+  margin-top: 24px;
+  color: #16a085;
+  font-size: 1.18em;
+  text-align: center;
+  font-weight: 700;
+  animation: pop 0.7s;
+  letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  padding: 6px 0;
+  box-shadow: 0 1px 6px #b6f5c680;
+  display: inline-block;
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  80% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.overdue {
+  border: 2px solid #ff7675;
+  background: linear-gradient(120deg, #fff0f0 60%, #fffbe0 100%);
+  position: relative;
+}
+.overdueBanner {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffeaea;
+  color: #d63031;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 16px;
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  z-index: 2;
+  box-shadow: 0 2px 8px #ff767580;
+  font-size: 0.92rem;
+  letter-spacing: 0.2px;
+}
+.overdueIcon {
+  color: #d63031;
+  font-size: 1em;
+}

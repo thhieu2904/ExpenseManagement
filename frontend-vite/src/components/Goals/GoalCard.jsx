@@ -11,6 +11,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
+import { FaTrophy, FaExclamationCircle } from "react-icons/fa";
 
 // ... các hàm formatCurrency và formatDeadline giữ nguyên ...
 const formatCurrency = (amount) => {
@@ -41,7 +42,9 @@ export default function GoalCard({ goal, onEdit, onDelete, onAddFunds }) {
   const progress =
     goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
   const progressPercentage = Math.min(progress, 100).toFixed(0);
-  const isCompleted = goal.status === "completed" || progress >= 100;
+  const isCompleted = goal.currentAmount >= goal.targetAmount;
+  const isOverdue =
+    goal.deadline && new Date(goal.deadline) < new Date() && !isCompleted;
 
   // ✅ THÊM LOGIC ĐỂ ĐÓNG MENU KHI CLICK RA NGOÀI
   useEffect(() => {
@@ -60,8 +63,22 @@ export default function GoalCard({ goal, onEdit, onDelete, onAddFunds }) {
 
   return (
     <div
-      className={`${styles.card} ${isCompleted ? styles.completedCard : ""}`}
+      className={`${styles.card} ${isCompleted ? styles.completed : ""} ${
+        isOverdue ? styles.overdue : ""
+      }`}
     >
+      {isCompleted && (
+        <div className={styles.completedBanner}>
+          <FaTrophy className={styles.trophyIcon} />
+          <span>Đã hoàn thành!</span>
+        </div>
+      )}
+      {isOverdue && (
+        <div className={styles.overdueBanner}>
+          <FaExclamationCircle className={styles.overdueIcon} />
+          <span>Đã quá hạn</span>
+        </div>
+      )}
       <div className={styles.cardHeader}>
         <div className={styles.iconWrapper}>
           <span className={styles.icon}>{goal.icon || "🎯"}</span>
@@ -139,6 +156,11 @@ export default function GoalCard({ goal, onEdit, onDelete, onAddFunds }) {
           </button>
         )}
       </div>
+      {isCompleted && (
+        <div className={styles.congratsText}>
+          🎉 Chúc mừng bạn đã đạt mục tiêu! 🎉
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,5 @@
 // src/components/DetailedAnalyticsSection/IncomeExpenseTrendChart.jsx
-import React, { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import React, { useCallback } from "react";
 import {
   LineChart,
   Line,
@@ -20,76 +19,61 @@ const formatCurrency = (value) => {
   return `${(value / 1000000).toLocaleString("vi-VN")}tr ₫`;
 };
 
-// Component giờ chỉ nhận props và hiển thị biểu đồ
-const IncomeExpenseTrendChart = ({ period, currentDate }) => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("Vui lòng đăng nhập.");
-
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth() + 1;
-      let apiUrl = "http://localhost:5000/api/statistics/trend";
-
-      if (period === "month") {
-        apiUrl += `?period=day&year=${year}&month=${month}`;
-      } else if (period === "year") {
-        apiUrl += `?period=month&year=${year}`;
-      } else if (period === "week") {
-        apiUrl += `?period=day&startDate=${
-          currentDate.toISOString().split("T")[0]
-        }&days=7`;
+// Component giờ chỉ là một "dumb component", nhận dữ liệu và hiển thị
+const IncomeExpenseTrendChart = ({
+  data,
+  period,
+  loading,
+  error,
+  categoryName,
+  categoryId,
+}) => {
+  // useCallback để không phải tính toán lại mỗi lần render, trừ khi data hoặc period thay đổi
+  const formatDataForChart = useCallback((rawData, period) => {
+    if (!rawData) return [];
+    return rawData.map((item) => {
+      const dateParts = item.name.split("-");
+      let displayName;
+      // Dựa trên period được truyền từ component cha để định dạng trục X
+      if (period === "year") {
+        displayName = `T${parseInt(dateParts[1], 10)}`;
+      } else {
+        displayName = dateParts[2];
       }
-
-      const response = await axios.get(apiUrl, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      let formattedData = response.data.map((item) => ({
-        name:
-          period === "year"
-            ? `T${parseInt(item.name.split("-")[1], 10)}`
-            : item.name.split("-")[2],
+      return {
+        name: displayName,
         income: item.income || 0,
         expense: item.expense || 0,
-      }));
+      };
+    });
+  }, []);
 
-      setData(formattedData);
-    } catch (err) {
-      setError("Không thể tải dữ liệu xu hướng.");
-    } finally {
-      setLoading(false);
+  const chartData = formatDataForChart(data, period);
+
+  const getChartTitle = () => {
+    if (categoryName) {
+      return `Xu hướng chi tiêu cho "${categoryName}"`;
     }
-  }, [period, currentDate]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    return `Xu hướng thu nhập và chi tiêu ${
+      period === "year" ? "theo tháng" : "theo ngày"
+    }`;
+  };
 
   return (
     <div className={styles.chartContainer}>
-      <div className={styles.chartTitle}>
-        Xu hướng thu nhập và chi tiêu{" "}
-        {period === "year" ? "theo tháng" : "theo ngày"}
-      </div>
+      <div className={styles.chartTitle}>{getChartTitle()}</div>
 
       {loading && <p className={styles.loadingText}>Đang tải biểu đồ...</p>}
       {error && <p className={styles.errorText}>{error}</p>}
-      {!loading && !error && data.length === 0 && (
+      {!loading && !error && chartData.length === 0 && (
         <p className={styles.noDataText}>
           Không có dữ liệu cho khoảng thời gian này.
         </p>
       )}
-      {!loading && !error && data.length > 0 && (
+      {!loading && !error && chartData.length > 0 && (
         <ResponsiveContainer width="100%" height={350}>
           <LineChart
-            data={data}
+            data={chartData}
             margin={{ top: 5, right: 20, left: 30, bottom: 20 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
@@ -120,15 +104,17 @@ const IncomeExpenseTrendChart = ({ period, currentDate }) => {
               ]}
             />
             <Legend wrapperStyle={{ paddingTop: "20px" }} />
-            <Line
-              type="monotone"
-              dataKey="income"
-              name="Thu nhập"
-              stroke="#4CAF50"
-              strokeWidth={2}
-              dot={{ r: 4 }}
-              activeDot={{ r: 6 }}
-            />
+            {!categoryId && (
+              <Line
+                type="monotone"
+                dataKey="income"
+                name="Thu nhập"
+                stroke="#4CAF50"
+                strokeWidth={2}
+                dot={{ r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+            )}
             <Line
               type="monotone"
               dataKey="expense"

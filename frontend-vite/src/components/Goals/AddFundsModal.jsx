@@ -1,12 +1,14 @@
 // src/components/Goals/AddFundsModal.jsx
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { getAccounts, addFundsToGoal } from "../../api/goalService";
 import styles from "./AddFundsModal.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-
 import Select from "react-select";
+
+// Component CustomOption không thay đổi
 const CustomOption = (props) => {
   const { data, innerProps, innerRef, isFocused } = props;
   return (
@@ -14,9 +16,7 @@ const CustomOption = (props) => {
       ref={innerRef}
       {...innerProps}
       className={styles.customOption}
-      style={{
-        backgroundColor: isFocused ? "#f3f4f6" : "transparent",
-      }}
+      style={{ backgroundColor: isFocused ? "#f3f4f6" : "transparent" }}
     >
       <span className={styles.optionName}>{data.label}</span>
       <span className={styles.optionBalance}>
@@ -33,116 +33,66 @@ export default function AddFundsModal({
   goalData,
 }) {
   const [amount, setAmount] = useState("");
-  const [accountId, setAccountId] = useState("");
-  const [accounts, setAccounts] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [accountId, setAccountId] = useState(null);
+  const [validationError, setValidationError] = useState("");
+
+  const { data: accountsData = [], isLoading: isLoadingAccounts } = useQuery({
+    queryKey: ["accounts"],
+    queryFn: getAccounts,
+    select: (res) => res.data,
+    enabled: isOpen,
+  });
+
+  const addFundsMutation = useMutation({
+    mutationFn: (variables) =>
+      addFundsToGoal(variables.goalId, variables.payload),
+    onSuccess: () => {
+      onSubmitSuccess();
+    },
+  });
 
   useEffect(() => {
-    if (!isOpen) return;
-
-    const fetchAccountsData = async () => {
-      setIsLoading(true); // Bắt đầu loading khi fetch
-      // Reset các state quan trọng khi modal mở
-      setError("");
+    if (isOpen) {
       setAmount("");
-      // Không reset accountId ở đây, sẽ được set sau khi fetch
-
-      const token = localStorage.getItem("token");
-      try {
-        const res = await axios.get("http://localhost:5000/api/accounts", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const fetchedAccounts = res.data || []; // Đảm bảo fetchedAccounts là mảng
-        setAccounts(fetchedAccounts);
-        if (fetchedAccounts.length > 0) {
-          setAccountId(fetchedAccounts[0].id); // Sử dụng .id thay vì ._id và gán tài khoản đầu tiên làm mặc định
-        } else {
-          setAccountId(""); // Nếu không có tài khoản nào, set accountId rỗng
-        }
-      } catch (err) {
-        setError("Không thể tải danh sách tài khoản.");
-        setAccounts([]); // Đảm bảo accounts là mảng rỗng khi có lỗi
-        setAccountId(""); // Reset accountId khi có lỗi
-      } finally {
-        setIsLoading(false); // Kết thúc loading
-      }
-    };
-
-    fetchAccountsData();
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return; // Chỉ validate khi modal đang mở
-
-    const insufficientFundsError =
-      "Số tiền nạp lớn hơn số dư hiện có trong tài khoản.";
-    const numericAmount = parseFloat(amount);
-
-    // Điều kiện để thực hiện kiểm tra số dư
-    if (accountId && accounts && accounts.length > 0 && numericAmount > 0) {
-      const selectedAccount = accounts.find((acc) => acc.id === accountId); // Sử dụng .id
-      if (selectedAccount) {
-        if (numericAmount > selectedAccount.balance) {
-          setError(insufficientFundsError); // Set lỗi cụ thể
-        } else {
-          // Số tiền hợp lệ. Nếu lỗi hiện tại là lỗi không đủ tiền thì xóa nó.
-          if (error === insufficientFundsError) {
-            setError("");
-          }
-        }
-      } else {
-        // Không tìm thấy tài khoản đã chọn (trường hợp hiếm)
-        if (error === insufficientFundsError) {
-          setError("");
-        }
+      setValidationError("");
+      if (accountsData.length > 0 && !accountId) {
+        setAccountId(accountsData[0].id);
       }
     } else {
-      // Các điều kiện kiểm tra số dư chưa được đáp ứng (chưa nhập số tiền, chưa chọn tài khoản,...)
-      // Nếu lỗi hiện tại là lỗi không đủ tiền thì xóa nó.
-      if (error === insufficientFundsError) {
-        setError("");
-      }
+      setAccountId(null);
     }
-    // Phụ thuộc vào amount, accountId, accounts để kiểm tra lại khi chúng thay đổi.
-    // Phụ thuộc `error` để có thể xóa lỗi một cách có điều kiện.
-    // Phụ thuộc `isOpen` để đảm bảo không chạy khi modal đóng.
-  }, [amount, accountId, accounts, isOpen, error]);
+  }, [isOpen, accountsData]);
 
-  const handleSubmit = async (e) => {
+  useEffect(() => {
+    const insufficientFundsError =
+      "Số tiền nạp lớn hơn số dư hiện có trong tài khoản.";
+    if (!amount || !accountId || !accountsData) {
+      setValidationError("");
+      return;
+    }
+    const selectedAccount = accountsData.find((acc) => acc.id === accountId);
+    if (selectedAccount && parseFloat(amount) > selectedAccount.balance) {
+      setValidationError(insufficientFundsError);
+    } else {
+      setValidationError("");
+    }
+  }, [amount, accountId, accountsData]);
+
+  const handleSubmit = (e) => {
     e.preventDefault();
+    if (validationError || addFundsMutation.isPending) return;
 
-    // Kiểm tra lỗi validation "Số tiền nạp lớn hơn số dư..." trước
-    if (error === "Số tiền nạp lớn hơn số dư hiện có trong tài khoản.") {
-      return;
-    }
-
-    // Check các trường hợp cơ bản khác
     if (!amount || parseFloat(amount) <= 0 || !accountId) {
-      setError("Vui lòng nhập số tiền và chọn tài khoản.");
+      setValidationError("Vui lòng nhập số tiền và chọn tài khoản.");
       return;
     }
 
-    setIsLoading(true);
     const payload = {
       amount: parseFloat(amount),
       accountId: accountId,
+      icon: "fa-piggy-bank",
     };
-    const token = localStorage.getItem("token");
-
-    try {
-      await axios.post(
-        `http://localhost:5000/api/goals/${goalData._id}/add-funds`,
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      onSubmitSuccess();
-      onClose();
-    } catch (apiError) {
-      setError(apiError.response?.data?.message || "Lỗi khi nạp tiền.");
-    } finally {
-      setIsLoading(false);
-    }
+    addFundsMutation.mutate({ goalId: goalData._id, payload });
   };
 
   const handleAmountChange = (e) => {
@@ -155,12 +105,14 @@ export default function AddFundsModal({
   const displayAmount = amount
     ? parseInt(amount, 10).toLocaleString("vi-VN")
     : "";
-
-  const accountOptions = accounts.map((acc) => ({
-    value: acc.id, // Sử dụng .id
+  const accountOptions = accountsData.map((acc) => ({
+    value: acc.id,
     label: acc.name,
     balance: acc.balance,
   }));
+
+  const displayError =
+    addFundsMutation.error?.response?.data?.message || validationError;
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -169,11 +121,10 @@ export default function AddFundsModal({
           <h2 className={styles.modalTitle}>Nạp tiền cho mục tiêu</h2>
           <p className={styles.modalSubtitle}>"{goalData.name}"</p>
         </div>
-
         <form onSubmit={handleSubmit} className={styles.form}>
-          {error && <p className={styles.errorMessage}>{error}</p>}
-
-          {/* ✅ ĐÂY LÀ PHẦN BỊ THIẾU TRONG FILE CỦA BẠN */}
+          {displayError && (
+            <p className={styles.errorMessage}>{displayError}</p>
+          )}
           <div className={styles.formGroup}>
             <label htmlFor="fund-amount" className={styles.formLabel}>
               Số tiền cần nạp <span className={styles.requiredStar}>*</span>
@@ -193,8 +144,6 @@ export default function AddFundsModal({
               <span className={styles.currencySymbol}>₫</span>
             </div>
           </div>
-          {/* KẾT THÚC PHẦN BỊ THIẾU */}
-
           <div className={styles.formGroup}>
             <label htmlFor="account-source" className={styles.formLabel}>
               Từ tài khoản <span className={styles.requiredStar}>*</span>
@@ -205,6 +154,7 @@ export default function AddFundsModal({
               value={accountOptions.find((opt) => opt.value === accountId)}
               onChange={(selectedOption) => setAccountId(selectedOption.value)}
               components={{ Option: CustomOption }}
+              // ✅ BƯỚC SỬA LỖI: PHỤC HỒI LẠI ĐẦY ĐỦ NỘI DUNG CHO `styles`
               styles={{
                 control: (base) => ({
                   ...base,
@@ -220,6 +170,7 @@ export default function AddFundsModal({
                   alignItems: "center",
                 }),
               }}
+              // ✅ BƯỚC SỬA LỖI: PHỤC HỒI LẠI ĐẦY ĐỦ NỘI DUNG CHO `getOptionLabel`
               getOptionLabel={(option) => (
                 <div className={styles.selectedOption}>
                   <span className={styles.optionName}>{option.label}</span>
@@ -228,8 +179,13 @@ export default function AddFundsModal({
                   </span>
                 </div>
               )}
-              isDisabled={isLoading || accounts.length === 0}
-              placeholder="Chọn tài khoản..."
+              isLoading={isLoadingAccounts}
+              isDisabled={addFundsMutation.isPending}
+              placeholder={
+                isLoadingAccounts
+                  ? "Đang tải tài khoản..."
+                  : "Chọn tài khoản..."
+              }
               noOptionsMessage={() => "Không có tài khoản"}
             />
           </div>
@@ -238,16 +194,20 @@ export default function AddFundsModal({
               type="button"
               onClick={onClose}
               className={`${styles.formButton} ${styles.cancelButton}`}
-              disabled={isLoading}
+              disabled={addFundsMutation.isPending}
             >
               Hủy
             </button>
             <button
               type="submit"
               className={`${styles.formButton} ${styles.submitButton}`}
-              disabled={isLoading || !!error} // Giữ nguyên logic disable này
+              disabled={
+                addFundsMutation.isPending ||
+                !!validationError ||
+                isLoadingAccounts
+              }
             >
-              {isLoading ? (
+              {addFundsMutation.isPending ? (
                 <FontAwesomeIcon icon={faSpinner} spin />
               ) : (
                 "Xác nhận"

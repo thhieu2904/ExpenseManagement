@@ -21,6 +21,8 @@ const CategoriesPage = () => {
   const [editingCategory, setEditingCategory] = useState(null);
   const [period, setPeriod] = useState("month");
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [activePieIndex, setActivePieIndex] = useState(null);
+  const [activeCategoryId, setActiveCategoryId] = useState(null);
 
   // --- STATE QUÄN LÝ DỮ LIỆU TẬP TRUNG ---
   const [categoriesData, setCategoriesData] = useState([]);
@@ -121,6 +123,19 @@ const CategoriesPage = () => {
     setRefreshTrigger((prev) => prev + 1);
   };
 
+  // Handler khi chọn slice trên PieChart
+  const handleActiveCategoryChange = (categoryId) => {
+    setActiveCategoryId(categoryId);
+    if (categoryId) {
+      const idx = chartData.findIndex(
+        (cat) => cat._id === categoryId || cat.id === categoryId
+      );
+      setActivePieIndex(idx);
+    } else {
+      setActivePieIndex(null);
+    }
+  };
+
   // --- ✅ THAY ĐỔI 1: XỬ LÝ VÀ CHUẨN BỊ DỮ LIỆU TRƯỚC KHI RENDER ---
 
   // Lọc dữ liệu cho CategoryList dựa trên tab đang active
@@ -164,13 +179,14 @@ const CategoriesPage = () => {
           <div className={styles.contentRow}>
             {/* Cột 1: Biểu đồ */}
             <div className={styles.chartContainer}>
-              {/* ✅ SỬA 3: XÓA CÁC PROPS BỘ LỌC KHÔNG CẦN THIẾT KHỎI BIỂU ĐỒ */}
               <CategoryAnalysisChart
                 categoryType={activeType}
                 data={chartData}
                 total={chartTotal}
                 loading={isLoading}
                 error={error}
+                onActiveCategoryChange={handleActiveCategoryChange}
+                activeIndex={activePieIndex}
               />
             </div>
 
@@ -182,6 +198,7 @@ const CategoriesPage = () => {
                 categories={listData}
                 isLoading={isLoading}
                 error={error}
+                activeCategoryId={activeCategoryId}
               />
             </div>
           </div>

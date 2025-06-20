@@ -2,8 +2,11 @@
 import React from "react";
 import styles from "./TotalBalanceDisplay.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import {
+  faSpinner,
+  faExclamationTriangle,
+} from "@fortawesome/free-solid-svg-icons";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
 // ... các hàm formatCurrency, isColorLight, renderCustomizedLabel không đổi ...
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#AF19FF"];
@@ -34,7 +37,7 @@ const renderCustomizedLabel = ({
   percent,
   fill,
 }) => {
-  if (percent * 100 < 5) {
+  if (percent * 100 < 1) {
     return null;
   }
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
@@ -96,7 +99,17 @@ const TotalBalanceDisplay = ({ accounts, isLoading }) => {
       <h3 className={styles.title}>Tổng Quan Nguồn Tiền</h3>
 
       {/* Hiển thị tổng số dư ròng */}
-      <div className={styles.totalAmount}>
+      <div
+        className={`${styles.totalAmount} ${
+          totalNetBalance < 0 ? styles.negativeTotal : ""
+        }`}
+      >
+        {totalNetBalance < 0 && (
+          <FontAwesomeIcon
+            icon={faExclamationTriangle}
+            style={{ color: "#e74c3c", marginRight: 6 }}
+          />
+        )}
         {formatCurrency(totalNetBalance)}
       </div>
       <p className={styles.totalLabel}>Tổng số dư</p>
@@ -105,7 +118,7 @@ const TotalBalanceDisplay = ({ accounts, isLoading }) => {
         <ResponsiveContainer width="100%" height={200}>
           <PieChart>
             <Pie
-              data={chartData} // <-- Dữ liệu đã được tính toán lại
+              data={chartData}
               cx="50%"
               cy="50%"
               innerRadius={60}
@@ -116,6 +129,7 @@ const TotalBalanceDisplay = ({ accounts, isLoading }) => {
               nameKey="name"
               labelLine={false}
               label={renderCustomizedLabel}
+              isAnimationActive={true}
             >
               {chartData.map((entry, index) => (
                 <Cell
@@ -124,34 +138,49 @@ const TotalBalanceDisplay = ({ accounts, isLoading }) => {
                 />
               ))}
             </Pie>
+            <Tooltip
+              formatter={(value, name, props) => [
+                `${value.toLocaleString("vi-VN")} ₫`,
+                props.payload.name,
+              ]}
+              contentStyle={{
+                borderRadius: 12,
+                boxShadow: "0 2px 12px #0001",
+                fontWeight: 600,
+                fontSize: 14,
+              }}
+            />
           </PieChart>
         </ResponsiveContainer>
       </div>
 
       <div className={styles.legendSection}>
         <ul className={styles.legendList}>
-          {chartData.map(
-            (
-              entry,
-              index // <-- Dùng chartData mới
-            ) => (
-              <li key={`item-${index}`} className={styles.legendItem}>
-                <span
-                  className={styles.legendIcon}
-                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                />
-                <div className={styles.legendInfo}>
-                  <span className={styles.legendText}>{entry.name}</span>
-                  <span className={styles.legendPercent}>
-                    {`(${(entry.percent * 100).toFixed(1)}%)`}
-                  </span>
-                </div>
-                <span className={styles.legendValue}>
-                  {formatCurrency(entry.balance)}
+          {chartData.map((entry, index) => (
+            <li
+              key={`item-${index}`}
+              className={styles.legendItem}
+              style={{
+                backgroundColor: "#fff",
+                borderRadius: 8,
+                transition: "background 0.2s",
+              }}
+            >
+              <span
+                className={styles.legendIcon}
+                style={{ backgroundColor: COLORS[index % COLORS.length] }}
+              />
+              <div className={styles.legendInfo}>
+                <span className={styles.legendText}>{entry.name}</span>
+                <span className={styles.legendPercent}>
+                  {`(${(entry.percent * 100).toFixed(1)}%)`}
                 </span>
-              </li>
-            )
-          )}
+              </div>
+              <span className={styles.legendValue}>
+                {formatCurrency(entry.balance)}
+              </span>
+            </li>
+          ))}
         </ul>
       </div>
     </div>

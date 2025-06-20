@@ -1,19 +1,19 @@
 // Mở và THAY THẾ file: frontend-vite/src/pages/HomePage.jsx
 
 import React, { useState, useEffect } from "react";
-import axios from "axios"; // Import axios
 import Header from "../components/Header/Header";
 import Navbar from "../components/Navbar/Navbar";
 import StatsOverview from "../components/StatsOverview/StatsOverview";
 import DetailedAnalyticsSection from "../components/DetailedAnalyticsSection/DetailedAnalyticsSection";
 import RecentTransactions from "../components/RecentTransactions/RecentTransactions";
 import Footer from "../components/Footer/Footer";
+import { getStatsOverview } from "../api/homePageService";
 
 const HomePage = () => {
   // State cho thông tin người dùng
   const [userData, setUserData] = useState({ name: "", avatarUrl: null });
 
-  // ✅ BƯỚC 1: Thêm state để lưu dữ liệu cho StatsOverview
+  // State cho StatsOverview
   const [statsData, setStatsData] = useState(null);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
 
@@ -40,23 +40,17 @@ const HomePage = () => {
     }
   }, []);
 
-  // ✅ BƯỚC 2: Thêm useEffect để fetch dữ liệu cho StatsOverview
+  // Fetch dữ liệu cho StatsOverview
   useEffect(() => {
     const fetchStats = async () => {
       setIsLoadingStats(true);
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          // Xử lý trường hợp không có token
           setIsLoadingStats(false);
           return;
         }
-
-        // API này sẽ tự động lấy tháng/năm hiện tại ở backend
-        const response = await axios.get(
-          "http://localhost:5000/api/statistics/overview",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const response = await getStatsOverview(token);
         setStatsData(response.data);
       } catch (err) {
         console.error("Lỗi khi tải dữ liệu tổng quan cho HomePage:", err);
@@ -64,19 +58,18 @@ const HomePage = () => {
         setIsLoadingStats(false);
       }
     };
-
     fetchStats();
-  }, []); // Mảng rỗng để chỉ chạy một lần
+  }, []);
 
   return (
     <div>
       <Header userName={userData.name} userAvatar={userData.avatarUrl} />
       <Navbar />
       <main style={{ padding: "20px" }}>
-        {/* ✅ BƯỚC 3: Truyền props xuống cho StatsOverview */}
         <StatsOverview stats={statsData} loading={isLoadingStats} />
 
         <DetailedAnalyticsSection />
+
         <RecentTransactions />
       </main>
       <Footer />

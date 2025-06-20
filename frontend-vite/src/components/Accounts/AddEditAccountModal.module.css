@@ -38,10 +38,14 @@
   flex-direction: column;
   transform: scale(0.95);
   opacity: 0;
-  animation: slideInModal 0.3s ease-out forwards;
+  animation: scaleInModal 0.3s ease-out forwards;
 }
 
-@keyframes slideInModal {
+@keyframes scaleInModal {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
   to {
     transform: scale(1);
     opacity: 1;
@@ -81,8 +85,8 @@
 }
 
 .closeButton:hover {
-  background-color: #f0f0f0;
-  color: #111827;
+  background-color: #f3f4f6;
+  color: #e74c3c;
 }
 
 /* === Form Styles === */
@@ -289,4 +293,11 @@
   text-align: center;
   font-weight: 500;
   font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .modalContent {
+    max-width: 98vw;
+    padding: 0;
+  }
 }

@@ -101,7 +101,6 @@ const TransactionItem = forwardRef(
           {formatCurrency(amount)}
         </td>
         <td data-label="Hành động" className={styles.actionsCell}>
-          {/* ✅ Các nút bây giờ gọi hàm mới */}
           <button
             onClick={handleEdit}
             className={`${styles.actionButton} ${styles.editButton}`}

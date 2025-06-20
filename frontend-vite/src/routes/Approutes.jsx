@@ -8,6 +8,7 @@ import CategoriesPage from "../pages/CategoriesPage";
 import AccountPage from "../pages/AccountPage";
 import TransactionsPage from "../pages/TransactionsPage";
 import GoalsPage from "../pages/GoalsPage";
+import StatisticsPage from "../pages/StatisticsPage";
 export default function AppRoutes() {
   return (
     <Routes>
@@ -19,6 +20,7 @@ export default function AppRoutes() {
       <Route path="/AccountPage" element={<AccountPage />} />
       <Route path="/TransactionsPage" element={<TransactionsPage />} />
       <Route path="/GoalsPage" element={<GoalsPage />} />
+      <Route path="/StatisticsPage" element={<StatisticsPage />} />
     </Routes>
   );
 }

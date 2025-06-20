@@ -15,5 +15,6 @@ router.get(
   verifyToken,
   statisticsController.getMonthlyTransactionsForCalendar
 );
+router.get("/summary", verifyToken, statisticsController.getSummaryStats);
 
 module.exports = router;
