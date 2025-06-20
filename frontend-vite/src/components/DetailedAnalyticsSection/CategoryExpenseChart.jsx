@@ -1,6 +1,6 @@
-// THAY THẾ TOÀN BỘ FILE: frontend-vite/src/components/DetailedAnalyticsSection/CategoryExpenseChart.jsx
+// GHI ĐÈ VÀO FILE: frontend-vite/src/components/DetailedAnalyticsSection/CategoryExpenseChart.jsx
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   PieChart,
   Pie,
@@ -20,40 +20,144 @@ const COLORS = [
   "#FF8042",
   "#AF19FF",
   "#FF4560",
+  "#3366CC",
+  "#DC3912",
 ];
 
 const formatCurrency = (value) =>
   value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 
-// ✅ Component giờ đây chỉ nhận props và hiển thị, không tự fetch data
+// ✅ SỬA 1: Thêm tham số `isActive` để quyết định style nổi bật
+const renderCustomizedLabel = ({
+  cx,
+  cy,
+  midAngle,
+  outerRadius,
+  percent,
+  payload,
+  isActive, // Tham số mới
+}) => {
+  // Với yêu cầu mới, chúng ta sẽ luôn hiển thị nhãn của múi được chọn,
+  // nên có thể bỏ qua điều kiện percent < 0.02 nếu múi đó đang active.
+  if (!isActive && percent < 0.02) return null;
+
+  // Style được điều chỉnh dựa trên `isActive`
+  const labelRadius = isActive ? outerRadius + 45 : outerRadius + 35;
+  const strokeWidth = isActive ? 2.2 : 1.5;
+  const fontSize = isActive ? 15 : 13;
+  const fontWeight = isActive ? 700 : 600;
+
+  const RADIAN = Math.PI / 180;
+  const x = cx + labelRadius * Math.cos(-midAngle * RADIAN);
+  const y = cy + labelRadius * Math.sin(-midAngle * RADIAN);
+  const icon = getIconObject(payload.icon);
+  const iconSize = 20;
+  const textOffset = 5;
+  const isLeft = x < cx;
+
+  return (
+    <g textAnchor={isLeft ? "end" : "start"} fill={payload.fill}>
+      <path
+        d={`M${cx + (outerRadius + 5) * Math.cos(-midAngle * RADIAN)},${
+          cy + (outerRadius + 5) * Math.sin(-midAngle * RADIAN)
+        } L${x},${y}`}
+        stroke={payload.fill}
+        fill="none"
+        strokeWidth={strokeWidth} // <-- Dùng style động
+      />
+      <foreignObject
+        x={isLeft ? x - iconSize : x}
+        y={y - iconSize / 2}
+        width={iconSize}
+        height={iconSize}
+      >
+        <FontAwesomeIcon
+          icon={icon}
+          style={{ width: "100%", height: "100%", color: payload.fill }}
+        />
+      </foreignObject>
+      <text
+        x={isLeft ? x - iconSize - textOffset : x + iconSize + textOffset}
+        y={y}
+        dominantBaseline="central"
+        fontSize={fontSize} // <-- Dùng style động
+        fontWeight={fontWeight} // <-- Dùng style động
+      >
+        {`${(percent * 100).toFixed(1)}%`}
+      </text>
+    </g>
+  );
+};
+
+// Component Sector custom khi click (không thay đổi)
+const renderActiveShape = (props) => {
+  const {
+    cx,
+    cy,
+    innerRadius,
+    outerRadius,
+    startAngle,
+    endAngle,
+    fill,
+    payload,
+    value,
+  } = props;
+
+  return (
+    <g>
+      <text
+        x={cx}
+        y={cy - 12}
+        textAnchor="middle"
+        fill="#333"
+        fontSize={16}
+        fontWeight={600}
+        style={{
+          maxWidth: "120px",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}
+      >
+        {payload.name}
+      </text>
+      <text
+        x={cx}
+        y={cy + 15}
+        textAnchor="middle"
+        fill={fill}
+        fontSize={20}
+        fontWeight={700}
+      >
+        {formatCurrency(value)}
+      </text>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius}
+        outerRadius={outerRadius + 8}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        style={{
+          filter: `drop-shadow(0px 4px 8px ${fill}60)`,
+        }}
+      />
+    </g>
+  );
+};
+
 const CategoryExpenseChart = ({
   data,
   total,
   loading,
   error,
   onSliceClick,
-  activeCategoryId,
 }) => {
   const [activeIndex, setActiveIndex] = useState(null);
 
-  useEffect(() => {
-    if (activeCategoryId && data) {
-      const index = data.findIndex(
-        (entry) =>
-          entry.id === activeCategoryId || entry._id === activeCategoryId
-      );
-      setActiveIndex(index !== -1 ? index : null);
-    } else {
-      setActiveIndex(null);
-    }
-  }, [activeCategoryId, data]);
-
-  if (loading) {
-    return <p className={styles.loadingText}>Đang tải...</p>;
-  }
-  if (error) {
-    return <p className={styles.errorText}>{error}</p>;
-  }
+  if (loading) return <p className={styles.loadingText}>Đang tải...</p>;
+  if (error) return <p className={styles.errorText}>{error}</p>;
   if (!data || data.length === 0) {
     return (
       <p className={styles.noDataText}>
@@ -61,114 +165,6 @@ const CategoryExpenseChart = ({
       </p>
     );
   }
-
-  const renderCustomizedLabel = ({
-    cx,
-    cy,
-    midAngle,
-    outerRadius,
-    percent,
-    payload,
-  }) => {
-    if (percent < 0.01) return null;
-
-    const RADIAN = Math.PI / 180;
-    const labelRadius = outerRadius + 30;
-    const x = cx + labelRadius * Math.cos(-midAngle * RADIAN);
-    const y = cy + labelRadius * Math.sin(-midAngle * RADIAN);
-    const icon = getIconObject(payload.icon);
-
-    const iconSize = 20;
-    const textOffset = 5;
-    const isLeft = x < cx;
-
-    return (
-      <g textAnchor={isLeft ? "end" : "start"}>
-        <path
-          d={`M${cx + (outerRadius + 5) * Math.cos(-midAngle * RADIAN)},${
-            cy + (outerRadius + 5) * Math.sin(-midAngle * RADIAN)
-          } L${x},${y}`}
-          stroke="#999"
-          fill="none"
-          strokeWidth={1}
-        />
-        <foreignObject
-          x={isLeft ? x - iconSize : x}
-          y={y - iconSize / 2}
-          width={iconSize}
-          height={iconSize}
-        >
-          <FontAwesomeIcon
-            icon={icon}
-            style={{ width: "100%", height: "100%", color: "#333" }}
-          />
-        </foreignObject>
-        <text
-          x={isLeft ? x - iconSize - textOffset : x + iconSize + textOffset}
-          y={y}
-          dominantBaseline="central"
-          fill="#333"
-          fontSize="13"
-          fontWeight="600"
-        >
-          {`${(percent * 100).toFixed(1)}%`}
-        </text>
-      </g>
-    );
-  };
-
-  const renderActiveShape = (props) => {
-    const {
-      cx,
-      cy,
-      innerRadius,
-      outerRadius,
-      startAngle,
-      endAngle,
-      fill,
-      payload,
-      value,
-    } = props;
-    return (
-      <g>
-        <text
-          x={cx}
-          y={cy - 10}
-          textAnchor="middle"
-          fill="#333"
-          fontSize={16}
-          fontWeight={600}
-          style={{
-            maxWidth: "120px",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          {payload.name}
-        </text>
-        <text
-          x={cx}
-          y={cy + 15}
-          textAnchor="middle"
-          fill={fill}
-          fontSize={20}
-          fontWeight={700}
-        >
-          {formatCurrency(value)}
-        </text>
-        <Sector
-          cx={cx}
-          cy={cy}
-          innerRadius={innerRadius}
-          outerRadius={outerRadius + 6}
-          startAngle={startAngle}
-          endAngle={endAngle}
-          fill={fill}
-        />
-      </g>
-    );
-  };
 
   const handlePieClick = (pieData, index) => {
     const newIndex = activeIndex === index ? null : index;
@@ -218,11 +214,24 @@ const CategoryExpenseChart = ({
             paddingAngle={2}
             dataKey="value"
             nameKey="name"
-            label={activeIndex === null ? renderCustomizedLabel : false}
             onClick={handlePieClick}
             isAnimationActive={true}
             activeIndex={activeIndex}
             activeShape={renderActiveShape}
+            // ✅ SỬA 2: Cập nhật logic để truyền `isActive`
+            label={(props) => {
+              const isActive = props.index === activeIndex;
+
+              // Nếu có một múi đang được chọn, và đây không phải múi đó -> không vẽ gì cả.
+              if (activeIndex !== null && !isActive) {
+                return null;
+              }
+
+              // Ngược lại (không có múi nào được chọn HOẶC đây là múi đang được chọn),
+              // thì gọi hàm render với đầy đủ thông tin, bao gồm cả `isActive`.
+              return renderCustomizedLabel({ ...props, isActive });
+            }}
+            labelLine={false} // Tắt đường kẻ mặc định vì ta đã tự vẽ trong `renderCustomizedLabel`
           >
             {data.map((entry, index) => (
               <Cell

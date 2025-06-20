@@ -1,5 +1,6 @@
-// src/pages/CategoriesPage.jsx
-import React, { useState, useEffect, useCallback } from "react";
+// GHI ĐÈ VÀO FILE: frontend-vite/src/pages/CategoriesPage.jsx
+
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 
 // Import các components
@@ -11,26 +12,26 @@ import CategoryPageHeader, {
 } from "../components/Categories/CategoryPageHeader";
 import CategoryList from "../components/Categories/CategoryList";
 import AddEditCategoryModal from "../components/Categories/AddEditCategoryModal";
-import CategoryAnalysisChart from "../components/Categories/CategoryAnalysisChart";
+// ✅ SỬA 1: DÙNG COMPONENT BIỂU ĐỒ ĐÃ ĐƯỢC HỢP NHẤT
+import CategoryExpenseChart from "../components/DetailedAnalyticsSection/CategoryExpenseChart";
 import styles from "../styles/CategoriesPage.module.css";
 
 const CategoriesPage = () => {
-  // --- STATE QUẢN LÝ BỘ LỌC VÀ MODAL ---
+  // State quản lý bộ lọc và modal
   const [activeType, setActiveType] = useState(CATEGORY_TYPE.ALL);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [period, setPeriod] = useState("month");
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [activePieIndex, setActivePieIndex] = useState(null);
   const [activeCategoryId, setActiveCategoryId] = useState(null);
 
-  // --- STATE QUÄN LÝ DỮ LIỆU TẬP TRUNG ---
+  // State quản lý dữ liệu
   const [categoriesData, setCategoriesData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // --- LOGIC FETCH DỮ LIỆU TẬP TRUNG ---
+  // Logic fetch dữ liệu tập trung
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setError("");
@@ -64,16 +65,12 @@ const CategoriesPage = () => {
     fetchData();
   }, [fetchData, refreshTrigger]);
 
-  // --- CÁC HÀM HANDLER ---
-  const handlePeriodChange = (newPeriod) => {
-    setPeriod(newPeriod);
-    setCurrentDate(new Date());
-  };
-  const handleDateChange = (newDate) => {
-    setCurrentDate(newDate);
-  };
+  // Các hàm handler (không thay đổi nhiều)
+  const handlePeriodChange = (newPeriod) => setPeriod(newPeriod);
+  const handleDateChange = (newDate) => setCurrentDate(newDate);
   const handleCategoryTypeChange = (newType) => {
     setActiveType(newType);
+    setActiveCategoryId(null); // Reset lựa chọn khi đổi tab
   };
   const handleOpenAddModal = () => {
     setEditingCategory(null);
@@ -87,7 +84,18 @@ const CategoriesPage = () => {
     setIsModalOpen(false);
     setEditingCategory(null);
   };
+  const handleForceRefresh = () => setRefreshTrigger((prev) => prev + 1);
 
+  // ✅ SỬA 2: Handler khi click vào slice biểu đồ
+  const handleSliceClick = (categoryData) => {
+    if (categoryData && categoryData.id === activeCategoryId) {
+      setActiveCategoryId(null);
+    } else {
+      setActiveCategoryId(categoryData ? categoryData.id : null);
+    }
+  };
+
+  // Logic form submit (không đổi)
   const handleFormSubmit = async (formData) => {
     const token = localStorage.getItem("token");
     const isEditing = !!editingCategory;
@@ -108,7 +116,7 @@ const CategoriesPage = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       handleCloseModal();
-      setRefreshTrigger((prev) => prev + 1);
+      handleForceRefresh();
     } catch (error) {
       console.error(
         "Lỗi khi lưu danh mục:",
@@ -119,74 +127,58 @@ const CategoriesPage = () => {
       );
     }
   };
-  const handleDeleteSuccess = () => {
-    setRefreshTrigger((prev) => prev + 1);
-  };
 
-  // Handler khi chọn slice trên PieChart
-  const handleActiveCategoryChange = (categoryId) => {
-    setActiveCategoryId(categoryId);
-    if (categoryId) {
-      const idx = chartData.findIndex(
-        (cat) => cat._id === categoryId || cat.id === categoryId
-      );
-      setActivePieIndex(idx);
-    } else {
-      setActivePieIndex(null);
-    }
-  };
+  // ✅ SỬA 3: Dùng `useMemo` để tối ưu việc lọc và tính toán dữ liệu
+  const { listData, chartData, chartTotal } = useMemo(() => {
+    const filteredList =
+      activeType === CATEGORY_TYPE.ALL
+        ? categoriesData
+        : categoriesData.filter((cat) => cat.type === activeType);
 
-  // --- ✅ THAY ĐỔI 1: XỬ LÝ VÀ CHUẨN BỊ DỮ LIỆU TRƯỚC KHI RENDER ---
+    const filteredChartData = filteredList
+      .filter((cat) => cat.totalAmount > 0)
+      .map((cat) => ({
+        id: cat._id || cat.id,
+        name: cat.name,
+        value: cat.totalAmount,
+        icon: cat.icon,
+      }));
 
-  // Lọc dữ liệu cho CategoryList dựa trên tab đang active
-  const listData =
-    activeType === CATEGORY_TYPE.ALL
-      ? categoriesData
-      : categoriesData.filter((cat) => cat.type === activeType);
+    const total = filteredChartData.reduce((sum, item) => sum + item.value, 0);
 
-  // Chuẩn bị dữ liệu cho CategoryAnalysisChart từ listData
-  const chartData = listData
-    .filter((cat) => cat.totalAmount > 0) // Chỉ lấy các mục có giá trị để vẽ biểu đồ
-    .map((cat) => ({
-      name: cat.name,
-      value: cat.totalAmount, // `recharts` PieChart dùng key là `value`
-      icon: cat.icon,
-    }));
-
-  // Tính tổng cho con số ở giữa biểu đồ
-  const chartTotal = chartData.reduce((sum, item) => sum + item.value, 0);
+    return {
+      listData: filteredList,
+      chartData: filteredChartData,
+      chartTotal: total,
+    };
+  }, [activeType, categoriesData]);
 
   return (
     <div>
       <Header />
       <Navbar />
       <main className={styles.pageContainer}>
-        {" "}
-        {/* Thêm class để dễ style tổng thể */}
-        {/* ✅ SỬA 1: TRUYỀN TẤT CẢ PROPS CẦN THIẾT CHO HEADER */}
         <CategoryPageHeader
           activeCategoryType={activeType}
           onCategoryTypeChange={handleCategoryTypeChange}
           onAddCategoryClick={handleOpenAddModal}
-          // Truyền state và handler của bộ lọc thời gian xuống đây
           period={period}
           currentDate={currentDate}
           onPeriodChange={handlePeriodChange}
           onDateChange={handleDateChange}
         />
-        {/* ✅ SỬA 2: ĐƠN GIẢN HÓA BỐ CỤC, KHÔNG CÒN BỘ LỌC Ở ĐÂY */}
         <div className={styles.analyticsSection}>
           <div className={styles.contentRow}>
             {/* Cột 1: Biểu đồ */}
             <div className={styles.chartContainer}>
-              <CategoryAnalysisChart
-                categoryType={activeType}
+              {/* ✅ SỬA 4: Render component biểu đồ đã hợp nhất */}
+              <CategoryExpenseChart
                 data={chartData}
                 total={chartTotal}
                 loading={isLoading}
                 error={error}
-                onActiveCategoryChange={handleActiveCategoryChange}
-                activeIndex={activePieIndex}
+                onSliceClick={handleSliceClick}
+                activeCategoryId={activeCategoryId} // Prop này để biểu đồ tự biết slice nào đang active
               />
             </div>
 
@@ -194,7 +186,7 @@ const CategoriesPage = () => {
             <div className={styles.listContainer}>
               <CategoryList
                 onEditCategory={handleOpenEditModal}
-                onDeleteSuccess={handleDeleteSuccess}
+                onDeleteSuccess={handleForceRefresh}
                 categories={listData}
                 isLoading={isLoading}
                 error={error}
