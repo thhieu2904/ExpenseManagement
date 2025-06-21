@@ -1,7 +1,12 @@
 // GHI ĐÈ VÀO FILE: frontend-vite/src/pages/CategoriesPage.jsx
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import axios from "axios";
+// Bỏ axios
+import {
+  getCategories,
+  addCategory,
+  updateCategory,
+} from "../api/categoriesService";
 
 // Import các components
 import Header from "../components/Header/Header";
@@ -29,14 +34,13 @@ const CategoriesPage = () => {
   const [categoriesData, setCategoriesData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Logic fetch dữ liệu tập trung
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setError("");
     try {
-      const token = localStorage.getItem("token");
+      // const token = localStorage.getItem("token"); // Token đã được quản lý trong axiosConfig
       const params = { period };
       if (period === "year") params.year = currentDate.getFullYear();
       if (period === "month") {
@@ -47,11 +51,8 @@ const CategoriesPage = () => {
         params.date = currentDate.toISOString().split("T")[0];
       }
 
-      const response = await axios.get("http://localhost:5000/api/categories", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: params,
-      });
-      setCategoriesData(response.data || []);
+      const data = await getCategories(params);
+      setCategoriesData(data || []);
     } catch (err) {
       console.error("Lỗi khi tải dữ liệu trang danh mục:", err);
       setError("Không thể tải dữ liệu. Vui lòng thử lại.");
@@ -63,7 +64,7 @@ const CategoriesPage = () => {
 
   useEffect(() => {
     fetchData();
-  }, [fetchData, refreshTrigger]);
+  }, [fetchData]);
 
   // Các hàm handler (không thay đổi nhiều)
   const handlePeriodChange = (newPeriod) => setPeriod(newPeriod);
@@ -84,12 +85,11 @@ const CategoriesPage = () => {
     setIsModalOpen(false);
     setEditingCategory(null);
   };
-  const handleForceRefresh = () => setRefreshTrigger((prev) => prev + 1);
 
-  // ✅ SỬA 2: Handler khi click vào slice biểu đồ
-  const handleSliceClick = (categoryData) => {
+  // ✅ SỬA 2: Handler khi click vào slice biểu đồ HOẶC một item trong danh sách
+  const handleSelectCategory = (categoryData) => {
     if (categoryData && categoryData.id === activeCategoryId) {
-      setActiveCategoryId(null);
+      setActiveCategoryId(null); // Bỏ chọn nếu click lại item đang được chọn
     } else {
       setActiveCategoryId(categoryData ? categoryData.id : null);
     }
@@ -97,7 +97,6 @@ const CategoriesPage = () => {
 
   // Logic form submit (không đổi)
   const handleFormSubmit = async (formData) => {
-    const token = localStorage.getItem("token");
     const isEditing = !!editingCategory;
     const categoryId = isEditing
       ? editingCategory._id || editingCategory.id
@@ -107,16 +106,15 @@ const CategoriesPage = () => {
       type: formData.type,
       icon: formData.icon,
     };
-    const apiUrl = isEditing
-      ? `http://localhost:5000/api/categories/${categoryId}`
-      : "http://localhost:5000/api/categories";
-    const apiMethod = isEditing ? "put" : "post";
+
     try {
-      await axios[apiMethod](apiUrl, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      if (isEditing) {
+        await updateCategory(categoryId, payload);
+      } else {
+        await addCategory(payload);
+      }
       handleCloseModal();
-      handleForceRefresh();
+      fetchData(); // Tải lại dữ liệu sau khi submit thành công
     } catch (error) {
       console.error(
         "Lỗi khi lưu danh mục:",
@@ -177,8 +175,8 @@ const CategoriesPage = () => {
                 total={chartTotal}
                 loading={isLoading}
                 error={error}
-                onSliceClick={handleSliceClick}
-                activeCategoryId={activeCategoryId} // Prop này để biểu đồ tự biết slice nào đang active
+                onSliceClick={handleSelectCategory}
+                activeCategoryId={activeCategoryId}
               />
             </div>
 
@@ -186,11 +184,12 @@ const CategoriesPage = () => {
             <div className={styles.listContainer}>
               <CategoryList
                 onEditCategory={handleOpenEditModal}
-                onDeleteSuccess={handleForceRefresh}
+                onDeleteSuccess={fetchData}
                 categories={listData}
                 isLoading={isLoading}
                 error={error}
                 activeCategoryId={activeCategoryId}
+                onSelectCategory={handleSelectCategory}
               />
             </div>
           </div>

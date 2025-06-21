@@ -1,6 +1,5 @@
 // src/components/Accounts/AccountList.jsx
 import React, { useState } from "react";
-import axios from "axios";
 import styles from "./AccountList.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -25,7 +24,15 @@ const formatAccountNumber = (number) => {
 };
 
 // --- AccountItem Component (Nội bộ) ---
-const AccountItem = ({ account, onEdit, onDeleteRequest }) => {
+const AccountItem = ({
+  account,
+  onEdit,
+  onDeleteRequest,
+  highlighted,
+  onHover,
+  transactionCount,
+  onTransactionLabelClick,
+}) => {
   const accountIcon = account.type === "TIENMAT" ? faWallet : faLandmark;
 
   // ✅ LOGIC MỚI: Tính toán cho thanh hoạt động
@@ -46,8 +53,10 @@ const AccountItem = ({ account, onEdit, onDeleteRequest }) => {
   return (
     <div
       className={`${styles.accountItem} ${
-        isNegative ? styles.negativeBalance : ""
-      }`}
+        highlighted ? styles.highlight : ""
+      } ${isNegative ? styles.negativeBalance : ""}`}
+      onMouseEnter={() => onHover && onHover(account.id)}
+      onMouseLeave={() => onHover && onHover(null)}
     >
       {/* Badge cảnh báo số dư âm */}
       {isNegative && (
@@ -80,12 +89,17 @@ const AccountItem = ({ account, onEdit, onDeleteRequest }) => {
 
       {/* ✅ Cột 2: Thanh hoạt động và số liệu thu/chi */}
       <div className={styles.activitySection}>
+        {/* Label số giao dịch phía trên bar */}
         <div
-          className={styles.activityBar}
-          title={`Tổng thu: +${formatCurrency(
-            account.monthlyIncome || 0
-          )} | Tổng chi: -${formatCurrency(account.monthlyExpense || 0)}`}
+          className={styles.transactionCountBox}
+          title={`Có ${transactionCount || 0} giao dịch trong kỳ này`}
+          onClick={() =>
+            onTransactionLabelClick && onTransactionLabelClick(account)
+          }
         >
+          {transactionCount || 0} giao dịch
+        </div>
+        <div className={styles.activityBar}>
           <div
             className={styles.incomeBar}
             style={{ width: `${incomePercentage}%` }}
@@ -137,7 +151,10 @@ const AccountList = ({
   isLoading,
   error,
   onEditRequest,
-  onDeleteSuccess,
+  onDeleteAccount,
+  highlightedAccountId,
+  onHoverAccount,
+  transactionCounts,
 }) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [accountToDelete, setAccountToDelete] = useState(null);
@@ -150,20 +167,20 @@ const AccountList = ({
   const handleConfirmDelete = async () => {
     if (!accountToDelete) return;
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(
-        `http://localhost:5000/api/accounts/${accountToDelete.id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      onDeleteSuccess();
+      await onDeleteAccount(accountToDelete.id);
     } catch (err) {
       console.error("Lỗi khi xóa nguồn tiền:", err);
     } finally {
       setIsConfirmOpen(false);
       setAccountToDelete(null);
     }
+  };
+
+  // Xử lý click vào label số giao dịch
+  const handleTransactionLabelClick = (account) => {
+    if (!account) return;
+    // Sử dụng window.location hoặc useNavigate để chuyển trang
+    window.location.href = `/transactions?accountId=${account.id}`;
   };
 
   if (isLoading) {
@@ -186,6 +203,10 @@ const AccountList = ({
               account={account}
               onEdit={onEditRequest}
               onDeleteRequest={requestDeleteAccount}
+              highlighted={highlightedAccountId === account.id}
+              onHover={onHoverAccount}
+              transactionCount={transactionCounts[account.id]}
+              onTransactionLabelClick={handleTransactionLabelClick}
             />
           ))}
         </div>

@@ -1,6 +1,6 @@
 // GHI ĐÈ VÀO FILE: frontend-vite/src/components/DetailedAnalyticsSection/CategoryExpenseChart.jsx
 
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 import {
   PieChart,
   Pie,
@@ -153,8 +153,14 @@ const CategoryExpenseChart = ({
   loading,
   error,
   onSliceClick,
+  activeCategoryId, // Nhận prop từ cha
 }) => {
-  const [activeIndex, setActiveIndex] = useState(null);
+  // Bỏ state nội bộ, tính toán activeIndex từ prop
+  const activeIndex = useMemo(
+    () =>
+      activeCategoryId ? data.findIndex((d) => d.id === activeCategoryId) : -1,
+    [data, activeCategoryId]
+  );
 
   if (loading) return <p className={styles.loadingText}>Đang tải...</p>;
   if (error) return <p className={styles.errorText}>{error}</p>;
@@ -167,10 +173,10 @@ const CategoryExpenseChart = ({
   }
 
   const handlePieClick = (pieData, index) => {
-    const newIndex = activeIndex === index ? null : index;
-    setActiveIndex(newIndex);
+    // Luôn gọi onSliceClick với dữ liệu của slice được click
+    // `CategoriesPage` sẽ quyết định nên chọn hay bỏ chọn
     if (onSliceClick) {
-      onSliceClick(newIndex !== null ? data[newIndex] : null);
+      onSliceClick(data[index]);
     }
   };
 
@@ -197,7 +203,8 @@ const CategoryExpenseChart = ({
 
   return (
     <div style={{ position: "relative", width: "100%", height: 400 }}>
-      {activeIndex === null && (
+      {/* Hiển thị tổng tiền khi không có slice nào được chọn */}
+      {activeIndex === -1 && (
         <div className={styles.centerLabel}>
           <span>Tổng cộng</span>
           <strong>{formatCurrency(total)}</strong>
@@ -218,20 +225,20 @@ const CategoryExpenseChart = ({
             isAnimationActive={true}
             activeIndex={activeIndex}
             activeShape={renderActiveShape}
-            // ✅ SỬA 2: Cập nhật logic để truyền `isActive`
             label={(props) => {
+              // activeIndex đã được tính toán ở trên từ prop
               const isActive = props.index === activeIndex;
 
-              // Nếu có một múi đang được chọn, và đây không phải múi đó -> không vẽ gì cả.
-              if (activeIndex !== null && !isActive) {
+              // Nếu có một slice đang được chọn, và đây không phải slice đó -> không vẽ label.
+              if (activeIndex !== -1 && !isActive) {
                 return null;
               }
 
-              // Ngược lại (không có múi nào được chọn HOẶC đây là múi đang được chọn),
-              // thì gọi hàm render với đầy đủ thông tin, bao gồm cả `isActive`.
+              // Ngược lại (không có slice nào được chọn HOẶC đây là slice đang được chọn),
+              // thì gọi hàm render với đầy đủ thông tin.
               return renderCustomizedLabel({ ...props, isActive });
             }}
-            labelLine={false} // Tắt đường kẻ mặc định vì ta đã tự vẽ trong `renderCustomizedLabel`
+            labelLine={false}
           >
             {data.map((entry, index) => (
               <Cell

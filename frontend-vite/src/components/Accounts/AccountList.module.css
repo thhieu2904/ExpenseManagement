@@ -17,12 +17,13 @@
   justify-content: space-between;
   align-items: center;
   gap: 15px;
-  padding: 15px;
+  padding: 22px 24px;
   border-radius: 8px;
   transition: background-color 0.2s ease, box-shadow 0.2s, transform 0.2s;
   border: 1px solid #f0f2f5;
   box-shadow: 0 2px 12px #0001;
   position: relative;
+  min-height: 80px;
 }
 .accountItem:hover {
   background-color: #f8f9fa;
@@ -63,9 +64,9 @@
   font-size: 1.1rem;
   color: #2c3e50;
   font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
+  overflow: visible;
 }
 
 .accountSubDetail {
@@ -172,23 +173,56 @@
 
 .activityBar {
   display: flex;
-  height: 8px;
-  border-radius: 4px;
+  height: 26px;
+  border-radius: 13px;
   background-color: #e9ecef;
-  overflow: hidden; /* Đảm bảo các bar con bo góc theo cha */
+  overflow: visible;
+  position: relative;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.transactionCountLabel {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #3f51b5;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.7rem;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px #3f51b540, 0 1px 3px #0002;
+  border: 2px solid #fff;
   cursor: pointer;
+  z-index: 3;
+  transition: box-shadow 0.18s, background 0.18s;
+  margin-left: 2px;
+  margin-right: 2px;
+  padding: 0;
+  line-height: 1;
+}
+.transactionCountLabel:hover {
+  background: #283593;
+  box-shadow: 0 4px 16px #3f51b570, 0 2px 8px #0002;
 }
 
 .incomeBar {
-  background-color: #28a745; /* Màu xanh lá cho thu nhập */
+  background-color: #28a745;
   height: 100%;
   transition: width 0.3s ease-in-out;
+  border-radius: 8px 0 0 8px;
 }
 
 .expenseBar {
-  background-color: #dc3545; /* Màu đỏ cho chi tiêu */
+  background-color: #dc3545;
   height: 100%;
   transition: width 0.3s ease-in-out;
+  border-radius: 0 8px 8px 0;
 }
 
 .activityFigures {
@@ -349,4 +383,36 @@
   background: linear-gradient(90deg, #4f8cff 0%, #6a5af9 100%);
   color: #fff;
   box-shadow: 0 4px 16px #6a5af930;
+}
+
+.highlight {
+  border: 2.5px solid #4f8cff !important;
+  box-shadow: 0 0 12px #4f8cff33, 0 2px 8px #4f8cff22;
+  background: #f0f7ff;
+  transform: scale(1.02);
+  transition: all 0.18s cubic-bezier(0.4, 2, 0.6, 1);
+  z-index: 2;
+}
+
+.transactionCountBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #3f51b5;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 2px 10px;
+  margin: 0 auto 4px auto;
+  box-shadow: 0 2px 8px #3f51b540, 0 1px 3px #0002;
+  cursor: pointer;
+  transition: box-shadow 0.18s, background 0.18s;
+  min-width: 40px;
+  max-width: 90%;
+  text-align: center;
+}
+.transactionCountBox:hover {
+  background: #283593;
+  box-shadow: 0 4px 16px #3f51b570, 0 2px 8px #0002;
 }

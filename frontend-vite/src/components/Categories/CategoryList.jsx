@@ -1,11 +1,11 @@
 // src/components/Categories/CategoryList.jsx
-import React, { useState } from "react"; // ✅ BỎ: useEffect, useCallback, axios
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./CategoryList.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { getIconObject } from "../../utils/iconMap";
 import ConfirmDialog from "../Common/ConfirmDialog";
-import axios from "axios"; // ✅ Vẫn cần axios cho việc xóa
+import { deleteCategory } from "../../api/categoriesService"; // ✅ THAY ĐỔI: Dùng service
 
 // Hàm định dạng tiền tệ (Không đổi)
 const formatCurrency = (amount) => {
@@ -74,22 +74,29 @@ const CategoryItem = ({
 
 // --- ✅ THAY ĐỔI 1: CẬP NHẬT PROPS VÀ LOẠI BỎ LOGIC FETCH ---
 const CategoryList = ({
-  categories, // Nhận danh sách category đã được lọc
-  isLoading, // Nhận trạng thái tải
-  error, // Nhận thông báo lỗi
+  categories,
+  isLoading,
+  error,
   onEditCategory,
   onDeleteSuccess,
   activeCategoryId,
+  onSelectCategory, // ✅ THAY ĐỔI: Thêm prop
 }) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
-  // State để quản lý lỗi xóa cục bộ
   const [deleteError, setDeleteError] = useState("");
+  const activeItemRef = useRef(null); // Ref cho item đang active
 
-  // Tìm category đang active trong list
-  const activeCategory = activeCategoryId
-    ? categories.find((cat) => (cat._id || cat.id) === activeCategoryId)
-    : null;
+  // ✅ THAY ĐỔI: useEffect để cuộn tới item được chọn
+  useEffect(() => {
+    if (activeItemRef.current) {
+      activeItemRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "start",
+      });
+    }
+  }, [activeCategoryId]);
 
   const requestDeleteCategory = (categoryId, categoryName) => {
     setDeleteError(""); // Reset lỗi xóa mỗi khi mở dialog
@@ -100,27 +107,22 @@ const CategoryList = ({
   const handleConfirmDelete = async () => {
     if (!categoryToDelete) return;
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(
-        `http://localhost:5000/api/categories/${categoryToDelete.id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // ✅ THAY ĐỔI: Gọi hàm xóa từ service
+      await deleteCategory(categoryToDelete.id);
 
-      // Gọi callback để báo cho component cha biết việc xóa thành công
-      // Component cha sẽ kích hoạt việc fetch lại dữ liệu
       if (onDeleteSuccess) {
         onDeleteSuccess();
       }
+      // Đóng dialog sau khi thành công
+      setIsConfirmOpen(false);
+      setCategoryToDelete(null);
     } catch (err) {
       console.error("Lỗi khi xóa danh mục:", err);
       const message =
         err.response?.data?.message ||
         `Lỗi khi xóa danh mục "${categoryToDelete.name}".`;
       setDeleteError(message);
-    } finally {
-      // Đóng dialog dù thành công hay thất bại
-      setIsConfirmOpen(false);
-      // Giữ lại categoryToDelete để hiển thị lỗi nếu có
+      // Giữ dialog mở để người dùng thấy lỗi
     }
   };
 
@@ -148,13 +150,6 @@ const CategoryList = ({
         {/* Hiển thị lỗi fetch ngay cả khi có dữ liệu cũ */}
         {error && <p className={styles.inlineError}>{error}</p>}
 
-        {/* Hiển thị tên category đang được chọn */}
-        {activeCategory && (
-          <div className={styles.activeCategoryNameDisplay}>
-            Đang chọn: {activeCategory.name}
-          </div>
-        )}
-
         {categories.length === 0 && !isLoading && !error && (
           <p className={styles.noCategoriesMessage}>
             Không có danh mục nào để hiển thị.
@@ -165,67 +160,76 @@ const CategoryList = ({
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>Mục</th>
-                  <th>Tổng tiền</th>
-                  <th>Hành động</th>
+                  <th scope="col">Mục</th>
+                  <th scope="col">Tổng tiền</th>
+                  <th scope="col">Hành động</th>
                 </tr>
               </thead>
               <tbody>
-                {categories.map((category, idx) => (
-                  <tr
-                    key={category._id || category.id || idx}
-                    className={`${styles.row} ${
-                      activeCategory &&
-                      (category._id || category.id) === activeCategoryId
-                        ? styles.highlight
-                        : ""
-                    }`}
-                  >
-                    <td>
-                      <FontAwesomeIcon
-                        icon={getIconObject(category.icon)}
-                        className={styles.categoryIcon}
-                      />
-                      <span className={styles.categoryName}>
-                        {category.name}
-                      </span>
-                    </td>
-                    <td
-                      className={
-                        category.type === "THUNHAP"
-                          ? styles.incomeAmount
-                          : styles.expenseAmount
+                {categories.map((category) => {
+                  const isSelected =
+                    activeCategoryId &&
+                    (category._id || category.id) === activeCategoryId;
+
+                  return (
+                    <tr
+                      key={category._id || category.id}
+                      ref={isSelected ? activeItemRef : null} // Gán ref nếu item được chọn
+                      className={`${styles.row} ${
+                        isSelected ? styles.highlight : ""
+                      }`}
+                      onClick={() =>
+                        onSelectCategory && onSelectCategory(category)
                       }
+                      role="button"
+                      aria-selected={isSelected}
                     >
-                      {formatCurrency(category.totalAmount)}
-                    </td>
-                    <td>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditCategory(category);
-                        }}
-                        className={`${styles.actionButton} ${styles.editButton}`}
-                        title="Sửa"
+                      <td>
+                        <FontAwesomeIcon
+                          icon={getIconObject(category.icon)}
+                          className={styles.categoryIcon}
+                        />
+                        <span className={styles.categoryName}>
+                          {category.name}
+                        </span>
+                      </td>
+                      <td
+                        className={
+                          category.type === "THUNHAP"
+                            ? styles.incomeAmount
+                            : styles.expenseAmount
+                        }
                       >
-                        <FontAwesomeIcon icon={faEdit} />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          requestDeleteCategory(
-                            category._id || category.id,
-                            category.name
-                          );
-                        }}
-                        className={`${styles.actionButton} ${styles.deleteButton}`}
-                        title="Xóa"
-                      >
-                        <FontAwesomeIcon icon={faTrashAlt} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                        {formatCurrency(category.totalAmount)}
+                      </td>
+                      <td>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // Ngăn event click của tr
+                            handleEditCategory(category);
+                          }}
+                          className={`${styles.actionButton} ${styles.editButton}`}
+                          title="Sửa"
+                        >
+                          <FontAwesomeIcon icon={faEdit} />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // Ngăn event click của tr
+                            requestDeleteCategory(
+                              category._id || category.id,
+                              category.name
+                            );
+                          }}
+                          className={`${styles.actionButton} ${styles.deleteButton}`}
+                          title="Xóa"
+                        >
+                          <FontAwesomeIcon icon={faTrashAlt} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -246,9 +250,8 @@ const CategoryList = ({
               Hành động này không thể hoàn tác và các giao dịch liên quan có thể
               bị ảnh hưởng.
             </p>
-            {/* Hiển thị lỗi xóa ngay trong dialog */}
             {deleteError && (
-              <p className={styles.dialogErrorText}>{deleteError}</p>
+              <p className={styles.errorMessageDialog}>{deleteError}</p>
             )}
           </>
         }

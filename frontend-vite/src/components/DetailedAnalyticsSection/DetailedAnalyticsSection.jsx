@@ -4,12 +4,15 @@ import IncomeExpenseTrendChart from "./IncomeExpenseTrendChart";
 import CategoryExpenseChart from "./CategoryExpenseChart";
 import styles from "./DetailedAnalyticsSection.module.css";
 import { Link } from "react-router-dom";
-import { startOfWeek, endOfWeek, getYear, getMonth } from "date-fns";
+import { getYear, getMonth, startOfWeek } from "date-fns";
 // MỚI: Import service đã được trừu tượng hóa
 import { getDetailedAnalyticsData } from "../../api/analyticsService";
 import chartStyles from "./IncomeExpenseTrendChart.module.css";
+
 // MỚI: import service riêng lẻ
 import statisticsService from "../../api/statisticsService";
+// MỚI: Import component điều hướng
+import DateRangeNavigator from "../Common/DateRangeNavigator";
 
 const DetailedAnalyticsSection = () => {
   // State cho bộ lọc thời gian
@@ -119,45 +122,12 @@ const DetailedAnalyticsSection = () => {
     setActiveCategoryName(null);
   };
 
-  const handlePrev = () => {
-    const newDate = new Date(currentDate);
-    if (period === "week") newDate.setDate(newDate.getDate() - 7);
-    if (period === "month") newDate.setMonth(newDate.getMonth() - 1);
-    if (period === "year") newDate.setFullYear(newDate.getFullYear() - 1);
-    handleDateChange(newDate);
-  };
-
-  const handleNext = () => {
-    const newDate = new Date(currentDate);
-    if (period === "week") newDate.setDate(newDate.getDate() + 7);
-    if (period === "month") newDate.setMonth(newDate.getMonth() + 1);
-    if (period === "year") newDate.setFullYear(newDate.getFullYear() + 1);
-    handleDateChange(newDate);
-  };
-
-  const getDisplayBox = () => {
-    if (period === "week") {
-      const start = startOfWeek(currentDate, { weekStartsOn: 1 });
-      const end = endOfWeek(currentDate, { weekStartsOn: 1 });
-      return `${start.toLocaleDateString("vi-VN")} - ${end.toLocaleDateString(
-        "vi-VN"
-      )}`;
-    }
-    if (period === "month")
-      return currentDate.toLocaleDateString("vi-VN", {
-        month: "long",
-        year: "numeric",
-      });
-    if (period === "year") return `Năm ${currentDate.getFullYear()}`;
-    return "";
-  };
-
   const handleCategorySelect = (data) => {
-    if (data && data._id === activeCategoryId) {
+    if (data && data.id === activeCategoryId) {
       setActiveCategoryId(null);
       setActiveCategoryName(null);
     } else if (data) {
-      setActiveCategoryId(data._id);
+      setActiveCategoryId(data.id);
       setActiveCategoryName(data.name);
     }
   };
@@ -188,33 +158,12 @@ const DetailedAnalyticsSection = () => {
       </div>
 
       <div className={styles.sectionHeader}>
-        <div className={chartStyles.controlsGroup}>
-          <div className={chartStyles.filterButtons}>
-            <button
-              onClick={() => handlePeriodChange("week")}
-              className={period === "week" ? chartStyles.active : ""}
-            >
-              Tuần
-            </button>
-            <button
-              onClick={() => handlePeriodChange("month")}
-              className={period === "month" ? chartStyles.active : ""}
-            >
-              Tháng
-            </button>
-            <button
-              onClick={() => handlePeriodChange("year")}
-              className={period === "year" ? chartStyles.active : ""}
-            >
-              Năm
-            </button>
-          </div>
-          <div className={chartStyles.navButtonsBox}>
-            <button onClick={handlePrev}>Trước</button>
-            <div className={chartStyles.navDateBox}>{getDisplayBox()}</div>
-            <button onClick={handleNext}>Sau</button>
-          </div>
-        </div>
+        <DateRangeNavigator
+          period={period}
+          currentDate={currentDate}
+          onPeriodChange={handlePeriodChange}
+          onDateChange={handleDateChange}
+        />
       </div>
 
       <div className={styles.chartsRow}>

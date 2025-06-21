@@ -15,12 +15,12 @@ export default function AppRoutes() {
       <Route path="/" element={<Welcome />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/HomePage" element={<HomePage />} />
-      <Route path="/CategoriesPage" element={<CategoriesPage />} />
-      <Route path="/AccountPage" element={<AccountPage />} />
-      <Route path="/TransactionsPage" element={<TransactionsPage />} />
-      <Route path="/GoalsPage" element={<GoalsPage />} />
-      <Route path="/StatisticsPage" element={<StatisticsPage />} />
+      <Route path="/homepage" element={<HomePage />} />
+      <Route path="/categories" element={<CategoriesPage />} />
+      <Route path="/accounts" element={<AccountPage />} />
+      <Route path="/transactions" element={<TransactionsPage />} />
+      <Route path="/goals" element={<GoalsPage />} />
+      <Route path="/statistics" element={<StatisticsPage />} />
     </Routes>
   );
 }

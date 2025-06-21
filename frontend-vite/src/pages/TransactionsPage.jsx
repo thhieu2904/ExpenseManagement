@@ -5,13 +5,15 @@ import axios from "axios";
 import styles from "../styles/TransactionsPage.module.css";
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { startOfWeek, endOfWeek } from "date-fns";
+import { useSearchParams } from "react-router-dom";
 
 // Import các component chung
 import Header from "../components/Header/Header";
 import Navbar from "../components/Navbar/Navbar";
 import Footer from "../components/Footer/Footer";
 import StatsOverview from "../components/StatsOverview/StatsOverview";
-import DateNavigator from "../components/Common/DateNavigator";
+import DateRangeNavigator from "../components/Common/DateRangeNavigator";
 
 // Import các component con của trang
 import TransactionCalendar from "../components/Transactions/TransactionCalendar";
@@ -23,6 +25,7 @@ import ConfirmDialog from "../components/Common/ConfirmDialog";
 const TransactionsPage = () => {
   // --- STATE MANAGEMENT ---
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [period, setPeriod] = useState("month");
   const [statsData, setStatsData] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [pagination, setPagination] = useState({
@@ -42,34 +45,45 @@ const TransactionsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [searchParams] = useSearchParams();
+
   // --- API CALLS ---
-  const fetchDataForPage = async (date, currentFilters, page = 1) => {
+  const fetchDataForPage = async (date, period, currentFilters, page = 1) => {
     setIsLoading(true);
     setError("");
     const token = localStorage.getItem("token");
 
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
+    const params = {
+      page,
+      limit: 10,
+      ...currentFilters,
+    };
+    if (period === "week") {
+      const startDate = startOfWeek(date, { weekStartsOn: 1 });
+      const endDate = endOfWeek(date, { weekStartsOn: 1 });
+      params.startDate = startDate.toISOString();
+      params.endDate = endDate.toISOString();
+    } else if (period === "year") {
+      params.year = date.getFullYear();
+    } else {
+      params.year = date.getFullYear();
+      params.month = date.getMonth() + 1;
+    }
+
+    const overviewParams = {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+    };
 
     try {
-      // Xây dựng params cho API
-      const params = {
-        year,
-        month,
-        page,
-        limit: 10, // Hoặc một số lượng bạn muốn
-        ...currentFilters,
-      };
-
-      // Gọi đồng thời 3 API
       const [statsRes, calendarRes, transactionsRes] = await Promise.all([
         axios.get("http://localhost:5000/api/statistics/overview", {
           headers: { Authorization: `Bearer ${token}` },
-          params: { year, month },
+          params: overviewParams,
         }),
         axios.get("http://localhost:5000/api/statistics/calendar", {
           headers: { Authorization: `Bearer ${token}` },
-          params: { year, month },
+          params: overviewParams,
         }),
         axios.get("http://localhost:5000/api/transactions", {
           headers: { Authorization: `Bearer ${token}` },
@@ -94,18 +108,35 @@ const TransactionsPage = () => {
   };
 
   useEffect(() => {
-    fetchDataForPage(currentDate, filters, pagination.currentPage);
+    // Khi mount, nếu có query param accountId thì set vào filters
+    const accountId = searchParams.get("accountId");
+    if (accountId) {
+      setFilters((prev) => ({ ...prev, accountId }));
+      setPagination((p) => ({ ...p, currentPage: 1 }));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentDate, filters, pagination.currentPage]);
+  }, []);
+
+  useEffect(() => {
+    fetchDataForPage(currentDate, period, filters, pagination.currentPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentDate, period, filters, pagination.currentPage]);
+
   // --- HANDLERS ---
   const handleDateChange = (newDate) => {
     setCurrentDate(newDate);
-    setPagination((p) => ({ ...p, currentPage: 1 })); // Reset về trang 1 khi đổi tháng
+    setPagination((p) => ({ ...p, currentPage: 1 }));
+  };
+
+  const handlePeriodChange = (newPeriod) => {
+    setPeriod(newPeriod);
+    setCurrentDate(new Date());
+    setPagination((p) => ({ ...p, currentPage: 1 }));
   };
 
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
-    setPagination((p) => ({ ...p, currentPage: 1 })); // Reset về trang 1 khi lọc
+    setPagination((p) => ({ ...p, currentPage: 1 }));
   };
 
   const handlePageChange = (newPage) => {
@@ -132,8 +163,7 @@ const TransactionsPage = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      // Tải lại dữ liệu sau khi xóa thành công
-      fetchDataForPage(currentDate, filters, pagination.currentPage);
+      fetchDataForPage(currentDate, period, filters, pagination.currentPage);
     } catch (err) {
       alert("Xóa giao dịch thất bại!");
     } finally {
@@ -145,7 +175,7 @@ const TransactionsPage = () => {
   const handleSubmitSuccess = () => {
     setIsModalOpen(false);
     setEditingTransaction(null);
-    fetchDataForPage(currentDate, filters, pagination.currentPage);
+    fetchDataForPage(currentDate, period, filters, pagination.currentPage);
   };
   console.log(
     "GIÁ TRỊ STATE 'calendarData' TRƯỚC KHI TRUYỀN XUỐNG:",
@@ -168,16 +198,13 @@ const TransactionsPage = () => {
           <div className={styles.contentCard}>
             <div className={styles.cardHeader}>
               <h3 className={styles.cardTitle}>Lịch Giao Dịch</h3>
-              <DateNavigator
+              <DateRangeNavigator
                 currentDate={currentDate}
                 onDateChange={handleDateChange}
-                period="month"
+                period={period}
+                onPeriodChange={handlePeriodChange}
               />
             </div>
-            {/* 
-        Chúng ta không cần div .calendarContainer riêng nữa,
-        nhưng giữ lại cũng không sao. Bỏ đi cho gọn.
-      */}
             <TransactionCalendar
               calendarData={calendarData}
               currentDate={currentDate}

@@ -3,29 +3,41 @@
 // ✅ Import axiosInstance từ file cấu hình cùng cấp
 import axiosInstance from "./axiosConfig.js";
 
+const getOverviewStats = async (params) => {
+  const response = await axiosInstance.get("/statistics/overview", { params });
+  return response.data;
+};
+
 // Hàm lấy dữ liệu thẻ tổng quan
-const getSummaryStats = (params) => {
-  return axiosInstance.get("/statistics/summary", { params });
+const getSummaryStats = async (params) => {
+  const response = await axiosInstance.get("/statistics/summary", { params });
+  return response.data;
 };
 
 // Hàm lấy dữ liệu cho biểu đồ xu hướng
-const getTrendData = (params) => {
-  return axiosInstance.get("/statistics/trend", { params });
+const getTrendData = async (params) => {
+  const response = await axiosInstance.get("/statistics/trend", { params });
+  return response.data;
 };
 
 // Hàm lấy dữ liệu cho biểu đồ cơ cấu
-const getCategoryData = (params) => {
-  return axiosInstance.get("/statistics/by-category", { params });
+const getCategoryData = async (params) => {
+  const response = await axiosInstance.get("/statistics/by-category", {
+    params,
+  });
+  return response.data;
 };
 
 // Hàm lấy danh sách giao dịch trong kỳ
-const getTransactionsInPeriod = (params) => {
-  return axiosInstance.get("/transactions", { params });
+const getTransactionsInPeriod = async (params) => {
+  const response = await axiosInstance.get("/transactions", { params });
+  return response.data;
 };
 
 // Thêm hàm xóa giao dịch
-const deleteTransaction = (id) => {
-  return axiosInstance.delete(`/transactions/${id}`);
+const deleteTransaction = async (id) => {
+  const response = await axiosInstance.delete(`/transactions/${id}`);
+  return response.data;
 };
 
 const statisticsService = {
@@ -34,6 +46,7 @@ const statisticsService = {
   getCategoryData,
   getTransactionsInPeriod,
   deleteTransaction,
+  getOverviewStats,
 };
 
 export default statisticsService;

@@ -1,18 +1,36 @@
 // src/pages/AccountPage.jsx
 import React, { useState, useEffect, useCallback } from "react";
-import axios from "axios";
-import { startOfMonth, endOfMonth, format } from "date-fns";
+import {
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+} from "date-fns";
 
 import Header from "../components/Header/Header";
 import Navbar from "../components/Navbar/Navbar";
 import Footer from "../components/Footer/Footer";
-import AccountPageHeader from "../components/Accounts/AccountPageHeader";
-import DateRangeNavigator from "../components/Common/DateRangeNavigator"; // ✅ 1. Import component mới
+import DateRangeNavigator from "../components/Common/DateRangeNavigator";
 import TotalBalanceDisplay from "../components/Accounts/TotalBalanceDisplay";
 import AccountList from "../components/Accounts/AccountList";
 import AddEditAccountModal from "../components/Accounts/AddEditAccountModal";
+import HeaderCard from "../components/Common/HeaderCard";
+import SummaryWidget from "../components/Common/SummaryWidget";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faWallet, faPlus } from "@fortawesome/free-solid-svg-icons";
+import Button from "../components/Common/Button";
 
 import styles from "../styles/AccountPage.module.css";
+import {
+  getAccounts,
+  addAccount,
+  editAccount,
+  deleteAccount,
+  getTransactionCountByAccount,
+} from "../api/accountsService";
+import statisticsService from "../api/statisticsService";
 
 const AccountPage = () => {
   // --- State quản lý chung ---
@@ -22,59 +40,95 @@ const AccountPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  // ✅ 2. THAY ĐỔI STATE QUẢN LÝ THỜI GIAN
-  // Bỏ state `currentDate` cũ, thay bằng `dateRange`
-  const [dateRange, setDateRange] = useState({
-    startDate: startOfMonth(new Date()),
-    endDate: endOfMonth(new Date()),
+  const [highlightedAccountId, setHighlightedAccountId] = useState(null);
+  const [transactionCounts, setTransactionCounts] = useState({});
+  const [summaryData, setSummaryData] = useState({
+    income: { amount: 0, comparison: "..." },
+    expense: { amount: 0, comparison: "..." },
   });
-  const [period, setPeriod] = useState("month"); // Thêm state để biết preset nào đang được chọn
 
-  // ✅ 3. CẬP NHẬT HÀM GỌI API
-  const fetchAccountsData = useCallback(async () => {
+  // THAY ĐỔI: Chuyển sang quản lý state bằng period và currentDate
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [period, setPeriod] = useState("month");
+
+  // CẬP NHẬT: Hàm gọi API sử dụng period và currentDate
+  const fetchPageData = useCallback(async () => {
     setIsLoading(true);
     setError("");
     try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("Vui lòng đăng nhập.");
-
-      // Xây dựng params cho API một cách chính xác
-      const params = {};
-      if (dateRange.startDate && dateRange.endDate) {
-        // Đảm bảo startDate là đầu ngày
-        const start = new Date(dateRange.startDate);
-        start.setHours(0, 0, 0, 0);
-
-        // Đảm bảo endDate là cuối ngày
-        const end = new Date(dateRange.endDate);
-        end.setHours(23, 59, 59, 999);
-
-        // Gửi dưới dạng chuỗi ISO để backend có thể đọc chính xác cả ngày và giờ
-        params.startDate = start.toISOString();
-        params.endDate = end.toISOString();
+      let startDate, endDate;
+      if (period === "week") {
+        startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
+        endDate = endOfWeek(currentDate, { weekStartsOn: 1 });
+      } else if (period === "month") {
+        startDate = startOfMonth(currentDate);
+        endDate = endOfMonth(currentDate);
+      } else if (period === "year") {
+        startDate = startOfYear(currentDate);
+        endDate = endOfYear(currentDate);
+      }
+      if (startDate && endDate) {
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
       }
 
-      const response = await axios.get("http://localhost:5000/api/accounts", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: params, // Gửi params đã được chuẩn hóa
-      });
+      const queryParams = {
+        startDate: startDate ? startDate.toISOString() : undefined,
+        endDate: endDate ? endDate.toISOString() : undefined,
+      };
 
-      setAccounts(response.data || []);
+      // Gọi đồng thời nhiều API
+      const [accountsData, summary, counts] = await Promise.all([
+        getAccounts(queryParams),
+        statisticsService.getOverviewStats(queryParams),
+        Promise.all(
+          (await getAccounts(queryParams)).map((acc) =>
+            getTransactionCountByAccount({
+              accountId: acc.id,
+              ...queryParams,
+            }).then((count) => ({ [acc.id]: count }))
+          )
+        ).then((results) =>
+          results.reduce((acc, val) => ({ ...acc, ...val }), {})
+        ),
+      ]);
+
+      setAccounts(accountsData || []);
+      if (summary && summary.income && summary.expense) {
+        setSummaryData({
+          income: {
+            amount: summary.income.amount,
+            comparison: summary.income.changeDescription,
+          },
+          expense: {
+            amount: summary.expense.amount,
+            comparison: summary.expense.changeDescription,
+          },
+        });
+      }
+      setTransactionCounts(counts);
     } catch (err) {
       setError(
-        err.response?.data?.message || "Không thể tải dữ liệu nguồn tiền."
+        err.response?.data?.message ||
+          "Không thể tải dữ liệu cho trang nguồn tiền."
       );
     } finally {
       setIsLoading(false);
     }
-  }, [dateRange]); // Phụ thuộc vào `dateRange`
+  }, [period, currentDate]);
 
   useEffect(() => {
-    fetchAccountsData();
-  }, [refreshTrigger, fetchAccountsData]);
+    fetchPageData();
+  }, [refreshTrigger, fetchPageData]);
 
   const handleForceRefresh = () => setRefreshTrigger((prev) => prev + 1);
+
+  // CÁC HÀM HANDLER MỚI cho DateRangeNavigator
+  const handleDateChange = (newDate) => setCurrentDate(newDate);
+  const handlePeriodChange = (newPeriod) => {
+    setPeriod(newPeriod);
+    setCurrentDate(new Date());
+  };
 
   // --- Các hàm xử lý Modal (không đổi) ---
   const handleOpenAddModal = () => {
@@ -93,15 +147,7 @@ const AccountPage = () => {
   };
 
   const handleFormSubmit = async (formData) => {
-    const token = localStorage.getItem("token");
     const isEditing = !!editingAccount;
-
-    const apiUrl = isEditing
-      ? `http://localhost:5000/api/accounts/${editingAccount.id}`
-      : "http://localhost:5000/api/accounts";
-
-    const apiMethod = isEditing ? "put" : "post";
-
     const payload = {
       name: formData.name,
       type: formData.type === "cash" ? "TIENMAT" : "THENGANHANG",
@@ -109,16 +155,16 @@ const AccountPage = () => {
       bankName: formData.bankName,
       accountNumber: formData.accountNumber,
     };
-
     if (isEditing) {
       delete payload.initialBalance;
       delete payload.type;
     }
-
     try {
-      await axios[apiMethod](apiUrl, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      if (isEditing) {
+        await editAccount(editingAccount.id, payload);
+      } else {
+        await addAccount(payload);
+      }
       handleCloseModal();
       handleForceRefresh();
     } catch (error) {
@@ -135,6 +181,16 @@ const AccountPage = () => {
     0
   );
 
+  // Hàm xóa tài khoản
+  const handleDeleteAccount = async (accountId) => {
+    try {
+      await deleteAccount(accountId);
+      handleForceRefresh();
+    } catch (err) {
+      console.error("Lỗi khi xóa nguồn tiền:", err);
+    }
+  };
+
   return (
     <div
       style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
@@ -142,34 +198,58 @@ const AccountPage = () => {
       <Header />
       <Navbar />
       <main className={styles.pageWrapper}>
-        {/* ✅ 4. THAY ĐỔI HEADER */}
-        <AccountPageHeader onAddAccountClick={handleOpenAddModal} />
-
-        {/* Thêm component DateRangeNavigator ngay dưới Header */}
-        <div style={{ marginTop: "20px", marginBottom: "20px" }}>
-          <DateRangeNavigator
-            dateRange={dateRange}
-            onDateChange={setDateRange}
-            period={period}
-            onPeriodChange={setPeriod}
-          />
-        </div>
+        <HeaderCard
+          title={
+            <>
+              <FontAwesomeIcon icon={faWallet} /> Quản Lý Nguồn Tiền
+            </>
+          }
+          action={
+            <Button
+              onClick={handleOpenAddModal}
+              icon={<FontAwesomeIcon icon={faPlus} />}
+              variant="secondary"
+            >
+              Thêm Nguồn Tiền
+            </Button>
+          }
+          extra={
+            <SummaryWidget
+              incomeData={summaryData.income}
+              expenseData={summaryData.expense}
+              isLoading={isLoading}
+            />
+          }
+          filter={
+            <DateRangeNavigator
+              period={period}
+              currentDate={currentDate}
+              onDateChange={handleDateChange}
+              onPeriodChange={handlePeriodChange}
+            />
+          }
+        />
 
         <div className={styles.mainContent}>
           <div className={styles.leftColumn}>
-            <TotalBalanceDisplay accounts={accounts} isLoading={isLoading} />
+            <TotalBalanceDisplay
+              accounts={accounts}
+              isLoading={isLoading}
+              highlightedAccountId={highlightedAccountId}
+              onHoverAccount={setHighlightedAccountId}
+            />
           </div>
           <div className={styles.rightColumn}>
-            {/* Sửa lại file AccountList để hiển thị thanh activity bar 
-                          thay vì progress bar cũ.
-                        */}
             <AccountList
               accounts={accounts}
               totalBalance={totalBalance}
               isLoading={isLoading}
               error={error}
               onEditRequest={handleOpenEditModal}
-              onDeleteSuccess={handleForceRefresh}
+              onDeleteAccount={handleDeleteAccount}
+              highlightedAccountId={highlightedAccountId}
+              onHoverAccount={setHighlightedAccountId}
+              transactionCounts={transactionCounts}
             />
           </div>
         </div>

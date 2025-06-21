@@ -34,8 +34,8 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(account));
       setIsSuccess(true);
       setMessage("Đăng nhập thành công! Đang chuyển hướng...");
-      setTimeout(() => navigate("/HomePage"), 1500);
-    } catch (err) {
+      setTimeout(() => navigate("/homepage"), 1500);
+    } catch {
       setIsSuccess(false);
       setMessage("Đăng nhập thất bại! Vui lòng kiểm tra lại thông tin.");
     }

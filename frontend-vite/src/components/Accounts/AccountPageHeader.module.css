@@ -11,46 +11,33 @@
 .titleSection {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 18px;
 }
 
 .titleIcon {
-  font-size: 1.8rem;
+  font-size: 2.2rem;
   color: #3f51b5;
 }
 
 .title {
-  font-size: 1.2rem;
+  font-size: 1.35rem;
   color: #2c3e50;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
+  letter-spacing: 0.01em;
 }
 
-.addButton {
-  background-color: #3f51b5;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: box-shadow 0.2s, transform 0.2s, background 0.25s;
-  box-shadow: 0 4px 12px #3f51b520, 0 1px 3px #0002;
+.addButton:hover:not(:disabled) {
+  box-shadow: 0 8px 32px #6a5af950;
+  transform: scale(1.04) translateY(-2px);
+  filter: brightness(1.08);
 }
-
-.addButton:hover {
-  transform: translateY(-2px) scale(1.04);
-  background-color: #303f9f;
-  box-shadow: 0 8px 24px #3f51b540, 0 3px 6px #0002;
-  filter: brightness(1.08) drop-shadow(0 0 6px #3f51b540);
-}
-
 .addButton:active {
-  transform: translateY(0);
+  transform: scale(0.98);
+}
+.addButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .primaryButton {

@@ -1,0 +1,82 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.05rem;
+  border: none;
+  border-radius: 10px;
+  height: 44px;
+  padding: 0 32px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.18s, background 0.2s;
+  box-shadow: 0 4px 16px #6a5af930;
+  outline: none;
+  gap: 12px;
+}
+.primary {
+  background: linear-gradient(90deg, #4f8cff 0%, #6a5af9 100%);
+  color: #fff;
+}
+.primary:hover:not(:disabled) {
+  box-shadow: 0 8px 32px #6a5af950;
+  transform: scale(1.04) translateY(-2px);
+  filter: brightness(1.08);
+}
+.primary:active {
+  transform: scale(0.98);
+}
+.primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Secondary (nhỏ, xanh dương đậm, gần giống navbar) */
+.secondary {
+  background: #3f51b5;
+  color: #fff;
+  font-size: 0.97rem;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #3f51b520;
+  animation: popBtn 0.7s;
+}
+.secondary:hover:not(:disabled) {
+  background: #32408f;
+  box-shadow: 0 4px 16px #3f51b540;
+  filter: brightness(1.08);
+}
+.secondary:active {
+  transform: scale(0.98);
+}
+.secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.2em;
+  margin-right: 6px;
+}
+.loading {
+  font-size: 0.95em;
+  font-weight: 500;
+  color: #fff;
+}
+
+@keyframes popBtn {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  80% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}

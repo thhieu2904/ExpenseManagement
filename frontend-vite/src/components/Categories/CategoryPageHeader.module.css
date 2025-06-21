@@ -1,54 +1,24 @@
 /* src/components/Categories/CategoryPageHeader.module.css */
 .categoryHeaderContainer {
   display: flex;
-  justify-content: space-between; /* Đẩy 2 Section ra xa nhau */
-  align-items: center; /* Căn các section theo chiều dọc */
+  flex-direction: column; /* Sắp xếp các tầng theo chiều dọc */
+  gap: 20px; /* Khoảng cách giữa các tầng */
   padding: 20px 25px;
   background-color: #f8f9fa;
   border-radius: 12px;
   margin-bottom: 25px;
-  flex-wrap: wrap; /* Cho phép xuống dòng trên mobile */
-  gap: 20px;
-}
-
-.leftSection {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.rightSection {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-  justify-content: flex-end; /* Đảm bảo các item con dồn về bên phải */
-}
-
-/* Nút "Thêm danh mục" */
-.addCategoryButton {
-  background-color: #4f46e5;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  /* ... các style khác không đổi ... */
 }
 
 .titleSection {
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%; /* Chiếm toàn bộ chiều rộng */
 }
 
 .titleIcon {
   font-size: 1.8rem;
   color: #555;
-  transform: rotate(-15deg);
 }
 
 .title {
@@ -58,6 +28,21 @@
   margin: 0;
 }
 
+.controlsContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* Căn các item con lên trên cùng */
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.leftControls {
+  display: flex;
+  flex-direction: column; /* Xếp chồng các nhóm control */
+  align-items: flex-start; /* Căn các nhóm control về bên trái */
+  gap: 15px; /* Khoảng cách giữa 2 hàng control */
+}
+
 .tabButtons {
   display: flex;
   gap: 10px;
@@ -65,8 +50,6 @@
   padding: 6px;
   border-radius: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  align-self: flex-start;
-  /* margin-bottom: auto; */ /* Đẩy tab lên nếu leftSection được kéo dài bởi align-items: flex-end */
 }
 
 .tabButton {
@@ -86,6 +69,7 @@
 .tabButton.active {
   background-color: #ffe0e6;
   color: #d9534f;
+  font-weight: 600;
   box-shadow: 0 2px 4px rgba(217, 83, 79, 0.2);
 }
 
@@ -93,21 +77,14 @@
   background-color: #e9ecef;
 }
 
-.addButtonContainer {
-  /* Với align-items: flex-end trên .categoryHeaderContainer,
-     container này sẽ tự động được căn chỉnh ở dưới cùng bên phải.
-     Chúng ta có thể không cần nhiều style ở đây nữa. */
-  /* Nếu muốn nút có khoảng cách với cạnh dưới của khung, có thể thêm padding vào .categoryHeaderContainer */
-}
-
 .addCategoryButton {
-  background-color: #3f51b5;
+  background-color: #4f46e5;
   color: white;
   border: none;
   padding: 10px 20px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
   display: flex;
@@ -115,39 +92,27 @@
   gap: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   white-space: nowrap;
-  /* Không cần margin-top nữa nếu align-items: flex-end hoạt động như mong muốn */
 }
 
 .addCategoryButton:hover {
-  background-color: #303f9f;
+  background-color: #4338ca;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-  .categoryHeaderContainer {
+@media (max-width: 992px) {
+  .controlsContainer {
     flex-direction: column;
-    align-items: stretch; /* Reset lại align-items cho mobile */
-    padding: 20px; /* Giảm padding trên mobile */
-    min-height: auto; /* Reset min-height */
+    align-items: stretch;
+    gap: 15px;
   }
-  .leftSection {
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 15px; /* Tạo khoảng cách với nút Thêm khi nó xuống dòng */
-  }
-  /* .titleSection không cần thay đổi nhiều */
-  .tabButtons {
-    justify-content: center;
-    width: auto;
-    align-self: center;
-  }
-  .addButtonContainer {
-    /* margin-top: 0; */ /* Reset margin-top nếu có */
-    display: flex;
+
+  .leftControls {
     justify-content: center;
   }
+
   .addCategoryButton {
-    width: auto;
+    width: 100%;
+    justify-content: center;
   }
 }

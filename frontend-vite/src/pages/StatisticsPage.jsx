@@ -1,7 +1,14 @@
 // THAY THẾ TOÀN BỘ FILE: frontend-vite/src/pages/StatisticsPage.jsx
 
 import React, { useState, useEffect, useCallback } from "react";
-import { startOfMonth, endOfMonth } from "date-fns";
+import {
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+} from "date-fns";
 
 import statisticsService from "../api/statisticsService";
 import CategoryList from "../components/Categories/CategoryList";
@@ -27,11 +34,7 @@ const StatCard = ({ title, amount, type }) => (
 );
 const StatisticsPage = () => {
   // State bộ lọc
-  const [dateRange, setDateRange] = useState({
-    startDate: startOfMonth(new Date()),
-    endDate: endOfMonth(new Date()),
-  });
-
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [period, setPeriod] = useState("month");
   const [activeTab, setActiveTab] = useState("trend");
   const [categoryType, setCategoryType] = useState("CHITIEU");
@@ -78,9 +81,23 @@ const StatisticsPage = () => {
   const fetchPageData = useCallback(
     async (page = 1, categoryId = null) => {
       setIsLoading(true);
+
+      // THAY ĐỔI: Tính toán startDate, endDate từ period và currentDate
+      let startDate, endDate;
+      if (period === "week") {
+        startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
+        endDate = endOfWeek(currentDate, { weekStartsOn: 1 });
+      } else if (period === "month") {
+        startDate = startOfMonth(currentDate);
+        endDate = endOfMonth(currentDate);
+      } else if (period === "year") {
+        startDate = startOfYear(currentDate);
+        endDate = endOfYear(currentDate);
+      }
+
       const params = {
-        startDate: dateRange.startDate?.toISOString(),
-        endDate: dateRange.endDate?.toISOString(),
+        startDate: startDate?.toISOString(),
+        endDate: endDate?.toISOString(),
         page: page,
         limit: 10,
       };
@@ -90,11 +107,11 @@ const StatisticsPage = () => {
           statisticsService.getSummaryStats(params),
           statisticsService.getTransactionsInPeriod(params),
         ]);
-        setStats(summaryRes.data);
-        setTransactions(transactionsRes.data.data);
+        setStats(summaryRes);
+        setTransactions(transactionsRes.data);
         setPagination({
-          currentPage: transactionsRes.data.currentPage,
-          totalPages: transactionsRes.data.totalPages,
+          currentPage: transactionsRes.currentPage,
+          totalPages: transactionsRes.totalPages,
         });
       } catch (error) {
         console.error("Lỗi tải dữ liệu chính:", error);
@@ -102,29 +119,43 @@ const StatisticsPage = () => {
         setIsLoading(false);
       }
     },
-    [dateRange]
+    [currentDate, period] // THAY ĐỔI: Phụ thuộc vào state mới
   );
 
   // ✅ Hàm gọi API cho biểu đồ cơ cấu
   const fetchCategoryChartData = useCallback(async () => {
     setIsChartLoading(true);
+
+    // THAY ĐỔI: Tính toán startDate, endDate từ period và currentDate
+    let startDate, endDate;
+    if (period === "week") {
+      startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
+      endDate = endOfWeek(currentDate, { weekStartsOn: 1 });
+    } else if (period === "month") {
+      startDate = startOfMonth(currentDate);
+      endDate = endOfMonth(currentDate);
+    } else if (period === "year") {
+      startDate = startOfYear(currentDate);
+      endDate = endOfYear(currentDate);
+    }
+
     const params = {
-      startDate: dateRange.startDate?.toISOString(),
-      endDate: dateRange.endDate?.toISOString(),
-      type: categoryType, // ✅ Gửi loại (THUNHAP/CHITIEU) lên API
+      startDate: startDate?.toISOString(),
+      endDate: endDate?.toISOString(),
+      type: categoryType,
     };
     try {
       const res = await statisticsService.getCategoryData(params);
-      setCategoryChartData(res.data);
+      setCategoryChartData(res);
       // Tính tổng giá trị của biểu đồ
-      const total = res.data.reduce((sum, item) => sum + item.value, 0);
+      const total = res.reduce((sum, item) => sum + item.value, 0);
       setCategoryChartTotal(total);
     } catch (error) {
       console.error("Lỗi tải dữ liệu biểu đồ cơ cấu:", error);
     } finally {
       setIsChartLoading(false);
     }
-  }, [dateRange, categoryType]); // ✅ Phụ thuộc vào cả dateRange và categoryType
+  }, [currentDate, period, categoryType]); // THAY ĐỔI: Phụ thuộc vào state mới
 
   // useEffect gọi khi trang tải lần đầu hoặc đổi khoảng thời gian
   useEffect(() => {
@@ -214,6 +245,13 @@ const StatisticsPage = () => {
     }
   };
 
+  // THAY ĐỔI: Thêm 2 handlers cho navigator
+  const handleDateChange = (newDate) => setCurrentDate(newDate);
+  const handlePeriodChange = (newPeriod) => {
+    setPeriod(newPeriod);
+    setCurrentDate(new Date());
+  };
+
   return (
     <div className={styles.pageContainer}>
       <Header userName={userData?.name} userAvatar={userData?.avatarUrl} />
@@ -222,10 +260,10 @@ const StatisticsPage = () => {
         <div className={styles.headerSection}>
           <h1 className={styles.pageTitle}>Báo cáo & Phân tích</h1>
           <DateRangeNavigator
-            dateRange={dateRange}
-            onDateChange={setDateRange}
             period={period}
-            onPeriodChange={setPeriod}
+            currentDate={currentDate}
+            onDateChange={handleDateChange}
+            onPeriodChange={handlePeriodChange}
           />
         </div>
 
@@ -262,7 +300,7 @@ const StatisticsPage = () => {
             {activeTab === "trend" && (
               <IncomeExpenseTrendChart
                 period={period}
-                currentDate={dateRange.startDate}
+                currentDate={currentDate}
               />
             )}
             {activeTab === "structure" && (

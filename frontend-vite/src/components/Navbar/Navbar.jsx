@@ -6,14 +6,13 @@ const Navbar = () => {
   // Danh sách các mục điều hướng
   // Quan trọng: 'path' phải khớp với các định nghĩa route trong App.jsx của bạn
   const navigationItems = [
-    { name: "Trang chủ", path: "/HomePage" }, // Hoặc '/' nếu bạn muốn trang chủ là root
-    { name: "Danh mục", path: "/CategoriesPage" },
-    { name: "Tài khoản", path: "/AccountPage" },
-    { name: "Mục tiêu", path: "/GoalsPage" },
-    // { name: "Ngân sách", path: "/budgets" },
-    { name: "Giao dịch", path: "/TransactionsPage" },
-    { name: "Thống kê", path: "/StatisticsPage" },
-    { name: "Cá nhân", path: "/PersonInfo" },
+    { name: "Trang chủ", path: "/homepage" },
+    { name: "Danh mục", path: "/categories" },
+    { name: "Tài khoản", path: "/accounts" },
+    { name: "Mục tiêu", path: "/goals" },
+    { name: "Giao dịch", path: "/transactions" },
+    { name: "Thống kê", path: "/statistics" },
+    // { name: "Cá nhân", path: "/personinfo" },
   ];
 
   return (

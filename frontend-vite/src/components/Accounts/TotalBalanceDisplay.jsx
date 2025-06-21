@@ -59,7 +59,12 @@ const renderCustomizedLabel = ({
   );
 };
 
-const TotalBalanceDisplay = ({ accounts, isLoading }) => {
+const TotalBalanceDisplay = ({
+  accounts,
+  isLoading,
+  highlightedAccountId,
+  onHoverAccount,
+}) => {
   if (isLoading) {
     return (
       <div className={styles.loadingContainer}>
@@ -88,7 +93,6 @@ const TotalBalanceDisplay = ({ accounts, isLoading }) => {
   // 4. Tạo dữ liệu cho biểu đồ DỰA TRÊN TỔNG TÀI SẢN
   const chartData = positiveAccounts.map((acc) => ({
     ...acc,
-    // Công thức mới: chia cho tổng tài sản thay vì tổng số dư ròng
     percent: totalPositiveBalance > 0 ? acc.balance / totalPositiveBalance : 0,
   }));
 
@@ -130,11 +134,24 @@ const TotalBalanceDisplay = ({ accounts, isLoading }) => {
               labelLine={false}
               label={renderCustomizedLabel}
               isAnimationActive={true}
+              onMouseLeave={() => onHoverAccount && onHoverAccount(null)}
             >
               {chartData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
                   fill={COLORS[index % COLORS.length]}
+                  stroke={highlightedAccountId === entry.id ? "#222" : "#fff"}
+                  strokeWidth={highlightedAccountId === entry.id ? 4 : 2}
+                  onMouseEnter={() =>
+                    onHoverAccount && onHoverAccount(entry.id)
+                  }
+                  style={{
+                    cursor: "pointer",
+                    filter:
+                      highlightedAccountId === entry.id
+                        ? "drop-shadow(0 0 8px #8884d8)"
+                        : "none",
+                  }}
                 />
               ))}
             </Pie>

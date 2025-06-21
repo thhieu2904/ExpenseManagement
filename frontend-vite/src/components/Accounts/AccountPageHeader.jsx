@@ -3,6 +3,7 @@ import React from "react";
 import styles from "./AccountPageHeader.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faWallet } from "@fortawesome/free-solid-svg-icons";
+import Button from "../Common/Button";
 
 const AccountPageHeader = ({ onAddAccountClick }) => {
   return (
@@ -11,10 +12,13 @@ const AccountPageHeader = ({ onAddAccountClick }) => {
         <FontAwesomeIcon icon={faWallet} className={styles.titleIcon} />
         <h2 className={styles.title}>Quản Lý Nguồn Tiền</h2>
       </div>
-      <button onClick={onAddAccountClick} className={`${styles.primaryButton}`}>
-        <FontAwesomeIcon icon={faPlus} />
-        <span>Thêm Nguồn Tiền</span>
-      </button>
+      <Button
+        onClick={onAddAccountClick}
+        icon={<FontAwesomeIcon icon={faPlus} />}
+        variant="secondary"
+      >
+        Thêm Nguồn Tiền
+      </Button>
     </div>
   );
 };
