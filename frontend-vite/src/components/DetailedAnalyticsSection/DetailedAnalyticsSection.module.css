@@ -60,12 +60,16 @@
   }
 }
 
-/* Thêm CSS cho header mới */
-.headerWithLink {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Sửa lại: Style cho header chỉ chứa tiêu đề */
+.header {
   margin-bottom: 10px; /* Thêm khoảng cách với phần controls bên dưới */
+}
+
+/* Thêm mới: Container cho link "Xem chi tiết" ở cuối */
+.footerLinkContainer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
 }
 
 .detailsLink {
@@ -73,7 +77,9 @@
   color: var(--primary-color, #007bff);
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.3s ease, transform 0.3s ease;
+  transition:
+    color 0.3s ease,
+    transform 0.3s ease;
 }
 
 .detailsLink:hover {

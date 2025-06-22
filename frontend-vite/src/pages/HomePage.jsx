@@ -1,6 +1,6 @@
 // Mở và THAY THẾ file: frontend-vite/src/pages/HomePage.jsx
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Header from "../components/Header/Header";
 import Navbar from "../components/Navbar/Navbar";
 import StatsOverview from "../components/StatsOverview/StatsOverview";
@@ -8,69 +8,173 @@ import DetailedAnalyticsSection from "../components/DetailedAnalyticsSection/Det
 import RecentTransactions from "../components/RecentTransactions/RecentTransactions";
 import Footer from "../components/Footer/Footer";
 import { getStatsOverview } from "../api/homePageService";
+import { getTransactions, deleteTransaction } from "../api/transactionsService";
+
+const ITEMS_PER_PAGE = 5;
 
 const HomePage = () => {
-  // State cho thông tin người dùng
   const [userData, setUserData] = useState({ name: "", avatarUrl: null });
-
-  // State cho StatsOverview
   const [statsData, setStatsData] = useState(null);
-  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [transactions, setTransactions] = useState([]);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    hasMore: true,
+  });
+  const [transactionFilters, setTransactionFilters] = useState({});
+  const [isLoading, setIsLoading] = useState({
+    stats: true,
+    transactions: true,
+  });
+  const [error, setError] = useState("");
 
-  // useEffect để lấy thông tin người dùng (giữ nguyên)
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const account = JSON.parse(storedUser);
-        setUserData({
-          name:
-            account.username ||
-            account.fullName ||
-            account.name ||
-            "Người dùng",
-          avatarUrl: account.avatarUrl || account.profilePicture || null,
-        });
-      } catch (error) {
-        console.error(
-          "Lỗi khi parse thông tin người dùng từ localStorage:",
-          error
-        );
-      }
+  // Modals state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
+
+  const isInitialMount = useRef(true);
+
+  // --- API Abstraction ---
+  const fetchStats = useCallback(async () => {
+    try {
+      const response = await getStatsOverview();
+      setStatsData(response.data);
+    } catch (err) {
+      console.error("Lỗi khi tải dữ liệu tổng quan:", err);
     }
   }, []);
 
-  // Fetch dữ liệu cho StatsOverview
-  useEffect(() => {
-    const fetchStats = async () => {
-      setIsLoadingStats(true);
+  const fetchTransactions = useCallback(
+    async (page, filters, shouldRefresh) => {
+      setIsLoading((prev) => ({ ...prev, transactions: true }));
+      if (page === 1) setError("");
+
       try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          setIsLoadingStats(false);
-          return;
+        const response = await getTransactions(page, ITEMS_PER_PAGE, filters);
+        const { data, totalPages, currentPage } = response.data;
+        if (data) {
+          setTransactions((prev) =>
+            shouldRefresh ? data : [...prev, ...data]
+          );
+          setPagination({ currentPage, hasMore: currentPage < totalPages });
         }
-        const response = await getStatsOverview(token);
-        setStatsData(response.data);
       } catch (err) {
-        console.error("Lỗi khi tải dữ liệu tổng quan cho HomePage:", err);
+        setError("Không thể tải danh sách giao dịch.");
+        console.error("Lỗi fetchTransactions:", err);
       } finally {
-        setIsLoadingStats(false);
+        setIsLoading((prev) => ({ ...prev, transactions: false }));
       }
-    };
-    fetchStats();
+    },
+    []
+  );
+
+  const refreshStatsAndTransactions = useCallback(
+    async (filters = {}) => {
+      setIsLoading({ stats: true, transactions: true });
+      await Promise.all([fetchStats(), fetchTransactions(1, filters, true)]);
+      setIsLoading({ stats: false, transactions: false });
+    },
+    [fetchStats, fetchTransactions]
+  );
+
+  // --- Initial Data Load ---
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) setUserData(JSON.parse(storedUser));
+
+    refreshStatsAndTransactions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ✅ SỬA: Effect 2: Tải lại giao dịch KHI BỘ LỌC THAY ĐỔI
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    fetchTransactions(1, transactionFilters, true);
+  }, [transactionFilters, fetchTransactions]);
+
+  // --- Handlers ---
+  const handleLoadMore = () => {
+    if (!isLoading.transactions && pagination.hasMore) {
+      fetchTransactions(pagination.currentPage + 1, transactionFilters, false);
+    }
+  };
+
+  const handleCategorySelectFromAnalytics = useCallback((categoryId) => {
+    const newFilters = categoryId ? { categoryId } : {};
+    setTransactionFilters(newFilters);
+  }, []);
+
+  const handleEditRequest = (transaction) => {
+    setEditingTransaction(transaction);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteRequest = (transactionId) => {
+    setTransactionToDelete(transactionId);
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!transactionToDelete) return;
+    try {
+      await deleteTransaction(transactionToDelete);
+      await refreshStatsAndTransactions(transactionFilters);
+    } catch (err) {
+      alert("Xóa giao dịch thất bại!");
+      console.error("Lỗi khi xóa giao dịch:", err);
+    } finally {
+      setIsConfirmOpen(false);
+      setTransactionToDelete(null);
+    }
+  };
+
+  const handleSubmitSuccess = async () => {
+    setIsModalOpen(false);
+    setEditingTransaction(null);
+    await refreshStatsAndTransactions(transactionFilters);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingTransaction(null);
+  };
+
+  const closeConfirm = () => {
+    setIsConfirmOpen(false);
+    setTransactionToDelete(null);
+  };
 
   return (
     <div>
       <Header userName={userData.name} userAvatar={userData.avatarUrl} />
       <Navbar />
       <main style={{ padding: "20px" }}>
-        <StatsOverview stats={statsData} loading={isLoadingStats} />
+        <StatsOverview stats={statsData} loading={isLoading.stats} />
 
-        <DetailedAnalyticsSection />
+        <DetailedAnalyticsSection
+          onCategorySelect={handleCategorySelectFromAnalytics}
+        />
 
-        <RecentTransactions />
+        <RecentTransactions
+          transactions={transactions}
+          isLoading={isLoading.transactions}
+          error={error}
+          hasMore={pagination.hasMore}
+          onLoadMore={handleLoadMore}
+          onEditRequest={handleEditRequest}
+          onDeleteRequest={handleDeleteRequest}
+          onConfirmDelete={handleConfirmDelete}
+          onSubmitSuccess={handleSubmitSuccess}
+          onCloseModal={closeModal}
+          onCloseConfirm={closeConfirm}
+          isModalOpen={isModalOpen}
+          isConfirmOpen={isConfirmOpen}
+          editingTransaction={editingTransaction}
+        />
       </main>
       <Footer />
     </div>

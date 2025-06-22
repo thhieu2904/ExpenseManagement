@@ -1,29 +1,29 @@
 // Mở và THAY THẾ TOÀN BỘ file: frontend-vite/src/pages/TransactionsPage.jsx
 
 import React, { useState, useEffect, useCallback } from "react";
-import axios from "axios";
-import styles from "../styles/TransactionsPage.module.css";
-import { faFilter } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { startOfWeek, endOfWeek } from "date-fns";
 import { useSearchParams } from "react-router-dom";
+import { startOfWeek, endOfWeek } from "date-fns";
 
-// Import các component chung
+// Services & Config
+import axiosInstance from "../api/axiosConfig";
+import { deleteTransaction } from "../api/transactionsService";
+
+// Components
 import Header from "../components/Header/Header";
 import Navbar from "../components/Navbar/Navbar";
 import Footer from "../components/Footer/Footer";
 import StatsOverview from "../components/StatsOverview/StatsOverview";
 import DateRangeNavigator from "../components/Common/DateRangeNavigator";
-
-// Import các component con của trang
 import TransactionCalendar from "../components/Transactions/TransactionCalendar";
 import TransactionFilterPanel from "../components/Transactions/TransactionFilterPanel";
 import TransactionList from "../components/Transactions/TransactionList";
 import AddEditTransactionModal from "../components/Transactions/AddEditTransactionModal";
 import ConfirmDialog from "../components/Common/ConfirmDialog";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFilter } from "@fortawesome/free-solid-svg-icons";
+import styles from "../styles/TransactionsPage.module.css";
 
 const TransactionsPage = () => {
-  // --- STATE MANAGEMENT ---
   const [currentDate, setCurrentDate] = useState(new Date());
   const [period, setPeriod] = useState("month");
   const [statsData, setStatsData] = useState(null);
@@ -35,112 +35,105 @@ const TransactionsPage = () => {
   });
   const [calendarData, setCalendarData] = useState({});
   const [filters, setFilters] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // State cho modals
+  // Modals
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState(null);
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [searchParams] = useSearchParams();
+  // API Call Abstraction
+  const fetchDataForPage = useCallback(
+    async (date, viewPeriod, currentFilters, page = 1) => {
+      setIsLoading(true);
+      setError("");
 
-  // --- API CALLS ---
-  const fetchDataForPage = async (date, period, currentFilters, page = 1) => {
-    setIsLoading(true);
-    setError("");
-    const token = localStorage.getItem("token");
+      const getRequestParams = () => {
+        let params = { page, limit: 10, ...currentFilters };
+        if (viewPeriod === "week") {
+          params.startDate = startOfWeek(date, {
+            weekStartsOn: 1,
+          }).toISOString();
+          params.endDate = endOfWeek(date, { weekStartsOn: 1 }).toISOString();
+        } else if (viewPeriod === "year") {
+          params.year = date.getFullYear();
+        } else {
+          // month
+          params.year = date.getFullYear();
+          params.month = date.getMonth() + 1;
+        }
+        return params;
+      };
 
-    const params = {
-      page,
-      limit: 10,
-      ...currentFilters,
-    };
-    if (period === "week") {
-      const startDate = startOfWeek(date, { weekStartsOn: 1 });
-      const endDate = endOfWeek(date, { weekStartsOn: 1 });
-      params.startDate = startDate.toISOString();
-      params.endDate = endDate.toISOString();
-    } else if (period === "year") {
-      params.year = date.getFullYear();
-    } else {
-      params.year = date.getFullYear();
-      params.month = date.getMonth() + 1;
-    }
+      const overviewParams = {
+        year: date.getFullYear(),
+        month: date.getMonth() + 1,
+      };
 
-    const overviewParams = {
-      year: date.getFullYear(),
-      month: date.getMonth() + 1,
-    };
+      try {
+        const [statsRes, calendarRes, transactionsRes] = await Promise.all([
+          axiosInstance.get("/statistics/overview", { params: overviewParams }),
+          axiosInstance.get("/statistics/calendar", { params: overviewParams }),
+          axiosInstance.get("/transactions", { params: getRequestParams() }),
+        ]);
 
-    try {
-      const [statsRes, calendarRes, transactionsRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/statistics/overview", {
-          headers: { Authorization: `Bearer ${token}` },
-          params: overviewParams,
-        }),
-        axios.get("http://localhost:5000/api/statistics/calendar", {
-          headers: { Authorization: `Bearer ${token}` },
-          params: overviewParams,
-        }),
-        axios.get("http://localhost:5000/api/transactions", {
-          headers: { Authorization: `Bearer ${token}` },
-          params,
-        }),
-      ]);
+        setStatsData(statsRes.data);
+        setCalendarData(calendarRes.data);
+        setTransactions(transactionsRes.data.data);
+        setPagination({
+          currentPage: transactionsRes.data.currentPage,
+          totalPages: transactionsRes.data.totalPages,
+          totalCount: transactionsRes.data.totalCount,
+        });
+      } catch (err) {
+        setError("Không thể tải dữ liệu trang. Vui lòng thử lại.");
+        console.error("Fetch data error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
 
-      setStatsData(statsRes.data);
-      setCalendarData(calendarRes.data);
-      setTransactions(transactionsRes.data.data);
-      setPagination({
-        currentPage: transactionsRes.data.currentPage,
-        totalPages: transactionsRes.data.totalPages,
-        totalCount: transactionsRes.data.totalCount,
-      });
-    } catch (err) {
-      setError("Không thể tải dữ liệu trang. Vui lòng thử lại.");
-      console.error("Fetch data error:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Effect to sync URL params to filter state on initial load
   useEffect(() => {
-    // Khi mount, nếu có query param accountId thì set vào filters
+    const categoryId = searchParams.get("categoryId");
     const accountId = searchParams.get("accountId");
-    if (accountId) {
-      setFilters((prev) => ({ ...prev, accountId }));
-      setPagination((p) => ({ ...p, currentPage: 1 }));
+    if (categoryId || accountId) {
+      const initialFilters = {};
+      if (categoryId) initialFilters.categoryId = categoryId;
+      if (accountId) initialFilters.accountId = accountId;
+      setFilters((prev) => ({ ...prev, ...initialFilters }));
+      // Clean up URL params after applying them
+      setSearchParams({}, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Main data fetching effect
   useEffect(() => {
     fetchDataForPage(currentDate, period, filters, pagination.currentPage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDate, period, filters, pagination.currentPage]);
 
-  // --- HANDLERS ---
-  const handleDateChange = (newDate) => {
-    setCurrentDate(newDate);
-    setPagination((p) => ({ ...p, currentPage: 1 }));
-  };
-
-  const handlePeriodChange = (newPeriod) => {
-    setPeriod(newPeriod);
-    setCurrentDate(new Date());
-    setPagination((p) => ({ ...p, currentPage: 1 }));
-  };
-
+  // Handlers
+  const handlePageChange = (newPage) =>
+    setPagination((p) => ({ ...p, currentPage: newPage }));
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
-    setPagination((p) => ({ ...p, currentPage: 1 }));
+    handlePageChange(1);
   };
-
-  const handlePageChange = (newPage) => {
-    setPagination((p) => ({ ...p, currentPage: newPage }));
+  const handleDateChange = (newDate) => {
+    setCurrentDate(newDate);
+    handlePageChange(1);
+  };
+  const handlePeriodChange = (newPeriod) => {
+    setPeriod(newPeriod);
+    handleDateChange(new Date());
   };
 
   const handleEditRequest = (transaction) => {
@@ -156,16 +149,11 @@ const TransactionsPage = () => {
   const handleConfirmDelete = async () => {
     if (!transactionToDelete) return;
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(
-        `http://localhost:5000/api/transactions/${transactionToDelete}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await deleteTransaction(transactionToDelete);
       fetchDataForPage(currentDate, period, filters, pagination.currentPage);
     } catch (err) {
       alert("Xóa giao dịch thất bại!");
+      console.error("Lỗi khi xóa giao dịch:", err);
     } finally {
       setIsConfirmOpen(false);
       setTransactionToDelete(null);
@@ -177,24 +165,16 @@ const TransactionsPage = () => {
     setEditingTransaction(null);
     fetchDataForPage(currentDate, period, filters, pagination.currentPage);
   };
-  console.log(
-    "GIÁ TRỊ STATE 'calendarData' TRƯỚC KHI TRUYỀN XUỐNG:",
-    calendarData
-  );
 
   return (
     <div>
       <Header />
       <Navbar />
       <main className={styles.pageWrapper}>
-        {/* Phần tổng quan thống kê (giữ nguyên) */}
         <div className={styles.overviewSection}>
           <StatsOverview stats={statsData} loading={isLoading} />
         </div>
-
-        {/* Phần nội dung chính với layout xếp chồng theo chiều dọc */}
         <div className={styles.mainContent}>
-          {/* ===== CARD 1: LỊCH GIAO DỊCH (Nằm ở trên) ===== */}
           <div className={styles.contentCard}>
             <div className={styles.cardHeader}>
               <h3 className={styles.cardTitle}>Lịch Giao Dịch</h3>
@@ -211,7 +191,6 @@ const TransactionsPage = () => {
             />
           </div>
 
-          {/* ===== CARD 2: BỘ LỌC VÀ DANH SÁCH (Nằm ở dưới) ===== */}
           <div className={styles.contentCard}>
             <fieldset className={styles.filterFieldset}>
               <legend className={styles.fieldsetLegend}>
@@ -221,7 +200,10 @@ const TransactionsPage = () => {
                 />
                 Bộ lọc giao dịch
               </legend>
-              <TransactionFilterPanel onFilterChange={handleFilterChange} />
+              <TransactionFilterPanel
+                onFilterChange={handleFilterChange}
+                initialFilters={filters}
+              />
             </fieldset>
             <div className={styles.listSection}>
               <TransactionList
@@ -254,7 +236,6 @@ const TransactionsPage = () => {
         title="Xác nhận xóa"
         message="Bạn có chắc chắn muốn xóa giao dịch này không? Hành động này không thể hoàn tác."
       />
-
       <Footer />
     </div>
   );

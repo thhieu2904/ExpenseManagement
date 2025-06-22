@@ -1,5 +1,5 @@
 import statisticsService from "./statisticsService";
-import { getYear, getMonth, startOfWeek, endOfWeek } from "date-fns";
+import { getYear, getMonth, startOfWeek } from "date-fns";
 
 /**
  * Lấy dữ liệu cho cả biểu đồ đường và biểu đồ tròn trong DetailedAnalyticsSection
@@ -11,7 +11,6 @@ export const getDetailedAnalyticsData = async (period, currentDate) => {
   const year = getYear(currentDate);
   const month = getMonth(currentDate) + 1;
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
 
   // 1. Xây dựng params cho API BIỂU ĐỒ ĐƯỜNG (TREND)
   let trendParams = {};
@@ -36,8 +35,7 @@ export const getDetailedAnalyticsData = async (period, currentDate) => {
   if (period === "week") {
     categoryParams = {
       period: "week",
-      startDate: weekStart.toISOString().split("T")[0],
-      endDate: weekEnd.toISOString().split("T")[0],
+      date: weekStart.toISOString().split("T")[0],
     };
   } else if (period === "month") {
     categoryParams = { period: "month", year, month };
@@ -53,14 +51,14 @@ export const getDetailedAnalyticsData = async (period, currentDate) => {
       statisticsService.getCategoryData(categoryParams),
     ]);
 
-    const rawCategoryData = categoryResponse.data || [];
+    const rawCategoryData = categoryResponse || [];
     const totalExpense = rawCategoryData.reduce(
       (sum, item) => sum + item.value,
       0
     );
     const categoryData = rawCategoryData;
 
-    return { trendData: trendResponse.data || [], categoryData, totalExpense };
+    return { trendData: trendResponse || [], categoryData, totalExpense };
   } catch (error) {
     console.error("Error fetching detailed analytics data:", error);
     throw error;

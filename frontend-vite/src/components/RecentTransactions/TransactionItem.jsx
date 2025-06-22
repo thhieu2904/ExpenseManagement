@@ -1,5 +1,6 @@
 // src/components/RecentTransactions/TransactionItem.jsx
 import React, { forwardRef } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./RecentTransactions.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
@@ -33,6 +34,8 @@ const formatCurrency = (amount) => {
 
 const TransactionItem = forwardRef(
   ({ transaction, onEditRequest, onDeleteRequest }, ref) => {
+    const navigate = useNavigate();
+
     if (!transaction) return null;
 
     const {
@@ -49,6 +52,12 @@ const TransactionItem = forwardRef(
     const handleEdit = () => onEditRequest(transaction);
     const handleDelete = () => onDeleteRequest(id);
 
+    const handleCategoryClick = () => {
+      if (category && category.id) {
+        navigate(`/transactions?categoryId=${category.id}`);
+      }
+    };
+
     const getStyleForAccount = (account) => {
       if (!account?.type) return styles.pmOther;
       switch (account.type) {
@@ -63,7 +72,6 @@ const TransactionItem = forwardRef(
 
     return (
       <tr ref={ref} className={styles.transactionRow}>
-        {/* ✅ THAY ĐỔI CẤU TRÚC Ô "THỜI GIAN" */}
         <td data-label="Thời gian">
           <div className={styles.dateTimeContainer}>
             <span className={styles.datePart}>{formatDateOnly(date)}</span>
@@ -78,7 +86,13 @@ const TransactionItem = forwardRef(
             className={styles.categoryIcon}
             style={{ marginRight: "8px" }}
           />
-          {category?.name || "N/A"}
+          <span
+            className={styles.categoryNameLink}
+            onClick={handleCategoryClick}
+            title={`Xem các giao dịch trong mục "${category?.name}"`}
+          >
+            {category?.name || "N/A"}
+          </span>
         </td>
         <td data-label="Mô tả" className={styles.descriptionCell}>
           {description || "-"}

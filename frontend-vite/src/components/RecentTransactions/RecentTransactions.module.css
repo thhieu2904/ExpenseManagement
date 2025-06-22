@@ -20,7 +20,9 @@
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.25s ease, box-shadow 0.25s ease,
+  transition:
+    background-color 0.25s ease,
+    box-shadow 0.25s ease,
     transform 0.15s ease;
   display: inline-flex; /* Để icon và text căn chỉnh tốt */
   align-items: center;
@@ -94,7 +96,9 @@
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .viewDetailsButton:hover {
@@ -295,4 +299,18 @@
   .dateTimeContainer {
     align-items: flex-end; /* Căn phải trên mobile cho thống nhất với layout */
   }
+}
+
+.categoryNameLink {
+  cursor: pointer;
+  color: #0056b3; /* Màu xanh dương đậm cho liên kết */
+  font-weight: 500;
+  transition:
+    color 0.2s ease-in-out,
+    text-decoration 0.2s ease-in-out;
+}
+
+.categoryNameLink:hover {
+  color: #003d80; /* Màu xanh đậm hơn khi hover */
+  text-decoration: underline;
 }

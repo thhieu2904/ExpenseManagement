@@ -7,14 +7,12 @@ import { Link } from "react-router-dom";
 import { getYear, getMonth, startOfWeek } from "date-fns";
 // MỚI: Import service đã được trừu tượng hóa
 import { getDetailedAnalyticsData } from "../../api/analyticsService";
-import chartStyles from "./IncomeExpenseTrendChart.module.css";
-
 // MỚI: import service riêng lẻ
 import statisticsService from "../../api/statisticsService";
 // MỚI: Import component điều hướng
 import DateRangeNavigator from "../Common/DateRangeNavigator";
 
-const DetailedAnalyticsSection = () => {
+const DetailedAnalyticsSection = ({ onCategorySelect }) => {
   // State cho bộ lọc thời gian
   const [currentDate, setCurrentDate] = useState(new Date());
   const [period, setPeriod] = useState("month");
@@ -62,10 +60,14 @@ const DetailedAnalyticsSection = () => {
 
   // useEffect 2: Fetch CHỈ BIỂU ĐỒ ĐƯỜNG khi chọn/bỏ chọn category
   useEffect(() => {
-    // Bỏ qua lần chạy đầu tiên để không fetch 2 lần lúc đầu
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
+    }
+
+    // Thông báo cho component cha về sự thay đổi category
+    if (onCategorySelect) {
+      onCategorySelect(activeCategoryId);
     }
 
     const fetchTrendOnly = async () => {
@@ -97,7 +99,7 @@ const DetailedAnalyticsSection = () => {
         }
 
         const res = await statisticsService.getTrendData(trendParams);
-        setTrendData(res.data || []);
+        setTrendData(res || []);
       } catch (err) {
         setError("Lỗi cập nhật biểu đồ xu hướng.");
         console.error(err);
@@ -107,7 +109,7 @@ const DetailedAnalyticsSection = () => {
     };
 
     fetchTrendOnly();
-  }, [activeCategoryId]);
+  }, [activeCategoryId, currentDate, period, onCategorySelect]);
 
   const handlePeriodChange = (newPeriod) => {
     setPeriod(newPeriod);
@@ -150,11 +152,8 @@ const DetailedAnalyticsSection = () => {
 
   return (
     <div className={styles.analyticsContainer}>
-      <div className={styles.headerWithLink}>
+      <div className={styles.header}>
         <h2 className={styles.analyticsTitle}>{getDynamicTitle()}</h2>
-        <Link to="/categories" className={styles.detailsLink}>
-          Xem chi tiết →
-        </Link>
       </div>
 
       <div className={styles.sectionHeader}>
@@ -187,6 +186,12 @@ const DetailedAnalyticsSection = () => {
             activeCategoryId={activeCategoryId}
           />
         </div>
+      </div>
+
+      <div className={styles.footerLinkContainer}>
+        <Link to="/categories" className={styles.detailsLink}>
+          Xem chi tiết →
+        </Link>
       </div>
     </div>
   );

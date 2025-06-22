@@ -1,6 +1,5 @@
 // src/components/RecentTransactions/RecentTransactions.jsx
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import axios from "axios";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import TransactionItem from "./TransactionItem";
 import styles from "./RecentTransactions.module.css";
@@ -9,125 +8,34 @@ import { faSpinner, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import AddEditTransactionModal from "../Transactions/AddEditTransactionModal";
 import ConfirmDialog from "../Common/ConfirmDialog";
 
-const ITEMS_PER_PAGE = 5;
+const RecentTransactions = ({
+  // Props từ cha
+  transactions = [],
+  isLoading = false,
+  error = "",
+  hasMore = false,
 
-const RecentTransactions = () => {
+  // Callbacks từ cha
+  onLoadMore,
+  onEditRequest,
+  onDeleteRequest,
+  onConfirmDelete,
+  onSubmitSuccess,
+  onCloseModal,
+  onCloseConfirm,
+
+  // State cho modals
+  isModalOpen = false,
+  isConfirmOpen = false,
+  editingTransaction = null,
+}) => {
   const navigate = useNavigate();
-  const [transactions, setTransactions] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const initialLoadAttempted = useRef(false);
-
-  // State cho việc sửa/xóa
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState(null);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [transactionToDelete, setTransactionToDelete] = useState(null);
-
-  // ✅ Hàm gọi API chính, xử lý cả tải lần đầu và tải thêm
-  const fetchTransactions = useCallback(
-    async (pageToFetch, shouldRefresh = false) => {
-      setIsLoading(true);
-      if (pageToFetch === 1) setError("");
-
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          setError("Bạn chưa đăng nhập.");
-          setIsLoading(false);
-          return;
-        }
-
-        const response = await axios.get(
-          `http://localhost:5000/api/transactions?page=${pageToFetch}&limit=${ITEMS_PER_PAGE}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        const {
-          data,
-          totalPages: apiTotalPages,
-          currentPage: apiCurrentPage,
-        } = response.data;
-
-        if (data && Array.isArray(data)) {
-          // Nếu refresh, thay thế toàn bộ. Nếu không, nối vào danh sách cũ.
-          setTransactions((prev) =>
-            shouldRefresh ? data : [...prev, ...data]
-          );
-          setTotalPages(apiTotalPages);
-          setCurrentPage(apiCurrentPage);
-          setHasMore(apiCurrentPage < apiTotalPages);
-        }
-      } catch (err) {
-        setError("Không thể tải danh sách giao dịch.");
-        console.error("Lỗi fetchTransactions:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
-
-  // Tải dữ liệu lần đầu
-  useEffect(() => {
-    if (!initialLoadAttempted.current) {
-      initialLoadAttempted.current = true;
-      fetchTransactions(1, true); // Tải trang 1 và yêu cầu refresh
-    }
-  }, [fetchTransactions]);
-
-  const handleLoadMore = () => {
-    if (!isLoading && hasMore) {
-      fetchTransactions(currentPage + 1, false); // Tải trang tiếp theo, không refresh
-    }
-  };
-
-  // === Các hàm xử lý cho Sửa/Xóa ===
-  const handleEditRequest = (transaction) => {
-    setEditingTransaction(transaction);
-    setIsModalOpen(true);
-  };
-
-  const handleDeleteRequest = (transactionId) => {
-    setTransactionToDelete(transactionId);
-    setIsConfirmOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!transactionToDelete) return;
-    try {
-      const token = localStorage.getItem("token");
-      await axios.delete(
-        `http://localhost:5000/api/transactions/${transactionToDelete}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setIsConfirmOpen(false);
-      setTransactionToDelete(null);
-      // Tải lại toàn bộ danh sách từ đầu để đảm bảo nhất quán
-      window.location.reload();
-    } catch (err) {
-      alert("Xóa giao dịch thất bại!");
-      setIsConfirmOpen(false);
-    }
-  };
-
-  const handleSubmitSuccess = () => {
-    setIsModalOpen(false);
-    setEditingTransaction(null);
-    // Tải lại toàn bộ trang để cập nhật cả StatsOverview và RecentTransactions
-    window.location.reload();
-  };
 
   const handleViewDetails = () => {
     navigate("/transactions");
   };
 
-  // ... Phần JSX để hiển thị ...
+  // Render content dựa trên state
   let content;
   if (isLoading && transactions.length === 0) {
     content = <div className={styles.loadingIndicator}>...</div>;
@@ -156,9 +64,8 @@ const RecentTransactions = () => {
               <TransactionItem
                 key={transaction.id}
                 transaction={transaction}
-                // ✅ Truyền đúng props xuống
-                onEditRequest={handleEditRequest}
-                onDeleteRequest={handleDeleteRequest}
+                onEditRequest={onEditRequest}
+                onDeleteRequest={onDeleteRequest}
               />
             ))}
           </tbody>
@@ -181,7 +88,7 @@ const RecentTransactions = () => {
       {content}
       <div className={styles.loadMoreButtonOuterContainer}>
         {hasMore && !isLoading && (
-          <button onClick={handleLoadMore} className={styles.loadMoreButton}>
+          <button onClick={onLoadMore} className={styles.loadMoreButton}>
             <span>Tải thêm</span>
             <FontAwesomeIcon
               icon={faChevronDown}
@@ -206,20 +113,20 @@ const RecentTransactions = () => {
         </p>
       )}
 
-      {/* ✅ Render các modal cần thiết */}
+      {/* Modals */}
       {isModalOpen && (
         <AddEditTransactionModal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSubmitSuccess={handleSubmitSuccess}
+          onClose={onCloseModal}
+          onSubmitSuccess={onSubmitSuccess}
           mode={editingTransaction ? "edit" : "add"}
           initialData={editingTransaction}
         />
       )}
       <ConfirmDialog
         isOpen={isConfirmOpen}
-        onClose={() => setIsConfirmOpen(false)}
-        onConfirm={handleConfirmDelete}
+        onClose={onCloseConfirm}
+        onConfirm={onConfirmDelete}
         title="Xác nhận xóa"
         message="Bạn có chắc chắn muốn xóa giao dịch này không?"
       />

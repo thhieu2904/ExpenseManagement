@@ -30,7 +30,9 @@ const IncomeExpenseTrendChart = ({
 }) => {
   // useCallback để không phải tính toán lại mỗi lần render, trừ khi data hoặc period thay đổi
   const formatDataForChart = useCallback((rawData, period) => {
-    if (!rawData) return [];
+    if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
+      return [];
+    }
     return rawData.map((item) => {
       const dateParts = item.name.split("-");
       let displayName;
