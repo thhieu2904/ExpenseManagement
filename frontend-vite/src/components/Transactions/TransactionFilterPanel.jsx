@@ -1,84 +1,46 @@
 // Ghi vào file: frontend-vite/src/components/Transactions/TransactionFilterPanel.jsx
 
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import styles from "./TransactionFilterPanel.module.css"; // Sẽ tạo CSS ở bước sau
+import React from "react";
+import styles from "./TransactionFilterPanel.module.css";
 
-const TransactionFilterPanel = ({ onFilterChange }) => {
-  // State nội bộ để quản lý giá trị của các input
-  const [keyword, setKeyword] = useState("");
-  const [type, setType] = useState("ALL");
-  const [categoryId, setCategoryId] = useState("ALL");
-  const [accountId, setAccountId] = useState("ALL");
-
-  // State để chứa danh sách categories và accounts từ API
-  const [categories, setCategories] = useState([]);
-  const [accounts, setAccounts] = useState([]);
-
-  // Gọi API để lấy danh sách categories và accounts một lần khi component mount
-  useEffect(() => {
-    const fetchData = async () => {
-      const token = localStorage.getItem("token");
-      try {
-        const [catRes, accRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/categories", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get("http://localhost:5000/api/accounts", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
-        setCategories(catRes.data || []);
-        setAccounts(accRes.data || []);
-      } catch (error) {
-        console.error("Failed to fetch filter data", error);
-      }
-    };
-    fetchData();
-  }, []);
-
-  // Hàm xử lý khi người dùng bấm nút "Áp dụng"
-  const handleApplyFilters = () => {
-    onFilterChange({
-      keyword,
-      type,
-      categoryId,
-      accountId,
-    });
-  };
-
-  // Hàm xử lý khi reset bộ lọc
-  const handleResetFilters = () => {
-    setKeyword("");
-    setType("ALL");
-    setCategoryId("ALL");
-    setAccountId("ALL");
-    onFilterChange({}); // Gửi object rỗng để reset
+const TransactionFilterPanel = ({
+  filters,
+  onFilterFieldChange,
+  onApplyFilters,
+  onResetFilters,
+  categories = [],
+  accounts = [],
+}) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    onFilterFieldChange(name, value);
   };
 
   return (
-    // THÊM className cho div cha ở đây
     <div className={styles.filterPanel}>
-      {/* THÊM className 'keyword' cho ô tìm kiếm */}
+      {/* Keyword Input */}
       <div className={`${styles.formGroup} ${styles.keyword}`}>
         <label htmlFor="keyword">Tên giao dịch</label>
         <input
           type="text"
           id="keyword"
+          name="keyword"
           className={styles.formInput}
           placeholder="VD: Ăn trưa, Lương..."
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
+          value={filters.keyword || ""}
+          onChange={handleChange}
         />
       </div>
 
+      {/* Type Select */}
       <div className={styles.formGroup}>
         <label htmlFor="type">Loại giao dịch</label>
         <select
           id="type"
+          name="type"
           className={styles.formInput}
-          value={type}
-          onChange={(e) => setType(e.target.value)}
+          value={filters.type || "ALL"}
+          onChange={handleChange}
         >
           <option value="ALL">Tất cả</option>
           <option value="CHITIEU">Chi tiêu</option>
@@ -86,13 +48,15 @@ const TransactionFilterPanel = ({ onFilterChange }) => {
         </select>
       </div>
 
+      {/* Category Select (giờ dùng prop `categories`) */}
       <div className={styles.formGroup}>
         <label htmlFor="category">Danh mục</label>
         <select
           id="category"
+          name="categoryId"
           className={styles.formInput}
-          value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
+          value={filters.categoryId || "ALL"}
+          onChange={handleChange}
         >
           <option value="ALL">Tất cả danh mục</option>
           {categories.map((cat) => (
@@ -103,13 +67,15 @@ const TransactionFilterPanel = ({ onFilterChange }) => {
         </select>
       </div>
 
+      {/* Account Select (giờ dùng prop `accounts`) */}
       <div className={styles.formGroup}>
         <label htmlFor="account">Tài khoản</label>
         <select
           id="account"
+          name="accountId"
           className={styles.formInput}
-          value={accountId}
-          onChange={(e) => setAccountId(e.target.value)}
+          value={filters.accountId || "ALL"}
+          onChange={handleChange}
         >
           <option value="ALL">Tất cả tài khoản</option>
           {accounts.map((acc) => (
@@ -120,16 +86,17 @@ const TransactionFilterPanel = ({ onFilterChange }) => {
         </select>
       </div>
 
+      {/* Buttons */}
       <div className={styles.buttonGroup}>
         <button
           className={`${styles.button} ${styles.resetButton}`}
-          onClick={handleResetFilters}
+          onClick={onResetFilters}
         >
           Xóa lọc
         </button>
         <button
           className={`${styles.button} ${styles.applyButton}`}
-          onClick={handleApplyFilters}
+          onClick={onApplyFilters}
         >
           Áp dụng
         </button>

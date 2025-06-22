@@ -1,5 +1,6 @@
 // src/components/Accounts/AccountList.jsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./AccountList.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -158,6 +159,7 @@ const AccountList = ({
 }) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [accountToDelete, setAccountToDelete] = useState(null);
+  const navigate = useNavigate();
 
   const requestDeleteAccount = (accountId, accountName) => {
     setAccountToDelete({ id: accountId, name: accountName });
@@ -179,8 +181,8 @@ const AccountList = ({
   // Xử lý click vào label số giao dịch
   const handleTransactionLabelClick = (account) => {
     if (!account) return;
-    // Sử dụng window.location hoặc useNavigate để chuyển trang
-    window.location.href = `/transactions?accountId=${account.id}`;
+    // Sử dụng useNavigate để chuyển trang
+    navigate(`/transactions?accountId=${account.id}`);
   };
 
   if (isLoading) {

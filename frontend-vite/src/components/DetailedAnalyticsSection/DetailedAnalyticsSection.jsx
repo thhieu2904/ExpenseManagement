@@ -189,7 +189,19 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
       </div>
 
       <div className={styles.footerLinkContainer}>
-        <Link to="/categories" className={styles.detailsLink}>
+        <Link
+          to={
+            activeCategoryId
+              ? `/transactions?categoryId=${activeCategoryId}`
+              : "/categories"
+          }
+          className={styles.detailsLink}
+          title={
+            activeCategoryId
+              ? `Xem các giao dịch của mục "${activeCategoryName}"`
+              : "Xem trang quản lý danh mục"
+          }
+        >
           Xem chi tiết →
         </Link>
       </div>
