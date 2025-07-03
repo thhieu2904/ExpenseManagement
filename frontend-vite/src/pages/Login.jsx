@@ -5,7 +5,7 @@ import logo from "../assets/login/logo.png";
 import bg from "../assets/login/background.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignInAlt } from "@fortawesome/free-solid-svg-icons";
-import axios from "axios";
+import { login } from "../api/authService";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -25,10 +25,7 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        formData
-      );
+      const res = await login(formData);
       const { token, account } = res.data;
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(account));

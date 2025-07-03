@@ -52,6 +52,7 @@
   color: #7f8c8d; /* Màu chữ cho phần trăm */
   font-size: 0.85em; /* Cỡ chữ nhỏ hơn cho phần trăm */
 }
+
 .centerLabel {
   position: absolute;
   top: 50%;

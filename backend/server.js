@@ -2,7 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
-
+const path = require("path");
 dotenv.config();
 const app = express();
 
@@ -43,3 +43,9 @@ const statisticsRoutes = require("./routes/statistics.routes");
 app.use("/api/statistics", statisticsRoutes);
 
 app.use("/api/goals", require("./routes/goalRoutes"));
+
+
+const userRoutes = require("./routes/userRoutes");
+app.use("/api/users", require("./routes/userRoutes"));
+
+app.use("/uploads", express.static(path.join(__dirname, "/uploads")));

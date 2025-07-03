@@ -1,0 +1,50 @@
+.pageContainer {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f4f6f8;
+  }
+  
+  .mainContent {
+    flex-grow: 1;
+    padding: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  
+  .profileCard {
+    width: 100%;
+    max-width: 800px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
+  
+  .tabs {
+    display: flex;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .tabs button {
+    padding: 15px 25px;
+    border: none;
+    background: none;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    transition: color 0.2s, border-bottom-color 0.2s;
+    border-bottom: 3px solid transparent;
+  }
+  
+  .tabs button.activeTab {
+    color: #4f46e5;
+    border-bottom-color: #4f46e5;
+  }
+  
+  .tabContent {
+    padding: 25px 30px;
+  }

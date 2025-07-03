@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { register } from "../api/authService";
 
 import styles from "../styles/Register.module.css";
 import logo from "../assets/login/logo.png";
@@ -34,20 +34,11 @@ export default function Register() {
     e.preventDefault();
     try {
       const { username, fullname, password } = formData;
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/register",
-        {
-          username,
-          fullname,
-          password,
-        }
-      );
-
+      const response = await register({ username, fullname, password });
       setIsSuccess(true);
       setMessage(
         response.data.message || "Đăng ký thành công! Đang chuyển hướng..."
       );
-
       setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
       setIsSuccess(false);

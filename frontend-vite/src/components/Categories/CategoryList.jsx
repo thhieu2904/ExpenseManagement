@@ -1,5 +1,6 @@
 // src/components/Categories/CategoryList.jsx
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./CategoryList.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
@@ -79,13 +80,21 @@ const CategoryList = ({
   error,
   onEditCategory,
   onDeleteSuccess,
-  activeCategoryId,
-  onSelectCategory, // ✅ THAY ĐỔI: Thêm prop
+  activeCategory,
+  onSelectCategory,
+  chartData,
 }) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [deleteError, setDeleteError] = useState("");
   const activeItemRef = useRef(null); // Ref cho item đang active
+  const navigate = useNavigate();
+
+  // ✅ THÊM: State cho hộp thoại xác nhận mở danh sách giao dịch
+  const [isNavigateConfirmOpen, setIsNavigateConfirmOpen] = useState(false);
+  const [categoryToNavigate, setCategoryToNavigate] = useState(null);
+
+  const activeCategoryId = activeCategory ? activeCategory.id : null;
 
   // ✅ THAY ĐỔI: useEffect để cuộn tới item được chọn
   useEffect(() => {
@@ -130,6 +139,40 @@ const CategoryList = ({
     if (onEditCategory) {
       onEditCategory(category);
     }
+  };
+
+  // ✅ THÊM: Hàm xử lý click vào category để mở hộp thoại xác nhận
+  const handleCategoryClick = (category) => {
+    // Luôn highlight trước khi hỏi
+    const chartEquivalent = chartData.find(
+      (c) => c.id === (category._id || category.id)
+    );
+    // Nếu không có trong chart (giá trị = 0), không cần màu, chỉ cần ID
+    const payload = chartEquivalent
+      ? chartEquivalent
+      : { id: category._id || category.id };
+    onSelectCategory(payload);
+
+    // Sau đó mở dialog
+    setCategoryToNavigate(category);
+    setIsNavigateConfirmOpen(true);
+  };
+
+  // ✅ THÊM: Hàm xử lý xác nhận mở danh sách giao dịch
+  const handleConfirmNavigate = () => {
+    if (categoryToNavigate) {
+      navigate(
+        `/transactions?categoryId=${categoryToNavigate._id || categoryToNavigate.id}`
+      );
+    }
+    setIsNavigateConfirmOpen(false);
+    setCategoryToNavigate(null);
+  };
+
+  // ✅ THÊM: Hàm đóng hộp thoại xác nhận
+  const handleCloseNavigateConfirm = () => {
+    setIsNavigateConfirmOpen(false);
+    setCategoryToNavigate(null);
   };
 
   // --- ✅ THAY ĐỔI 2: CẬP NHẬT LOGIC RENDER DỰA TRÊN PROPS ---
@@ -178,9 +221,15 @@ const CategoryList = ({
                       className={`${styles.row} ${
                         isSelected ? styles.highlight : ""
                       }`}
-                      onClick={() =>
-                        onSelectCategory && onSelectCategory(category)
+                      style={
+                        isSelected && activeCategory.color
+                          ? {
+                              backgroundColor: `${activeCategory.color}20`,
+                              borderLeft: `4px solid ${activeCategory.color}`,
+                            }
+                          : {}
                       }
+                      onClick={() => handleCategoryClick(category)}
                       role="button"
                       aria-selected={isSelected}
                     >
@@ -253,6 +302,24 @@ const CategoryList = ({
             {deleteError && (
               <p className={styles.errorMessageDialog}>{deleteError}</p>
             )}
+          </>
+        }
+      />
+      {/* ✅ THÊM: Hộp thoại xác nhận mở danh sách giao dịch */}
+      <ConfirmDialog
+        isOpen={isNavigateConfirmOpen}
+        onClose={handleCloseNavigateConfirm}
+        onConfirm={handleConfirmNavigate}
+        title="Mở danh sách giao dịch"
+        message={
+          <>
+            <p>
+              Bạn có muốn mở danh sách giao dịch của danh mục "
+              <strong>{categoryToNavigate?.name || ""}</strong>" không?
+            </p>
+            <p>
+              Hệ thống sẽ chuyển đến trang Giao dịch và lọc theo danh mục này.
+            </p>
           </>
         }
       />

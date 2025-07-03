@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
+const LoginHistory = require("../models/LoginHistory");
 // Đăng ký
 const register = async (req, res) => {
   try {
@@ -19,17 +19,24 @@ const register = async (req, res) => {
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 };
-
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
-
     const user = await User.findOne({ username });
     if (!user)
       return res.status(400).json({ message: "Tài khoản không tồn tại" });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Sai mật khẩu" });
+
+    // --- BẮT ĐẦU THÊM LOGIC MỚI ---
+    // Ghi lại lịch sử đăng nhập
+    await LoginHistory.create({
+      userId: user._id,
+      ipAddress: req.ip, // Lấy địa chỉ IP từ request
+      userAgent: req.headers["user-agent"], // Lấy thông tin trình duyệt
+    });
+    // --- KẾT THÚC LOGIC MỚI ---
 
     const token = jwt.sign(
       { id: user._id, username: user.username },

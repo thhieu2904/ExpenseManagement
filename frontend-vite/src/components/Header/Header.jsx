@@ -1,72 +1,87 @@
-import React, { useMemo, useEffect, useState } from "react";
-
+import React, { useState, useMemo, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import styles from "./Header.module.css";
+import logoSrc from "../../assets/login/logo2.png";
 import avatar1 from "../../assets/avatars/cat1.png";
 import avatar2 from "../../assets/avatars/cat2.png";
 import avatar3 from "../../assets/avatars/cat3.png";
 
-import styles from "./Header.module.css";
-import logoSrc from "../../assets/login/logo2.png";
 const animalAvatars = [avatar1, avatar2, avatar3];
 
-const Header = ({ userName = "Nguyễn Văn A", userAvatar }) => {
-  const [name, setName] = useState(userName);
+const Header = () => {
+  const [userInfo, setUserInfo] = useState({ fullname: "User", avatar: "" });
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
-        const parsed = JSON.parse(storedUser);
-        if (parsed.fullname) setName(parsed.fullname);
-        else if (parsed.username) setName(parsed.username);
+        setUserInfo(JSON.parse(storedUser));
       } catch (err) {
         console.error("Lỗi đọc user:", err);
       }
     }
+
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
-  // ✅ Random ảnh 1 lần duy nhất khi avatar trống
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
   const fallbackAvatar = useMemo(() => {
     const index = Math.floor(Math.random() * animalAvatars.length);
     return animalAvatars[index];
   }, []);
 
-  const finalAvatar = userAvatar?.trim() ? userAvatar : fallbackAvatar;
+  // Sửa logic để avatar có thể là đường dẫn từ server
+  const finalAvatar = userInfo.avatar
+    ? `http://localhost:5000${userInfo.avatar}`
+    : fallbackAvatar;
+
   return (
     <header className={styles.headerContainer}>
       <div className={styles.logoContainer}>
-        <img
-          src={logoSrc}
-          alt="Expense Management Logo"
-          className={styles.logo}
-        />
-        {/* Nếu muốn thêm text bên cạnh logo */}
-        {/* <span className={styles.logoText}>EXPENSE MANAGEMENT</span> */}
+        <img src={logoSrc} alt="Logo" className={styles.logo} />
       </div>
       <div className={styles.userSection}>
         <div className={styles.notificationIcon}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={styles.bellIcon}
-          >
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-          </svg>
+          {/* ... SVG chuông thông báo ... */}
         </div>
-        <div className={styles.userInfo}>
+        <div
+          className={styles.userInfo}
+          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          ref={dropdownRef}
+        >
           <img
             src={finalAvatar}
-            alt={`${userName}'s avatar`}
+            alt={`${userInfo.fullname}'s avatar`}
             className={styles.avatar}
           />
-          <span className={styles.userName}>{name}</span>
+          <span className={styles.userName}>{userInfo.fullname}</span>
+          {isDropdownOpen && (
+            <div className={styles.dropdownMenu}>
+              <Link to="/profile" className={styles.dropdownItem}>
+                Trang cá nhân
+              </Link>
+              <div onClick={handleLogout} className={styles.dropdownItem}>
+                Đăng xuất
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>

@@ -243,7 +243,7 @@ const CategoryExpenseChart = ({
             {data.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
-                fill={COLORS[index % COLORS.length]}
+                fill={entry.color}
                 style={{ cursor: "pointer" }}
               />
             ))}

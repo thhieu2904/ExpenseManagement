@@ -21,6 +21,17 @@ import AddEditCategoryModal from "../components/Categories/AddEditCategoryModal"
 import CategoryExpenseChart from "../components/DetailedAnalyticsSection/CategoryExpenseChart";
 import styles from "../styles/CategoriesPage.module.css";
 
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#AF19FF",
+  "#FF4560",
+  "#3366CC",
+  "#DC3912",
+];
+
 const CategoriesPage = () => {
   // State quản lý bộ lọc và modal
   const [activeType, setActiveType] = useState(CATEGORY_TYPE.ALL);
@@ -28,7 +39,9 @@ const CategoriesPage = () => {
   const [editingCategory, setEditingCategory] = useState(null);
   const [period, setPeriod] = useState("month");
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [activeCategoryId, setActiveCategoryId] = useState(null);
+
+  // ✅ SỬA: Thay thế activeCategoryId bằng state phức tạp hơn
+  const [activeCategory, setActiveCategory] = useState(null); // Sẽ lưu { id, color }
 
   // State quản lý dữ liệu
   const [categoriesData, setCategoriesData] = useState([]);
@@ -71,7 +84,7 @@ const CategoriesPage = () => {
   const handleDateChange = (newDate) => setCurrentDate(newDate);
   const handleCategoryTypeChange = (newType) => {
     setActiveType(newType);
-    setActiveCategoryId(null); // Reset lựa chọn khi đổi tab
+    setActiveCategory(null); // Reset lựa chọn khi đổi tab
   };
   const handleOpenAddModal = () => {
     setEditingCategory(null);
@@ -86,12 +99,13 @@ const CategoriesPage = () => {
     setEditingCategory(null);
   };
 
-  // ✅ SỬA 2: Handler khi click vào slice biểu đồ HOẶC một item trong danh sách
+  // ✅ SỬA: Handler khi click vào slice biểu đồ HOẶC một item trong danh sách
   const handleSelectCategory = (categoryData) => {
-    if (categoryData && categoryData.id === activeCategoryId) {
-      setActiveCategoryId(null); // Bỏ chọn nếu click lại item đang được chọn
+    const currentActiveId = activeCategory ? activeCategory.id : null;
+    if (categoryData && categoryData.id === currentActiveId) {
+      setActiveCategory(null); // Bỏ chọn nếu click lại item đang được chọn
     } else {
-      setActiveCategoryId(categoryData ? categoryData.id : null);
+      setActiveCategory(categoryData); // Chọn item mới {id, color}
     }
   };
 
@@ -126,27 +140,28 @@ const CategoriesPage = () => {
     }
   };
 
-  // ✅ SỬA 3: Dùng `useMemo` để tối ưu việc lọc và tính toán dữ liệu
+  // ✅ SỬA: Dùng `useMemo` để tối ưu việc lọc và tính toán dữ liệu
   const { listData, chartData, chartTotal } = useMemo(() => {
     const filteredList =
       activeType === CATEGORY_TYPE.ALL
         ? categoriesData
         : categoriesData.filter((cat) => cat.type === activeType);
 
-    const filteredChartData = filteredList
+    const finalChartData = filteredList
       .filter((cat) => cat.totalAmount > 0)
-      .map((cat) => ({
+      .map((cat, index) => ({
         id: cat._id || cat.id,
         name: cat.name,
         value: cat.totalAmount,
         icon: cat.icon,
+        color: COLORS[index % COLORS.length], // Gán màu ở đây
       }));
 
-    const total = filteredChartData.reduce((sum, item) => sum + item.value, 0);
+    const total = finalChartData.reduce((sum, item) => sum + item.value, 0);
 
     return {
       listData: filteredList,
-      chartData: filteredChartData,
+      chartData: finalChartData, // Dùng dữ liệu đã có màu
       chartTotal: total,
     };
   }, [activeType, categoriesData]);
@@ -176,7 +191,7 @@ const CategoriesPage = () => {
                 loading={isLoading}
                 error={error}
                 onSliceClick={handleSelectCategory}
-                activeCategoryId={activeCategoryId}
+                activeCategoryId={activeCategory ? activeCategory.id : null}
               />
             </div>
 
@@ -188,8 +203,9 @@ const CategoriesPage = () => {
                 categories={listData}
                 isLoading={isLoading}
                 error={error}
-                activeCategoryId={activeCategoryId}
+                activeCategory={activeCategory}
                 onSelectCategory={handleSelectCategory}
+                chartData={chartData}
               />
             </div>
           </div>
