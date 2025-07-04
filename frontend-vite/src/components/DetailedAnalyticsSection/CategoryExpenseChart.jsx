@@ -155,16 +155,25 @@ const CategoryExpenseChart = ({
   onSliceClick,
   activeCategoryId, // Nhận prop từ cha
 }) => {
+  // Đảm bảo dữ liệu luôn có màu sắc
+  const processedData = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    return data.map((item, index) => ({
+      ...item,
+      color: item.color || COLORS[index % COLORS.length],
+    }));
+  }, [data]);
+
   // Bỏ state nội bộ, tính toán activeIndex từ prop
   const activeIndex = useMemo(
     () =>
-      activeCategoryId ? data.findIndex((d) => d.id === activeCategoryId) : -1,
-    [data, activeCategoryId]
+      activeCategoryId ? processedData.findIndex((d) => d.id === activeCategoryId) : -1,
+    [processedData, activeCategoryId]
   );
 
   if (loading) return <p className={styles.loadingText}>Đang tải...</p>;
   if (error) return <p className={styles.errorText}>{error}</p>;
-  if (!data || data.length === 0) {
+  if (!processedData || processedData.length === 0) {
     return (
       <p className={styles.noDataText}>
         Không có dữ liệu cho khoảng thời gian này.
@@ -176,7 +185,7 @@ const CategoryExpenseChart = ({
     // Luôn gọi onSliceClick với dữ liệu của slice được click
     // `CategoriesPage` sẽ quyết định nên chọn hay bỏ chọn
     if (onSliceClick) {
-      onSliceClick(data[index]);
+      onSliceClick(processedData[index]);
     }
   };
 
@@ -213,7 +222,7 @@ const CategoryExpenseChart = ({
       <ResponsiveContainer>
         <PieChart>
           <Pie
-            data={data}
+            data={processedData}
             cx="50%"
             cy="50%"
             innerRadius={80}
@@ -240,7 +249,7 @@ const CategoryExpenseChart = ({
             }}
             labelLine={false}
           >
-            {data.map((entry, index) => (
+            {processedData.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
                 fill={entry.color}

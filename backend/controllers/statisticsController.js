@@ -2,20 +2,37 @@ const Transaction = require("../models/Transaction");
 const mongoose = require("mongoose");
 
 function calcChange(curr, prev) {
+  // Nếu cả tháng này và tháng trước đều là 0
   if (prev === 0 && curr === 0) {
     return { percent: 0, desc: "Không thay đổi so với tháng trước" };
   }
 
-  if (prev === 0) {
-    return { percent: 100, desc: "Tăng mạnh so với tháng trước" };
+  // Nếu tháng trước là 0 nhưng tháng này có giá trị
+  if (prev === 0 && curr > 0) {
+    return { percent: null, desc: "Mới có trong tháng này" };
   }
 
+  // Nếu tháng trước là 0 và tháng này cũng là 0 (đã xử lý ở trên)
+  if (prev === 0) {
+    return { percent: 0, desc: "Không có dữ liệu tháng trước" };
+  }
+
+  // Nếu tháng này là 0 nhưng tháng trước có giá trị
+  if (curr === 0 && prev > 0) {
+    return { percent: -100, desc: "Giảm 100% so với tháng trước" };
+  }
+
+  // Tính toán bình thường khi cả hai tháng đều có giá trị
   const diff = curr - prev;
   const percent = Math.round((diff / prev) * 100);
-  const desc =
-    percent >= 0
-      ? `Tăng ${percent}% so với tháng trước`
-      : `Giảm ${Math.abs(percent)}% so với tháng trước`;
+  
+  if (percent === 0) {
+    return { percent: 0, desc: "Không thay đổi so với tháng trước" };
+  }
+  
+  const desc = percent > 0
+    ? `Tăng ${percent}% so với tháng trước`
+    : `Giảm ${Math.abs(percent)}% so với tháng trước`;
 
   return { percent, desc };
 }

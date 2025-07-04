@@ -23,3 +23,12 @@ export const getTransactions = (page = 1, limit = 5, filters = {}) => {
 export const deleteTransaction = (transactionId) => {
   return axiosInstance.delete(`${API_URL}/${transactionId}`);
 };
+
+/**
+ * Thêm một giao dịch mới.
+ * @param {object} transactionData - Dữ liệu giao dịch mới.
+ * @returns {Promise<object>} - Dữ liệu trả về từ API.
+ */
+export const addTransaction = (transactionData) => {
+  return axiosInstance.post(API_URL, transactionData);
+};

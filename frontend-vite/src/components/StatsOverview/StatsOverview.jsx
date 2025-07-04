@@ -1,5 +1,3 @@
-// Mở và THAY THẾ TOÀN BỘ file: src/components/StatsOverview/StatsOverview.jsx
-
 import React, { useState } from "react";
 import styles from "./StatsOverview.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -8,8 +6,11 @@ import {
   faArrowDown,
   faArrowUp,
   faChartLine,
+  faExchangeAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import AddEditTransactionModal from "../Transactions/AddEditTransactionModal"; // Sửa lại tên component Modal
+import HeaderCard from "../Common/HeaderCard";
+import Button from "../Common/Button";
+import AddEditTransactionModal from "../Transactions/AddEditTransactionModal";
 
 // Hàm tiện ích định dạng tiền tệ
 const formatCurrency = (amount) => {
@@ -20,14 +21,19 @@ const formatCurrency = (amount) => {
 };
 
 // Component nhận props từ cha, không tự fetch dữ liệu
-const StatsOverview = ({ stats, loading }) => {
-  // <--- NHẬN PROPS stats và loading
+const StatsOverview = ({ stats, loading, onTransactionAdded }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Hàm này giờ cần được xử lý ở component cha, nhưng tạm thời giữ lại để nút "Thêm" hoạt động
+  // Hàm xử lý khi thêm giao dịch thành công
   const handleTransactionAdded = () => {
     setIsModalOpen(false);
-    window.location.reload(); // Tạm thời reload để cập nhật
+    // Nếu có callback từ component cha, gọi nó để refresh dữ liệu
+    if (onTransactionAdded) {
+      onTransactionAdded();
+    } else {
+      // Fallback: reload trang nếu không có callback
+      window.location.reload();
+    }
   };
 
   if (loading) {
@@ -44,121 +50,172 @@ const StatsOverview = ({ stats, loading }) => {
     stats.currentMonthYear ||
     `Tháng ${new Date().getMonth() + 1}/${new Date().getFullYear()}`;
 
+  // Tính toán dòng tiền ròng
+  const calculateNetCashFlow = () => {
+    const income = stats.income?.amount || 0;
+    const expense = stats.expense?.amount || 0;
+    return income - expense;
+  };
+
+  const netCashFlow = calculateNetCashFlow();
+  const isPositiveFlow = netCashFlow >= 0;
+
   return (
     <div className={styles.statsOverviewContainer}>
-      <div className={styles.header}>
-        <h2 className={styles.title}>
-          <FontAwesomeIcon icon={faChartLine} className={styles.titleIcon} />
-          Tổng quan chi tiêu
-        </h2>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className={styles.addTransactionButton}
-        >
-          <FontAwesomeIcon icon={faPlus} /> Thêm giao dịch
-        </button>
-      </div>
-
-      <div className={styles.statsCards}>
-        {/* Card Thu nhập */}
-        <div className={`${styles.statCard} ${styles.incomeCard}`}>
-          {/* ... phần JSX của card thu nhập giữ nguyên ... */}
-          <div
-            className={styles.cardIconWrapper}
-            style={{ backgroundColor: "rgba(76, 175, 80, 0.1)" }}
+      <HeaderCard
+        className={styles.statsHeaderCard}
+        title={
+          <>
+            <FontAwesomeIcon icon={faChartLine} className={styles.titleIcon} />
+            Tổng quan chi tiêu
+          </>
+        }
+        action={
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            icon={<FontAwesomeIcon icon={faPlus} />}
+            variant="primary"
           >
-            <FontAwesomeIcon
-              icon={faArrowDown}
-              className={styles.cardIcon}
-              style={{ color: "#4CAF50" }}
-            />
-          </div>
-          <div className={styles.cardContent}>
-            <div className={styles.cardHeader}>
-              <h3 className={styles.cardTitle}>Thu nhập</h3>
-              <span className={styles.cardPeriod}>
-                {stats.income?.monthYear || currentMonthYearLabel}
-              </span>
-            </div>
-            <p className={styles.cardAmount}>
-              {formatCurrency(stats.income?.amount)}
-            </p>
-            {stats.income?.changeDescription && (
-              <p
-                className={`${styles.cardChange} ${
-                  (stats.income?.percentageChange || 0) >= 0
-                    ? styles.positiveChange
-                    : styles.negativeChange
-                }`}
-              >
+            Thêm giao dịch
+          </Button>
+        }
+        filter={
+          <div className={styles.statsCards}>
+            {/* Card Thu nhập */}
+            <div className={`${styles.statCard} ${styles.incomeCard}`}>
+              <div className={styles.cardIconWrapper}>
                 <FontAwesomeIcon
-                  icon={
-                    (stats.income?.percentageChange || 0) >= 0
-                      ? faArrowUp
-                      : faArrowDown
-                  }
+                  icon={faArrowDown}
+                  className={styles.cardIcon}
                 />
-                <strong>
-                  ({stats.income.percentageChange > 0 ? "+" : ""}
-                  {stats.income.percentageChange}%)
-                </strong>{" "}
-                {stats.income.changeDescription}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Card Chi tiêu */}
-        <div className={`${styles.statCard} ${styles.expenseCard}`}>
-          {/* ... phần JSX của card chi tiêu giữ nguyên ... */}
-          <div
-            className={styles.cardIconWrapper}
-            style={{ backgroundColor: "rgba(244, 67, 54, 0.1)" }}
-          >
-            <FontAwesomeIcon
-              icon={faArrowUp}
-              className={styles.cardIcon}
-              style={{ color: "#f44336" }}
-            />
-          </div>
-          <div className={styles.cardContent}>
-            <div className={styles.cardHeader}>
-              <h3 className={styles.cardTitle}>Chi tiêu</h3>
-              <span className={styles.cardPeriod}>
-                {stats.expense?.monthYear || currentMonthYearLabel}
-              </span>
+              </div>
+              <div className={styles.cardContent}>
+                <div className={styles.cardHeader}>
+                  <h3 className={styles.cardTitle}>Thu nhập</h3>
+                  <span className={styles.cardPeriod}>
+                    {stats.income?.monthYear || currentMonthYearLabel}
+                  </span>
+                </div>
+                <p className={styles.cardAmount}>
+                  {formatCurrency(stats.income?.amount)}
+                </p>
+                {stats.income?.changeDescription && (
+                  <p
+                    className={`${styles.cardChange} ${
+                      stats.income?.percentageChange === null
+                        ? styles.neutralChange
+                        : (stats.income?.percentageChange || 0) >= 0
+                        ? styles.positiveChange  // Thu nhập tăng = tốt (xanh)
+                        : styles.negativeChange  // Thu nhập giảm = xấu (đỏ)
+                    }`}
+                  >
+                    {stats.income?.percentageChange !== null && (
+                      <FontAwesomeIcon
+                        icon={
+                          (stats.income?.percentageChange || 0) >= 0
+                            ? faArrowUp
+                            : faArrowDown
+                        }
+                      />
+                    )}
+                    {stats.income?.percentageChange !== null ? (
+                      <strong>
+                        ({stats.income.percentageChange > 0 ? "+" : ""}
+                        {stats.income.percentageChange}%)
+                      </strong>
+                    ) : (
+                      <strong>🆕 Mới</strong>
+                    )}{" "}
+                    {stats.income.changeDescription}
+                  </p>
+                )}
+              </div>
             </div>
-            <p className={styles.cardAmount}>
-              {formatCurrency(stats.expense?.amount)}
-            </p>
-            {stats.expense?.changeDescription && (
-              <p
-                className={`${styles.cardChange} ${
-                  (stats.expense?.percentageChange || 0) >= 0
-                    ? styles.positiveChange
-                    : styles.negativeChange
-                }`}
-              >
-                <FontAwesomeIcon
-                  icon={
-                    (stats.expense?.percentageChange || 0) >= 0
-                      ? faArrowUp
-                      : faArrowDown
-                  }
-                />
-                <strong>
-                  ({stats.expense.percentageChange > 0 ? "+" : ""}
-                  {stats.expense.percentageChange}%)
-                </strong>{" "}
-                {stats.expense.changeDescription}
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
 
+            {/* Card Chi tiêu */}
+            <div className={`${styles.statCard} ${styles.expenseCard}`}>
+              <div className={styles.cardIconWrapper}>
+                <FontAwesomeIcon
+                  icon={faArrowUp}
+                  className={styles.cardIcon}
+                />
+              </div>
+              <div className={styles.cardContent}>
+                <div className={styles.cardHeader}>
+                  <h3 className={styles.cardTitle}>Chi tiêu</h3>
+                  <span className={styles.cardPeriod}>
+                    {stats.expense?.monthYear || currentMonthYearLabel}
+                  </span>
+                </div>
+                <p className={styles.cardAmount}>
+                  {formatCurrency(stats.expense?.amount)}
+                </p>
+                {stats.expense?.changeDescription && (
+                  <p
+                    className={`${styles.cardChange} ${
+                      stats.expense?.percentageChange === null
+                        ? styles.neutralChange
+                        : (stats.expense?.percentageChange || 0) >= 0
+                        ? styles.negativeChange  // Chi tiêu tăng = xấu (đỏ)
+                        : styles.positiveChange  // Chi tiêu giảm = tốt (xanh)
+                    }`}
+                  >
+                    {stats.expense?.percentageChange !== null && (
+                      <FontAwesomeIcon
+                        icon={
+                          (stats.expense?.percentageChange || 0) >= 0
+                            ? faArrowUp
+                            : faArrowDown
+                        }
+                      />
+                    )}
+                    {stats.expense?.percentageChange !== null ? (
+                      <strong>
+                        ({stats.expense.percentageChange > 0 ? "+" : ""}
+                        {stats.expense.percentageChange}%)
+                      </strong>
+                    ) : (
+                      <strong>🆕 Mới</strong>
+                    )}{" "}
+                    {stats.expense.changeDescription}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Card Dòng tiền */}
+            <div className={`${styles.statCard} ${styles.cashFlowCard} ${isPositiveFlow ? styles.positiveCashFlow : styles.negativeCashFlow}`}>
+              <div className={styles.cardIconWrapper}>
+                <FontAwesomeIcon
+                  icon={faExchangeAlt}
+                  className={styles.cardIcon}
+                />
+              </div>
+              <div className={styles.cardContent}>
+                <div className={styles.cardHeader}>
+                  <h3 className={styles.cardTitle}>Dòng tiền</h3>
+                  <span className={styles.cardPeriod}>
+                    {currentMonthYearLabel}
+                  </span>
+                </div>
+                <p className={styles.cardAmount}>
+                  {formatCurrency(netCashFlow)}
+                </p>
+                <p className={`${styles.cardChange} ${styles.cashFlowNeutral}`}>
+                  <FontAwesomeIcon
+                    icon={isPositiveFlow ? faArrowUp : faArrowDown}
+                  />
+                  <strong>
+                    {isPositiveFlow ? "Dương" : "Âm"}
+                  </strong>{" "}
+                  {isPositiveFlow ? "Tích lũy được tiền" : "Thiếu hụt ngân sách"}
+                </p>
+              </div>
+            </div>
+          </div>
+        }
+      />
       {/* Modal thêm giao dịch */}
-      {/* Lưu ý: Tên component modal là AddEditTransactionModal */}
       <AddEditTransactionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

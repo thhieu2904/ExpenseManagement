@@ -10,6 +10,20 @@ const accountController = require("../controllers/accountController");
 router.get("/", verifyToken, accountController.getAccounts);
 router.post("/", verifyToken, accountController.createAccount);
 router.put("/:id", verifyToken, accountController.updateAccount);
-router.delete("/:id", verifyToken, accountController.deleteAccount);
+
+// Đặt route này TRƯỚC route delete theo id để tránh nhầm lẫn
+router.delete('/all', verifyToken, async (req, res) => {
+  try {
+    console.log('DELETE /accounts/all - req.user:', req.user);
+    const result = await require('../models/Account').deleteMany({ userId: req.user.id });
+    console.log('Kết quả deleteMany:', result);
+    res.json({ message: 'Đã xóa toàn bộ tài khoản!', deletedCount: result.deletedCount });
+  } catch (err) {
+    console.error('Lỗi xóa toàn bộ tài khoản:', err);
+    res.status(500).json({ message: 'Lỗi xóa tài khoản', error: err.message, stack: err.stack });
+  }
+});
+
+router.delete('/:id', verifyToken, accountController.deleteAccount);
 
 module.exports = router;

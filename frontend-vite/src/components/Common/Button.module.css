@@ -2,26 +2,27 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 1.05rem;
+  font-weight: 600;
+  font-size: 0.95rem;
   border: none;
-  border-radius: 10px;
-  height: 44px;
-  padding: 0 32px;
+  border-radius: 8px;
+  height: 40px;
+  padding: 0 20px;
   cursor: pointer;
   transition: box-shadow 0.2s, transform 0.18s, background 0.2s;
-  box-shadow: 0 4px 16px #6a5af930;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   outline: none;
-  gap: 12px;
+  gap: 10px;
 }
 .primary {
-  background: linear-gradient(90deg, #4f8cff 0%, #6a5af9 100%);
+  background: #3f51b5;
   color: #fff;
+  box-shadow: 0 3px 12px rgba(63, 81, 181, 0.3);
 }
 .primary:hover:not(:disabled) {
-  box-shadow: 0 8px 32px #6a5af950;
-  transform: scale(1.04) translateY(-2px);
-  filter: brightness(1.08);
+  background: #32408f;
+  box-shadow: 0 6px 20px rgba(63, 81, 181, 0.4);
+  transform: scale(1.02) translateY(-1px);
 }
 .primary:active {
   transform: scale(0.98);

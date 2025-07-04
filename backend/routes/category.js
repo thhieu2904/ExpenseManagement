@@ -169,6 +169,16 @@ const {
 router.get("/", verifyToken, getCategories);
 router.post("/", verifyToken, createCategory);
 router.put("/:id", verifyToken, updateCategory);
-router.delete("/:id", verifyToken, deleteCategory);
+
+router.delete('/all', require('../middleware/verifyToken'), async (req, res) => {
+  try {
+    const result = await require('../models/Category').deleteMany({ userId: req.user.id });
+    res.json({ message: 'Đã xóa toàn bộ danh mục!', deletedCount: result.deletedCount });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi xóa danh mục', error: err.message });
+  }
+});
+
+router.delete('/:id', verifyToken, deleteCategory);
 
 module.exports = router;

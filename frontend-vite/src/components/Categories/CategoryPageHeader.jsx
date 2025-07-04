@@ -3,6 +3,8 @@ import React from "react";
 import styles from "./CategoryPageHeader.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTag } from "@fortawesome/free-solid-svg-icons";
+import HeaderCard from "../Common/HeaderCard";
+import Button from "../Common/Button";
 
 // Import component điều hướng riêng
 import DateRangeNavigator from "../Common/DateRangeNavigator";
@@ -28,18 +30,25 @@ const CategoryPageHeader = ({
   onDateChange,
 }) => {
   return (
-    <div className={styles.categoryHeaderContainer}>
-      {/* Tầng 1: Tiêu đề */}
-      <div className={styles.titleSection}>
-        <FontAwesomeIcon icon={faTag} className={styles.titleIcon} />
-        <h2 className={styles.title}>Quản lí danh mục</h2>
-      </div>
-
-      {/* Tầng 2: Các nút điều khiển */}
-      <div className={styles.controlsContainer}>
-        {/* Nhóm điều khiển bên trái */}
-        <div className={styles.leftControls}>
-          {/* Các tab lọc loại danh mục */}
+    <HeaderCard
+      className={styles.categoryHeaderCard}
+      title={
+        <>
+          <FontAwesomeIcon icon={faTag} className={styles.titleIcon} />
+          Quản lí danh mục
+        </>
+      }
+      action={
+        <Button
+          onClick={onAddCategoryClick}
+          icon={<FontAwesomeIcon icon={faPlus} />}
+          variant="primary"
+        >
+          Thêm danh mục
+        </Button>
+      }
+      filter={
+        <div className={styles.filterGroup}>
           <div className={styles.tabButtons}>
             <button
               className={`${styles.tabButton} ${
@@ -59,34 +68,25 @@ const CategoryPageHeader = ({
             </button>
             <button
               className={`${styles.tabButton} ${
-                activeCategoryType === CATEGORY_TYPE.EXPENSE
-                  ? styles.active
-                  : ""
+                activeCategoryType === CATEGORY_TYPE.EXPENSE ? styles.active : ""
               }`}
               onClick={() => onCategoryTypeChange(CATEGORY_TYPE.EXPENSE)}
             >
               Chi tiêu
             </button>
           </div>
-
-          {/* Bộ lọc và điều hướng thời gian */}
-          <DateRangeNavigator
-            period={period}
-            currentDate={currentDate}
-            onPeriodChange={onPeriodChange}
-            onDateChange={onDateChange}
-          />
+          <div className={styles.controlGroup}>
+            <DateRangeNavigator
+              period={period}
+              currentDate={currentDate}
+              onPeriodChange={onPeriodChange}
+              onDateChange={onDateChange}
+            />
+          </div>
         </div>
-
-        {/* Nút thêm danh mục (bên phải) */}
-        <button
-          onClick={onAddCategoryClick}
-          className={styles.addCategoryButton}
-        >
-          <FontAwesomeIcon icon={faPlus} /> Thêm danh mục
-        </button>
-      </div>
-    </div>
+      }
+      extra={null}
+    />
   );
 };
 
