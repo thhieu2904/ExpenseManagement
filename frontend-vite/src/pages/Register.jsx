@@ -12,6 +12,7 @@ export default function Register() {
   const [formData, setFormData] = useState({
     username: "",
     fullname: "",
+    email: "",
     password: "",
     confirmPassword: "",
   });
@@ -19,6 +20,7 @@ export default function Register() {
   const isFormValid =
     formData.username &&
     formData.fullname &&
+    formData.email &&
     formData.password &&
     formData.confirmPassword &&
     formData.password === formData.confirmPassword;
@@ -33,8 +35,8 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { username, fullname, password } = formData;
-      const response = await register({ username, fullname, password });
+      const { username, fullname, email, password } = formData;
+      const response = await register({ username, fullname, email, password });
       setIsSuccess(true);
       setMessage(
         response.data.message || "Đăng ký thành công! Đang chuyển hướng..."
@@ -82,6 +84,16 @@ export default function Register() {
           required
         />
 
+        <label htmlFor="email">Email:</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
+
         <label htmlFor="password">Nhập mật khẩu:</label>
         <input
           id="password"
@@ -120,6 +132,15 @@ export default function Register() {
           <FontAwesomeIcon icon={faUserPlus} />
           &nbsp;Đăng ký
         </button>
+        <div className={styles["register-login-link"]}>
+          Đã có tài khoản?
+          <span
+            className={styles["login-link"]}
+            onClick={() => navigate("/login")}
+          >
+            Đăng nhập
+          </span>
+        </div>
       </form>
     </div>
   );

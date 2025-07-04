@@ -1,6 +1,7 @@
 .container {
     display: flex;
     gap: 40px;
+    align-items: center;
   }
   .avatarSection {
     display: flex;
@@ -26,6 +27,8 @@
   }
   .formSection {
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
   }
   .formGroup {
     margin-bottom: 20px;
@@ -55,7 +58,23 @@
     cursor: pointer;
     font-size: 1rem;
     font-weight: 600;
+    align-self: flex-end;
   }
   .message { padding: 10px; border-radius: 5px; margin-bottom: 15px; }
   .success { background-color: #d4edda; color: #155724; }
   .error { background-color: #f8d7da; color: #721c24; }
+  .inputWithIcon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .editIcon {
+    color: #888;
+    cursor: pointer;
+    font-size: 1.1rem;
+    margin-left: 4px;
+    transition: color 0.2s;
+  }
+  .editIcon:hover {
+    color: #1a4fa3;
+  }

@@ -5,14 +5,14 @@ const LoginHistory = require("../models/LoginHistory");
 // Đăng ký
 const register = async (req, res) => {
   try {
-    const { username, fullname, password } = req.body;
+    const { username, fullname, password, email } = req.body;
 
     const existingUser = await User.findOne({ username });
     if (existingUser)
       return res.status(400).json({ message: "Tài khoản đã tồn tại" });
 
     const hashed = await bcrypt.hash(password, 10);
-    const newUser = await User.create({ username, fullname, password: hashed });
+    const newUser = await User.create({ username, fullname, password: hashed, email });
 
     res.status(201).json({ message: "Đăng ký thành công", user: newUser });
   } catch (err) {

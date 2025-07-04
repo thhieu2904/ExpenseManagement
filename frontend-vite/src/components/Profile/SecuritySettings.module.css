@@ -94,3 +94,53 @@
       font-weight: 600;
       flex-shrink: 0;
   }
+
+.securityGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.securityRow {
+  display: flex;
+  gap: 28px;
+}
+
+.securityCard {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(80, 80, 120, 0.07);
+  border: 1.5px solid #ececf3;
+  padding: 2rem 2rem 1.5rem 2rem;
+  flex: 1 1 0;
+  min-width: 320px;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.securityCardDanger {
+  background: #fff1f2;
+  border-radius: 14px;
+  border: 1.5px solid #ffdde0;
+  box-shadow: 0 2px 12px rgba(255, 80, 80, 0.07);
+  padding: 2rem 2rem 1.5rem 2rem;
+  flex: 1 1 0;
+  min-width: 320px;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+@media (max-width: 900px) {
+  .securityRow {
+    flex-direction: column;
+    gap: 18px;
+  }
+  .securityCard, .securityCardDanger {
+    min-width: 0;
+    width: 100%;
+  }
+}

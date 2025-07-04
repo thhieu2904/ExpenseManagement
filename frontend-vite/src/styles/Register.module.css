@@ -107,3 +107,22 @@ body {
 .register-button:hover:not(:disabled) {
   background-color: #187bd1;
 }
+
+.register-login-link {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 1rem;
+  color: #444;
+}
+.login-link {
+  color: #1a4fa3;
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: 600;
+  margin-left: 4px;
+  transition: color 0.2s;
+}
+.login-link:hover {
+  color: #0d357a;
+  text-decoration: underline;
+}

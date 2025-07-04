@@ -22,6 +22,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
       fullname: user.fullname,
       username: user.username,
       avatar: user.avatar,
+      email: user.email,
     });
   } else {
     res.status(404);
@@ -37,6 +38,13 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 
   if (user) {
     user.fullname = req.body.fullname || user.fullname;
+    if (req.body.email && req.body.email !== user.email) {
+      const emailExists = await User.findOne({ email: req.body.email });
+      if (emailExists) {
+        return res.status(400).json({ message: "Email đã tồn tại." });
+      }
+      user.email = req.body.email;
+    }
     // Logic cập nhật avatar sẽ được thêm ở các tuần sau
 
     const updatedUser = await user.save();
@@ -46,6 +54,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       fullname: updatedUser.fullname,
       username: updatedUser.username,
       avatar: updatedUser.avatar,
+      email: updatedUser.email,
     });
   } else {
     res.status(404);
