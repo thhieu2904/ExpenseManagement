@@ -147,10 +147,33 @@ const TransactionsPage = () => {
     }
   }, [initialDataLoaded, activeFilters, pagination.currentPage, fetchPageData]);
 
-  // Effect để xóa URL params (giữ nguyên)
+  // Effect để xóa URL params và xử lý focus
   useEffect(() => {
-    if (searchParams.get("categoryId") || searchParams.get("accountId")) {
-      setSearchParams({}, { replace: true });
+    const shouldFocus = searchParams.get("focus");
+    const source = searchParams.get("source");
+    
+    if (shouldFocus === "filter" && source === "analytics") {
+      // Scroll to and focus on filter panel
+      setTimeout(() => {
+        const filterPanel = document.querySelector('[data-filter-panel]');
+        if (filterPanel) {
+          filterPanel.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+          // Optionally highlight the filter panel briefly
+          filterPanel.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.5)';
+          setTimeout(() => {
+            filterPanel.style.boxShadow = '';
+          }, 2000);
+        }
+      }, 100);
+    }
+    
+    // Clean up URL params
+    if (searchParams.get("categoryId") || searchParams.get("accountId") || shouldFocus) {
+      const newParams = {};
+      setSearchParams(newParams, { replace: true });
     }
   }, [searchParams, setSearchParams]);
 
@@ -233,6 +256,7 @@ const TransactionsPage = () => {
             <fieldset
               className={styles.filterFieldset}
               disabled={isLoading.filters}
+              data-filter-panel
             >
               <legend className={styles.fieldsetLegend}>
                 <FontAwesomeIcon

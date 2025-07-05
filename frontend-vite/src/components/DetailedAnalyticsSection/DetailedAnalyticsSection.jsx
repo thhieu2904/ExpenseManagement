@@ -124,13 +124,25 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
     setActiveCategoryName(null);
   };
 
-  const handleCategorySelect = (data) => {
-    if (data && data.id === activeCategoryId) {
+  const handleCategorySelect = (sliceData, index) => {
+    // Khi click vào nút ✕ hoặc reset, sliceData sẽ là null
+    if (!sliceData) {
       setActiveCategoryId(null);
       setActiveCategoryName(null);
-    } else if (data) {
-      setActiveCategoryId(data.id);
-      setActiveCategoryName(data.name);
+      return;
+    }
+
+    // Lấy id từ sliceData (_id hoặc id)
+    const categoryId = sliceData._id || sliceData.id;
+    
+    // Nếu click vào slice đã được chọn, thì reset
+    if (categoryId === activeCategoryId) {
+      setActiveCategoryId(null);
+      setActiveCategoryName(null);
+    } else {
+      // Chọn slice mới
+      setActiveCategoryId(categoryId);
+      setActiveCategoryName(sliceData.name);
     }
   };
 

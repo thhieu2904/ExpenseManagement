@@ -125,6 +125,8 @@ const CategoryAnalysisChart = ({
         loading={loading}
         error={error}
         onSliceClick={handlePieClick}
+        activeCategoryId={activeIndex !== null && data[activeIndex] ? (data[activeIndex]._id || data[activeIndex].id) : null}
+        activeCategoryName={activeIndex !== null && data[activeIndex] ? data[activeIndex].name : null}
         colors={COLORS}
         showCenterLabel={true}
         showLabels={true}

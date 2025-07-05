@@ -13,7 +13,6 @@ const CategoryExpenseChart = ({
 }) => {
   return (
     <BasePieChart
-      title="Phân tích chi tiêu theo danh mục"
       data={data}
       total={total}
       loading={loading}
@@ -27,8 +26,8 @@ const CategoryExpenseChart = ({
       showActiveShape={true}
       detailsLink={{
         url: activeCategoryId
-          ? `/transactions?categoryId=${activeCategoryId}`
-          : "/categories",
+          ? `/transactions?categoryId=${activeCategoryId}&focus=filter&source=analytics`
+          : "/categories?focus=list",
         text: "Xem chi tiết",
         title: activeCategoryId
           ? `Xem các giao dịch của mục "${activeCategoryName}"`

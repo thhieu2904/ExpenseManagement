@@ -1,5 +1,6 @@
 // src/components/Common/BasePieChart.jsx
 import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
 import {
   PieChart,
   Pie,
@@ -30,6 +31,37 @@ const DEFAULT_COLORS = [
 
 const formatCurrency = (value) =>
   value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+
+// Smart text truncation function
+const truncateText = (text, maxLength = 30) => {
+  if (!text) return '';
+  
+  // If text is already short enough, return as is
+  if (text.length <= maxLength) return text;
+  
+  // Try to break at word boundaries
+  const words = text.split(' ');
+  let result = '';
+  
+  for (let i = 0; i < words.length; i++) {
+    const wordToAdd = i === 0 ? words[i] : ' ' + words[i];
+    
+    if ((result + wordToAdd).length <= maxLength) {
+      result += wordToAdd;
+    } else {
+      // If we can't fit this word, add ellipsis if we have something
+      if (result.length > 0) {
+        return result + '...';
+      } else {
+        // If even the first word is too long, truncate it
+        return words[0].substring(0, maxLength - 3) + '...';
+      }
+    }
+  }
+  
+  // If we've processed all words and they fit, return the result
+  return result;
+};
 
 /**
  * Base Pie Chart Component - Highly Customizable and Reusable
@@ -87,10 +119,10 @@ const BasePieChart = ({
 }) => {
   // Chart configuration with defaults
   const {
-    innerRadius = 80,
-    outerRadius = 120,
+    innerRadius = 95,
+    outerRadius = 145,
     paddingAngle = 2,
-    height = 400,
+    height = 480,
   } = chartConfig;
 
   // Label configuration with defaults
@@ -252,6 +284,26 @@ const BasePieChart = ({
     }
   };
 
+  // Handle center label click to reset to total view
+  const handleCenterLabelClick = () => {
+    if (onSliceClick && activeIndex !== -1) {
+      onSliceClick(null, -1); // Reset to show total
+    }
+  };
+
+  // Handle center click to deselect
+  const handleCenterClick = (e) => {
+    // Only handle click if it's on the center label itself, not on the chart
+    if (e.target.closest(`.${styles.centerLabel}`) || e.target.closest(`.${styles.centerLabelActive}`)) {
+      if (activeIndex !== -1) {
+        // Deselect current slice
+        if (onSliceClick) {
+          onSliceClick(null, -1);
+        }
+      }
+    }
+  };
+
   // Loading state
   if (loading) {
     return <p className={styles.loadingText}>Đang tải...</p>;
@@ -298,12 +350,13 @@ const BasePieChart = ({
           
           {/* Center label when a slice is selected */}
           {showCenterLabel && activeIndex !== -1 && processedData[activeIndex] && (
-            <div className={styles.centerLabelActive}>
-              <span className={`${styles.categoryName} ${
-                processedData[activeIndex].name.length > 20 ? styles.longText : 
-                processedData[activeIndex].name.length > 30 ? styles.veryLongText : ''
-              }`}>
-                {processedData[activeIndex].name}
+            <div 
+              className={styles.centerLabelActive} 
+              onClick={handleCenterLabelClick}
+              title="Click để xem tổng quan"
+            >
+              <span className={styles.categoryName}>
+                {truncateText(processedData[activeIndex].name, 35)}
               </span>
               <span className={styles.categoryAmount}>
                 {formatCurrency(processedData[activeIndex].value)}
@@ -355,14 +408,14 @@ const BasePieChart = ({
         {/* Details Link - positioned at bottom right corner */}
         {detailsLink && (
           <div className={styles.detailsLink}>
-            <a 
-              href={detailsLink.url} 
+            <Link 
+              to={detailsLink.url} 
               title={detailsLink.title}
               className={styles.detailsLinkButton}
             >
               {detailsLink.text || "Xem chi tiết"}
               <span className={styles.detailsLinkArrow}>→</span>
-            </a>
+            </Link>
           </div>
         )}
       </div>

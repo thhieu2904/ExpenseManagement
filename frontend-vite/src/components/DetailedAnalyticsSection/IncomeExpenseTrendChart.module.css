@@ -1,21 +1,71 @@
 /* src/components/DetailedAnalyticsSection/IncomeExpenseTrendChart.module.css */
 
+/* Card styling similar to pie chart */
+.chartCard {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.05),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease-out;
+  width: 100%;
+  height: 100%;
+}
+
+.chartCard:hover {
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.08),
+    0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.chartTitle {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.chartTitle h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .chartContainer {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* Phân bố đều không gian, đẩy biểu đồ xuống dưới */
 }
 
-/* Wrapper cho phần biểu đồ để căn xuống dưới */
+/* Wrapper cho phần biểu đồ để sử dụng toàn bộ không gian */
 .chartWrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end; /* Đẩy biểu đồ xuống dưới */
-  min-height: 0; /* Cho phép shrink */
-  padding-bottom: 10px; /* Đảm bảo có chỗ cho legend */
+  min-height: 500px; /* Tăng để phù hợp với ResponsiveContainer */
+  max-height: 550px; /* Tăng giới hạn */
 }
 
 /* Container chính cho header của biểu đồ */
