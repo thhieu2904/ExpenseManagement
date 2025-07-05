@@ -63,10 +63,10 @@ const IncomeExpenseTrendChart = ({
       )}
       {!loading && !error && chartData.length > 0 && (
         <div className={styles.chartWrapper}>
-          <ResponsiveContainer width="100%" height={320}>
+          <ResponsiveContainer width="100%" height={350}>
             <LineChart
               data={chartData}
-              margin={{ top: 5, right: 20, left: 30, bottom: 50 }}
+              margin={{ top: 5, right: 20, left: 30, bottom: 20 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
               <XAxis dataKey="name" stroke="#666" tick={{ fontSize: 12 }}>

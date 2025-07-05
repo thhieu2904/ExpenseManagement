@@ -1,5 +1,8 @@
 /* index.css */
 
+/* --- Design System --- */
+@import './styles/globals.css';
+
 /* --- Tailwind Directives --- */
 @tailwind base;
 @tailwind components;

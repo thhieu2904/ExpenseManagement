@@ -1,5 +1,3 @@
-// THAY THẾ TOÀN BỘ FILE: frontend-vite/src/pages/StatisticsPage.jsx
-
 import React, { useState, useEffect, useCallback } from "react";
 import {
   startOfWeek,
@@ -16,22 +14,49 @@ import CategoryList from "../components/Categories/CategoryList";
 import Header from "../components/Header/Header";
 import Navbar from "../components/Navbar/Navbar";
 import Footer from "../components/Footer/Footer";
+import HeaderCard from "../components/Common/HeaderCard";
+import ExtendedHeaderCard from "../components/Common/ExtendedHeaderCard";
 import DateRangeNavigator from "../components/Common/DateRangeNavigator";
 import IncomeExpenseTrendChart from "../components/DetailedAnalyticsSection/IncomeExpenseTrendChart";
-import CategoryExpenseChart from "../components/DetailedAnalyticsSection/CategoryExpenseChart"; // Đã được sửa
+import CategoryExpenseChart from "../components/DetailedAnalyticsSection/CategoryExpenseChart";
 import TransactionList from "../components/Transactions/TransactionList";
 import styles from "../styles/StatisticsPage.module.css";
 import AddEditTransactionModal from "../components/Transactions/AddEditTransactionModal";
 import ConfirmDialog from "../components/Common/ConfirmDialog";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faArrowDown,
+  faArrowUp,
+  faExchangeAlt,
+} from "@fortawesome/free-solid-svg-icons";
 
-const StatCard = ({ title, amount, type }) => (
-  <div className={`${styles.statCard} ${styles[type]}`}>
-    <div className={styles.cardTitle}>{title}</div>
-    <div className={styles.cardAmount}>
-      {(amount || 0).toLocaleString("vi-VN")} ₫
+const StatCard = ({ title, amount, type }) => {
+  // Icon mapping
+  const iconMap = {
+    income: faArrowDown,
+    expense: faArrowUp,
+    cashFlow: faExchangeAlt,
+  };
+
+  return (
+    <div className={`${styles.statCard} ${styles[type]}`}>
+      <div className={styles.cardIconWrapper}>
+        <FontAwesomeIcon
+          icon={iconMap[type]}
+          className={styles.cardIcon}
+        />
+      </div>
+      <div className={styles.cardContent}>
+        <div className={styles.cardHeader}>
+          <h3 className={styles.cardTitle}>{title}</h3>
+        </div>
+        <p className={styles.cardAmount}>
+          {(amount || 0).toLocaleString("vi-VN")} ₫
+        </p>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 const StatisticsPage = () => {
   // State bộ lọc
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -257,29 +282,34 @@ const StatisticsPage = () => {
       <Header userName={userData?.name} userAvatar={userData?.avatarUrl} />
       <Navbar />
       <main className={styles.pageWrapper}>
-        <div className={styles.headerSection}>
-          <h1 className={styles.pageTitle}>Báo cáo & Phân tích</h1>
-          <DateRangeNavigator
-            period={period}
-            currentDate={currentDate}
-            onDateChange={handleDateChange}
-            onPeriodChange={handlePeriodChange}
-          />
-        </div>
+        <ExtendedHeaderCard
+          title="Báo cáo & Phân tích"
+        >
+          {/* Hàng 2: StatsGrid (3 cards như StatsOverview) */}
+          <div className={styles.statsGrid}>
+            <StatCard
+              title="Tổng Thu Nhập"
+              amount={stats.totalIncome}
+              type="income"
+            />
+            <StatCard
+              title="Tổng Chi Tiêu"
+              amount={stats.totalExpense}
+              type="expense"
+            />
+            <StatCard title="Dòng Tiền" amount={stats.cashFlow} type="cashFlow" />
+          </div>
 
-        <div className={styles.statsGrid}>
-          <StatCard
-            title="Tổng Thu Nhập"
-            amount={stats.totalIncome}
-            type="income"
-          />
-          <StatCard
-            title="Tổng Chi Tiêu"
-            amount={stats.totalExpense}
-            type="expense"
-          />
-          <StatCard title="Dòng Tiền" amount={stats.cashFlow} type="cashFlow" />
-        </div>
+          {/* Hàng 3: DateRangeNavigator */}
+          <div className={styles.dateRangeSection}>
+            <DateRangeNavigator
+              period={period}
+              currentDate={currentDate}
+              onDateChange={handleDateChange}
+              onPeriodChange={handlePeriodChange}
+            />
+          </div>
+        </ExtendedHeaderCard>
 
         <div className={styles.analysisSection}>
           <div className={styles.tabs}>

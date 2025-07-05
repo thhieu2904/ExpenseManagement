@@ -1,5 +1,7 @@
 /* TẠO FILE MỚI: frontend-vite/src/styles/StatisticsPage.module.css */
 
+/* StatisticsPage.module.css - Updated for ExtendedHeaderCard */
+
 .pageContainer {
   display: flex;
   flex-direction: column;
@@ -18,59 +20,94 @@
   flex-grow: 1;
 }
 
-.headerSection {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.pageTitle {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #2c3e50;
-  margin: 0;
-}
-
+/* Stats Grid - giống như StatsOverview */
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
 }
 
+/* DateRange Section */
+.dateRangeSection {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-md) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+/* StatCard styles - giống StatsOverview */
 .statCard {
-  padding: 20px 24px;
-  border-radius: 12px;
-  color: #fff;
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-lg);
+  background: #ffffff;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid #ececf3;
   position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
+  min-height: 120px;
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(80, 80, 120, 0.15);
+  border-color: #d0d7de;
 }
 
 .cardTitle {
   font-size: 1rem;
-  font-weight: 500;
-  margin-bottom: 8px;
-  opacity: 0.9;
+  color: #495057;
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .cardAmount {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  letter-spacing: -1px;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
-.income {
-  background: linear-gradient(135deg, #4caf50, #2e7d32);
-} /* Xanh lá cây dịu */
-.expense {
-  background: linear-gradient(135deg, #f44336, #d32f2f);
-} /* Đỏ dịu */
-.cashFlow {
-  background: linear-gradient(135deg, #2196f3, #1976d2);
-} /* Xanh dương dịu */
+
+/* Màu sắc cho các loại card */
+.income::before {
+  background: linear-gradient(90deg, #4CAF50, #66BB6A);
+}
+
+.expense::before {
+  background: linear-gradient(90deg, #f44336, #EF5350);
+}
+
+.cashFlow::before {
+  background: linear-gradient(90deg, #3f51b5, #5c6bc0);
+}
+
+.income .cardAmount {
+  color: #4caf50;
+}
+
+.expense .cardAmount {
+  color: #f44336;
+}
+
+.cashFlow .cardAmount {
+  color: #3f51b5;
+}
 
 .analysisSection {
   background-color: #fff;
@@ -223,4 +260,82 @@
   .listColumn {
     max-height: none; /* Bỏ giới hạn chiều cao trên mobile */
   }
+}
+
+/* Responsive cho statsGrid */
+@media (max-width: 992px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dateRangeSection {
+    padding: var(--spacing-sm) 0;
+  }
+}
+
+/* Icon và Content styles cho StatCard */
+.cardIconWrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1.2rem;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.income .cardIconWrapper {
+  background: rgba(76, 175, 80, 0.1);
+  border: 2px solid rgba(76, 175, 80, 0.2);
+}
+
+.expense .cardIconWrapper {
+  background: rgba(244, 67, 54, 0.1);
+  border: 2px solid rgba(244, 67, 54, 0.2);
+}
+
+.cashFlow .cardIconWrapper {
+  background: rgba(63, 81, 181, 0.1);
+  border: 2px solid rgba(63, 81, 181, 0.2);
+}
+
+.cardIcon {
+  font-size: 1.4rem;
+  transition: all 0.3s ease;
+}
+
+.income .cardIcon {
+  color: #4CAF50;
+}
+
+.expense .cardIcon {
+  color: #f44336;
+}
+
+.cashFlow .cardIcon {
+  color: #3f51b5;
+}
+
+.statCard:hover .cardIcon {
+  transform: scale(1.1);
+}
+
+.cardContent {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.8rem;
 }

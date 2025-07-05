@@ -14,7 +14,7 @@
 
 /* Style cho tiêu đề chính "Phân Tích Chi Tiêu..." */
 .analyticsTitle {
-  font-size: 1.8rem;
+  font-size: 1.6rem; /* Giảm từ 1.8rem xuống 1.6rem để nhỏ hơn StatsOverview (2.1rem) */
   color: #2c3e50;
   font-weight: 600;
   margin: 0;
@@ -43,11 +43,32 @@
 .trendChartContainer {
   flex: 2;
   min-width: 300px;
+  background-color: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .categoryChartContainer {
   flex: 1;
   min-width: 300px;
+  background-color: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Style cho tiêu đề của từng chart */
+.chartTitle {
+  font-size: 1.3rem;
+  color: #2c3e50;
+  font-weight: 500; /* Giảm từ 600 xuống 500 để nhẹ hơn */
+  margin: 0 0 15px 0;
+  text-align: center;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 10px;
 }
 
 /* Responsive */
@@ -58,32 +79,4 @@
   .chartsRow {
     flex-direction: column;
   }
-}
-
-/* Sửa lại: Style cho header chỉ chứa tiêu đề */
-.header {
-  margin-bottom: 10px; /* Thêm khoảng cách với phần controls bên dưới */
-}
-
-/* Thêm mới: Container cho link "Xem chi tiết" ở cuối */
-.footerLinkContainer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 10px;
-}
-
-.detailsLink {
-  font-size: 0.9rem;
-  color: var(--primary-color, #007bff);
-  text-decoration: none;
-  font-weight: 500;
-  transition:
-    color 0.3s ease,
-    transform 0.3s ease;
-}
-
-.detailsLink:hover {
-  color: var(--primary-dark-color, #0056b3);
-  text-decoration: underline;
-  transform: translateX(2px);
 }

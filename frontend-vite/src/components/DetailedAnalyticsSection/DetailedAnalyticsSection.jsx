@@ -167,6 +167,12 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
 
       <div className={styles.chartsRow}>
         <div className={styles.trendChartContainer}>
+          <h3 className={styles.chartTitle}>
+            {activeCategoryName 
+              ? `Xu hướng thu nhập và chi tiêu - ${activeCategoryName}`
+              : "Xu hướng thu nhập và chi tiêu theo ngày"
+            }
+          </h3>
           <IncomeExpenseTrendChart
             data={trendData}
             period={period}
@@ -177,6 +183,7 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
           />
         </div>
         <div className={styles.categoryChartContainer}>
+          <h3 className={styles.chartTitle}>Phân bổ chi tiêu theo danh mục</h3>
           <CategoryExpenseChart
             data={categoryData}
             total={totalExpense}
@@ -184,26 +191,9 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
             error={error}
             onSliceClick={handleCategorySelect}
             activeCategoryId={activeCategoryId}
+            activeCategoryName={activeCategoryName}
           />
         </div>
-      </div>
-
-      <div className={styles.footerLinkContainer}>
-        <Link
-          to={
-            activeCategoryId
-              ? `/transactions?categoryId=${activeCategoryId}`
-              : "/categories"
-          }
-          className={styles.detailsLink}
-          title={
-            activeCategoryId
-              ? `Xem các giao dịch của mục "${activeCategoryName}"`
-              : "Xem trang quản lý danh mục"
-          }
-        >
-          Xem chi tiết →
-        </Link>
       </div>
     </div>
   );

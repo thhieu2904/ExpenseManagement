@@ -64,7 +64,9 @@ const CategoriesPage = () => {
         params.date = currentDate.toISOString().split("T")[0];
       }
 
+      console.log('CategoriesPage - Fetching with params:', params);
       const data = await getCategories(params);
+      console.log('CategoriesPage - Fetched data:', data);
       setCategoriesData(data || []);
     } catch (err) {
       console.error("Lỗi khi tải dữ liệu trang danh mục:", err);
@@ -142,22 +144,26 @@ const CategoriesPage = () => {
 
   // ✅ SỬA: Dùng `useMemo` để tối ưu việc lọc và tính toán dữ liệu
   const { listData, chartData, chartTotal } = useMemo(() => {
+    console.log('CategoriesPage - Processing data:', { categoriesData, activeType });
+    
     const filteredList =
       activeType === CATEGORY_TYPE.ALL
         ? categoriesData
         : categoriesData.filter((cat) => cat.type === activeType);
 
     const finalChartData = filteredList
-      .filter((cat) => cat.totalAmount > 0)
+      .filter((cat) => (cat.totalAmount || cat.total || 0) > 0) // Hỗ trợ cả totalAmount và total
       .map((cat, index) => ({
         id: cat._id || cat.id,
         name: cat.name,
-        value: cat.totalAmount,
+        value: cat.totalAmount || cat.total || 0, // Hỗ trợ cả totalAmount và total
         icon: cat.icon,
         color: COLORS[index % COLORS.length], // Gán màu ở đây
       }));
 
     const total = finalChartData.reduce((sum, item) => sum + item.value, 0);
+
+    console.log('CategoriesPage - Processed chart data:', { finalChartData, total });
 
     return {
       listData: filteredList,
@@ -192,6 +198,7 @@ const CategoriesPage = () => {
                 error={error}
                 onSliceClick={handleSelectCategory}
                 activeCategoryId={activeCategory ? activeCategory.id : null}
+                showDetailsButton={false} // Không hiển thị nút ở CategoriesPage
               />
             </div>
 

@@ -1,14 +1,10 @@
-// src/pages/GoalsPage.jsx
-
-// ✅ BỎ: KHÔNG CẦN useState và useEffect cho việc fetch dữ liệu nữa
 import React, { useState, useEffect } from "react";
-
-// ✅ 1. IMPORT CÁC "SIÊU NĂNG LỰC" TỪ REACT QUERY
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
 import { getGoals, deleteGoal } from "../api/goalService";
 import GoalsList from "../components/Goals/GoalsList";
 import AddEditGoalModal from "../components/Goals/AddEditGoalModal";
+import ExtendedHeaderCard from "../components/Common/ExtendedHeaderCard";
+import HeaderCard from "../components/Common/HeaderCard";
 import styles from "../styles/GoalsPage.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -120,15 +116,16 @@ export default function GoalsPage() {
       <Header userName={userData.name} userAvatar={userData.avatarUrl} />
       <Navbar />
       <main className={styles.pageWrapper}>
-        <div className={styles.header}>
-          <h1 className={styles.pageTitle}>Mục tiêu của tôi</h1>
-          <button onClick={handleOpenAddModal} className={styles.addButton}>
-            <FontAwesomeIcon icon={faPlus} className={styles.addIcon} />
-            Tạo mục tiêu mới
-          </button>
-        </div>
+        <HeaderCard
+          title="Mục tiêu của tôi"
+          action={
+            <button onClick={handleOpenAddModal} className={styles.addButton}>
+              <FontAwesomeIcon icon={faPlus} className={styles.addIcon} />
+              Tạo mục tiêu mới
+            </button>
+          }
+        />
         <div className={styles.content}>
-          {/* ✅ 8. SỬ DỤNG CÁC TRẠNG THÁI TỪ `useQuery` */}
           {isLoading && (
             <div className={styles.loading}>Đang tải dữ liệu...</div>
           )}
@@ -140,7 +137,7 @@ export default function GoalsPage() {
 
           {!isLoading && !error && (
             <GoalsList
-              goals={goals} // `goals` bây giờ đến từ `useQuery`
+              goals={goals}
               onEdit={handleOpenEditModal}
               onDelete={handleRequestDelete}
               onAddFunds={handleOpenAddFundsModal}

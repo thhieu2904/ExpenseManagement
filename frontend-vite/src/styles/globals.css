@@ -1,0 +1,157 @@
+/* globals.css - Design System Variables */
+
+:root {
+  /* Typography Scale */
+  --font-size-xs: 0.75rem;      /* 12px */
+  --font-size-sm: 0.875rem;     /* 14px */
+  --font-size-base: 1rem;       /* 16px */
+  --font-size-lg: 1.125rem;     /* 18px */
+  --font-size-xl: 1.25rem;      /* 20px */
+  --font-size-2xl: 1.5rem;      /* 24px */
+  --font-size-3xl: 1.875rem;    /* 30px */
+  --font-size-4xl: 2.25rem;     /* 36px */
+  
+  /* Component Titles */
+  --title-font-size-h1: 2.1rem;       /* HeaderCard, Page titles */
+  --title-font-size-h2: 1.8rem;       /* Section titles */
+  --title-font-size-h3: 1.5rem;       /* Subsection titles */
+  --title-font-size-h4: 1.25rem;      /* Card titles */
+  
+  /* Spacing Scale */
+  --spacing-xs: 0.5rem;          /* 8px */
+  --spacing-sm: 0.75rem;         /* 12px */
+  --spacing-base: 1rem;          /* 16px */
+  --spacing-lg: 1.5rem;          /* 24px */
+  --spacing-xl: 2rem;            /* 32px */
+  --spacing-2xl: 2.5rem;         /* 40px */
+  --spacing-3xl: 3rem;           /* 48px */
+  
+  /* Component Spacing */
+  --component-gap: 1.5rem;            /* Standard gap between components */
+  --component-gap-lg: 2rem;           /* Large gap */
+  --component-margin-bottom: 2rem;    /* Standard margin bottom */
+  --component-padding: 1.5rem 2rem;   /* Standard padding */
+  
+  /* Component Heights */
+  --header-card-min-height: 100px;
+  --stats-card-min-height: 130px;
+  --button-height: 40px;
+  
+  /* Border Radius */
+  --border-radius-sm: 8px;
+  --border-radius-base: 12px;
+  --border-radius-lg: 16px;
+  --border-radius-xl: 18px;
+  
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Colors */
+  --color-primary: #3f51b5;
+  --color-primary-hover: #3949ab;
+  --color-primary-light: #e8eaf6;
+  --color-text-primary: #2c3e50;
+  --color-text-secondary: #6c757d;
+  --color-background: #ffffff;
+  --color-surface-primary: #ffffff;
+  --color-border: #ececf3;
+  --color-border-light: #ececf3;
+  --color-gray-50: #f9fafb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-base: 0 2px 12px rgba(80, 80, 120, 0.07);
+  --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Global Typography Classes */
+.title-h1 {
+  font-size: var(--title-font-size-h1);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.title-h2 {
+  font-size: var(--title-font-size-h2);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.title-h3 {
+  font-size: var(--title-font-size-h3);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.title-h4 {
+  font-size: var(--title-font-size-h4);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* Global Spacing Classes */
+.component-spacing {
+  gap: var(--component-gap);
+}
+
+.component-spacing-lg {
+  gap: var(--component-gap-lg);
+}
+
+.component-margin {
+  margin-bottom: var(--component-margin-bottom);
+}
+
+.component-padding {
+  padding: var(--component-padding);
+}
+
+/* Global Layout Classes */
+.standard-component {
+  background: var(--color-background);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-base);
+  border: 1.5px solid var(--color-border);
+  padding: var(--component-padding);
+  margin-bottom: var(--component-margin-bottom);
+}
+
+.standard-component-min-height {
+  min-height: var(--header-card-min-height);
+}
+
+/* Media Queries for Responsive Typography */
+@media (max-width: 992px) {
+  :root {
+    --title-font-size-h1: 1.8rem;
+    --title-font-size-h2: 1.5rem;
+    --title-font-size-h3: 1.3rem;
+    --title-font-size-h4: 1.1rem;
+    --component-gap: 1.2rem;
+    --component-margin-bottom: 1.5rem;
+    --component-padding: 1rem 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  :root {
+    --title-font-size-h1: 1.5rem;
+    --title-font-size-h2: 1.3rem;
+    --title-font-size-h3: 1.1rem;
+    --title-font-size-h4: 1rem;
+    --component-gap: 1rem;
+    --component-margin-bottom: 1rem;
+    --component-padding: 1rem;
+  }
+}

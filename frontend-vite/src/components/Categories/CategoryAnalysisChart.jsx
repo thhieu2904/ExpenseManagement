@@ -1,20 +1,9 @@
 // frontend-vite/src/components/Categories/CategoryAnalysisChart.jsx
-
 import React, { useState } from "react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  Sector,
-} from "recharts";
-import { getIconObject } from "../../utils/iconMap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
-// Tái sử dụng style từ component biểu đồ của HomePage cho nhất quán
+import BasePieChart from "../Common/BasePieChart";
+import DateRangeNavigator from "../Common/DateRangeNavigator";
 import styles from "../DetailedAnalyticsSection/IncomeExpenseTrendChart.module.css";
-import customChartStyles from "./CategoryAnalysisChart.module.css"; // CSS riêng cho biểu đồ
+import customChartStyles from "./CategoryAnalysisChart.module.css";
 
 const COLORS = [
   "#0088FE",
@@ -31,8 +20,141 @@ const COLORS = [
   "#0099C6",
 ];
 
-const formatCurrency = (value) =>
-  value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+const CategoryAnalysisChart = ({
+  data,
+  total,
+  loading,
+  error,
+  categoryType,
+  period,
+  currentDate,
+  onPeriodChange,
+  onDateChange,
+  onActiveCategoryChange,
+}) => {
+  const [activeIndex, setActiveIndex] = useState(null);
+
+  // Navigation handlers
+  const handlePrev = () => {
+    const newDate = new Date(currentDate);
+    if (period === "week") newDate.setDate(newDate.getDate() - 7);
+    if (period === "month") newDate.setMonth(newDate.getMonth() - 1);
+    if (period === "year") newDate.setFullYear(newDate.getFullYear() - 1);
+    onDateChange(newDate);
+  };
+
+  const handleNext = () => {
+    const newDate = new Date(currentDate);
+    if (period === "week") newDate.setDate(newDate.getDate() + 7);
+    if (period === "month") newDate.setMonth(newDate.getMonth() + 1);
+    if (period === "year") newDate.setFullYear(newDate.getFullYear() + 1);
+    onDateChange(newDate);
+  };
+
+  const getDateLabel = () => {
+    if (period === "week") {
+      const start = new Date(currentDate);
+      start.setDate(start.getDate() - start.getDay() + 1);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      return `${start.getDate()}/${start.getMonth() + 1} - ${end.getDate()}/${end.getMonth() + 1}`;
+    }
+    if (period === "month") return `${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
+    if (period === "year") return `Năm ${currentDate.getFullYear()}`;
+    return "";
+  };
+
+  const chartTitle =
+    categoryType === "THUNHAP"
+      ? "Cơ cấu Thu nhập"
+      : categoryType === "CHITIEU"
+      ? "Cơ cấu Chi tiêu"
+      : "Cơ cấu Thu chi";
+
+  const handlePieClick = (sliceData, index) => {
+    const newIndex = activeIndex === index ? null : index;
+    setActiveIndex(newIndex);
+    if (onActiveCategoryChange) {
+      onActiveCategoryChange(newIndex !== null ? sliceData._id || sliceData.id : null);
+    }
+  };
+
+  return (
+    <div className={styles.chartContainer}>
+      <div className={styles.headerContainer}>
+        <div className={styles.controlsGroup}>
+          <div className={styles.filterButtons}>
+            <button
+              onClick={() => onPeriodChange("week")}
+              className={period === "week" ? styles.active : ""}
+            >
+              Tuần
+            </button>
+            <button
+              onClick={() => onPeriodChange("month")}
+              className={period === "month" ? styles.active : ""}
+            >
+              Tháng
+            </button>
+            <button
+              onClick={() => onPeriodChange("year")}
+              className={period === "year" ? styles.active : ""}
+            >
+              Năm
+            </button>
+          </div>
+
+          <div className={styles.navButtonsBox}>
+            <button onClick={handlePrev} aria-label="Kỳ trước">
+              ‹
+            </button>
+            <div className={styles.navDateBox}>{getDateLabel()}</div>
+            <button onClick={handleNext} aria-label="Kỳ sau">
+              ›
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className={customChartStyles.chartTitle}>{chartTitle}</div>
+
+      <BasePieChart
+        title={`Phân tích ${categoryType === 'income' ? 'thu nhập' : 'chi tiêu'} theo danh mục`}
+        data={data}
+        total={total}
+        loading={loading}
+        error={error}
+        onSliceClick={handlePieClick}
+        colors={COLORS}
+        showCenterLabel={true}
+        showLabels={true}
+        showTooltip={true}
+        showActiveShape={true}
+        detailsLink={{
+          url: "/transactions",
+          text: "Xem giao dịch",
+          title: "Xem trang quản lý giao dịch"
+        }}
+        chartConfig={{
+          innerRadius: 80,
+          outerRadius: 120,
+          paddingAngle: 2,
+          height: 400,
+        }}
+        labelConfig={{
+          fontSize: 13,
+          activeFontSize: 15,
+          fontWeight: 600,
+          activeFontWeight: 700,
+          labelRadius: 60,
+          activeLabelRadius: 60,
+        }}
+      />
+    </div>
+  );
+};
+
+export default CategoryAnalysisChart;
 
 // --- renderCustomizedLabel Component (Không thay đổi) ---
 const renderCustomizedLabel = ({
@@ -92,215 +214,4 @@ const renderCustomizedLabel = ({
   );
 };
 
-// --- ✅ THAY ĐỔI 1: CẬP NHẬT PROPS VÀ LOẠI BỎ LOGIC FETCH ---
-const CategoryAnalysisChart = ({
-  // Props dữ liệu mới
-  data,
-  total,
-  loading,
-  error,
-  // Props bộ lọc để hiển thị
-  categoryType,
-  period,
-  currentDate,
-  onPeriodChange,
-  onDateChange,
-  onActiveCategoryChange,
-}) => {
-  const [activeIndex, setActiveIndex] = useState(null);
 
-  // --- CÁC HÀM ĐIỀU KHIỂN BỘ LỌC (Không đổi) ---
-  const handlePrev = () => {
-    const newDate = new Date(currentDate);
-    if (period === "week") newDate.setDate(newDate.getDate() - 7);
-    if (period === "month") newDate.setMonth(newDate.getMonth() - 1);
-    if (period === "year") newDate.setFullYear(newDate.getFullYear() - 1);
-    onDateChange(newDate);
-  };
-
-  const handleNext = () => {
-    const newDate = new Date(currentDate);
-    if (period === "week") newDate.setDate(newDate.getDate() + 7);
-    if (period === "month") newDate.setMonth(newDate.getMonth() + 1);
-    if (period === "year") newDate.setFullYear(newDate.getFullYear() + 1);
-    onDateChange(newDate);
-  };
-
-  const getDisplayBox = () => {
-    if (period === "week") {
-      const endOfWeek = new Date(currentDate);
-      endOfWeek.setDate(currentDate.getDate() + 6);
-      return `${currentDate.toLocaleDateString(
-        "vi-VN"
-      )} - ${endOfWeek.toLocaleDateString("vi-VN")}`;
-    }
-    if (period === "month")
-      return currentDate.toLocaleDateString("vi-VN", {
-        month: "long",
-        year: "numeric",
-      });
-    if (period === "year") return `Năm ${currentDate.getFullYear()}`;
-    return "";
-  };
-
-  const chartTitle =
-    categoryType === "THUNHAP"
-      ? "Cơ cấu Thu nhập"
-      : categoryType === "CHITIEU"
-      ? "Cơ cấu Chi tiêu"
-      : "Cơ cấu Thu chi";
-
-  const handlePieClick = (data, index) => {
-    const newIndex = activeIndex === index ? null : index;
-    setActiveIndex(newIndex);
-    if (onActiveCategoryChange) {
-      onActiveCategoryChange(newIndex !== null ? data._id || data.id : null);
-    }
-  };
-
-  const renderActiveShape = (props) => {
-    const RADIAN = Math.PI / 180;
-    const {
-      cx,
-      cy,
-      midAngle,
-      innerRadius,
-      outerRadius,
-      startAngle,
-      endAngle,
-      fill,
-      payload,
-      percent,
-      value,
-    } = props;
-    const sin = Math.sin(-RADIAN * midAngle);
-    const cos = Math.cos(-RADIAN * midAngle);
-    const sx = cx + (outerRadius + 10) * cos;
-    const sy = cy + (outerRadius + 10) * sin;
-    const mx = cx + (outerRadius + 20) * cos;
-    const my = cy + (outerRadius + 20) * sin;
-    const ex = mx + (cos >= 0 ? 1 : -1) * 12;
-    const ey = my;
-    const textAnchor = cos >= 0 ? "start" : "end";
-
-    return (
-      <g>
-        <text
-          x={cx}
-          y={cy - 10}
-          textAnchor="middle"
-          fill="#333"
-          fontSize={16}
-          fontWeight={600}
-          style={{
-            maxWidth: "120px",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          {payload.name}
-        </text>
-        <text
-          x={cx}
-          y={cy + 15}
-          textAnchor="middle"
-          fill={fill}
-          fontSize={20}
-          fontWeight={700}
-        >
-          {formatCurrency(value)}
-        </text>
-        <Sector
-          cx={cx}
-          cy={cy}
-          innerRadius={innerRadius}
-          outerRadius={outerRadius + 6}
-          startAngle={startAngle}
-          endAngle={endAngle}
-          fill={fill}
-        />
-        <path
-          d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
-          stroke={fill}
-          fill="none"
-          opacity={0.7}
-        />
-        <circle cx={ex} cy={ey} r={3} fill={fill} stroke="none" opacity={0.7} />
-        <text
-          x={ex + (cos >= 0 ? 1 : -1) * 8}
-          y={ey}
-          dy={4}
-          textAnchor={textAnchor}
-          fill="#666"
-          fontWeight={500}
-        >
-          {`(${(percent * 100).toFixed(1)}%)`}
-        </text>
-      </g>
-    );
-  };
-
-  return (
-    <div className={styles.chartContainer}>
-      <div className={styles.chartTitle}>{chartTitle}</div>
-
-      {/* ✅ THAY ĐỔI 2: PHẦN BIỂU ĐỒ RENDER DỰA TRÊN PROPS */}
-      {loading && <p className={styles.loadingText}>Đang tải...</p>}
-      {error && !loading && <p className={styles.errorText}>{error}</p>}
-      {!loading && !error && data.length === 0 && (
-        <p className={styles.noDataText}>Không có dữ liệu.</p>
-      )}
-      {!loading && !error && data.length > 0 && (
-        <div style={{ position: "relative", width: "100%", height: 400 }}>
-          {activeIndex === null && (
-            <div className={customChartStyles.centerLabel}>
-              <span>Tổng cộng</span>
-              <strong>{formatCurrency(total)}</strong>
-            </div>
-          )}
-          <ResponsiveContainer>
-            <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={80}
-                outerRadius={120}
-                paddingAngle={2}
-                fill="#8884d8"
-                dataKey="value"
-                nameKey="name"
-                labelLine={false}
-                label={renderCustomizedLabel}
-                isAnimationActive={true}
-                activeIndex={activeIndex}
-                activeShape={renderActiveShape}
-                onClick={handlePieClick}
-              >
-                {data.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                    cursor="pointer"
-                  />
-                ))}
-              </Pie>
-              <Tooltip
-                formatter={(value, name) => [formatCurrency(value), name]}
-                contentStyle={{
-                  borderRadius: 12,
-                  boxShadow: "0 2px 12px #0001",
-                  fontWeight: 600,
-                  fontSize: 14,
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default CategoryAnalysisChart;
