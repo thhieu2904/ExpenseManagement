@@ -35,14 +35,25 @@
   overflow: hidden; /* Ẩn overflow để bo góc header */
   display: flex; /* Dùng flexbox cho layout tổng */
   flex-direction: column;
-  transform: scale(0.95);
+  transform: scale(0.9) translateY(20px);
   opacity: 0;
-  animation: slideInModal 0.3s ease-out forwards;
+  animation: enhancedSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 @keyframes slideInModal {
   to {
     transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes enhancedSlideIn {
+  0% {
+    transform: scale(0.9) translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) translateY(0);
     opacity: 1;
   }
 }
@@ -80,8 +91,9 @@
 }
 
 .closeButton:hover {
-  background-color: #f0f0f0;
-  color: #111827;
+  background-color: #fee2e2;
+  color: #dc2626;
+  transform: rotate(90deg);
 }
 
 /* === Form Styles === */
@@ -117,6 +129,7 @@
   border-color: #4f46e5;
   outline: 0;
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  transform: scale(1.02);
 }
 
 textarea.formInput {
@@ -146,6 +159,7 @@ textarea.formInput {
   border-color: #4f46e5;
   outline: 0;
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  transform: scale(1.02);
 }
 
 .currencySymbol {
@@ -291,6 +305,125 @@ textarea.formInput {
   font-size: 1.1rem;
   color: #4f46e5;
   gap: 10px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* === Field Validation Styles === */
+.fieldError {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.errorText {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 0.375rem;
+  padding: 0.25rem 0;
+}
+
+.errorIcon {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+}
+
+/* === Enhanced Button Styles === */
+.disabledButton {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+.buttonText {
+  margin-left: 0.5rem;
+}
+
+.successIcon {
+  color: #22c55e;
+  margin-right: 0.375rem;
+}
+
+/* === Form Loading Enhancement === */
+.formLoading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+/* === Enhanced tooltip for disabled submit button === */
+.submitButton[disabled]:hover {
+  cursor: not-allowed;
+}
+
+.submitButton:not([disabled]):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+}
+
+/* === Character counter for description === */
+.formGroup:has(#description) {
+  position: relative;
+}
+
+.formGroup:has(#description) .formInput:focus ~ .characterCounter,
+.formGroup:has(#description) .formInput:not(:placeholder-shown) ~ .characterCounter {
+  opacity: 1;
+}
+
+.characterCounter {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.5rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  pointer-events: none;
+}
+
+/* === Accessibility improvements === */
+@media (prefers-reduced-motion: reduce) {
+  .modalOverlay,
+  .modalContent,
+  .formInput,
+  .amountInput,
+  .formButton,
+  .radioLabelText {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* === High contrast mode support === */
+@media (prefers-contrast: high) {
+  .fieldError {
+    border-color: #dc2626 !important;
+    border-width: 2px !important;
+  }
+  
+  .errorText {
+    color: #991b1b;
+    font-weight: 600;
+  }
 }
 
 /* Responsive cho màn hình nhỏ */
@@ -299,4 +432,234 @@ textarea.formInput {
     grid-template-columns: 1fr;
     gap: 0; /* Bỏ gap trên mobile để các formGroup tự có margin-bottom */
   }
+}
+
+/* === Smart Suggestions and Auto-completion === */
+.suggestionsDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  margin-top: 0.25rem;
+}
+
+.suggestionItem {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.suggestionItem:hover,
+.suggestionItem.highlighted {
+  background-color: #f3f4f6;
+}
+
+.suggestionItem:last-child {
+  border-bottom: none;
+}
+
+/* === Smart Amount Input with Suggestions === */
+.amountSuggestions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.amountSuggestion {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 1rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.amountSuggestion:hover {
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}
+
+/* === Enhanced Form Validation Visual Feedback === */
+.formGroup.valid .formInput,
+.formGroup.valid .amountInput {
+  border-color: #22c55e;
+  background-color: #f0fdf4;
+}
+
+.formGroup.valid::after {
+  content: "✓";
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #22c55e;
+  font-weight: bold;
+  font-size: 1.125rem;
+}
+
+/* === Progressive Enhancement for Better UX === */
+.formGroup {
+  position: relative;
+}
+
+.smartLabel {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.75rem;
+  color: #9ca3af;
+  font-size: 1rem;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  background: white;
+  padding: 0 0.25rem;
+}
+
+.formInput:focus ~ .smartLabel,
+.formInput:not(:placeholder-shown) ~ .smartLabel,
+.amountInput:focus ~ .smartLabel,
+.amountInput:not(:placeholder-shown) ~ .smartLabel {
+  top: -0.5rem;
+  left: 0.5rem;
+  font-size: 0.75rem;
+  color: #3b82f6;
+  font-weight: 500;
+}
+
+/* === Loading States for Better Feedback === */
+.loadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  border-radius: 0.5rem;
+}
+
+.loadingSpinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* === Improved Keyboard Navigation === */
+.formInput:focus,
+.amountInput:focus,
+.formButton:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* === Success State Animation === */
+.submitButton.success {
+  background-color: #22c55e !important;
+  animation: successPulse 0.6s ease-in-out;
+}
+
+@keyframes successPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* === Form Progress Indicator === */
+.formProgress {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+}
+
+.progressBar {
+  width: 100%;
+  height: 0.5rem;
+  background-color: #e5e7eb;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  border-radius: 0.25rem;
+  transition: width 0.3s ease-in-out;
+  position: relative;
+}
+
+.progressFill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: progressShine 2s infinite;
+}
+
+@keyframes progressShine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.progressText {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.progressText .successIcon {
+  color: #22c55e;
+  font-size: 1rem;
+}
+
+/* === Smart Hover Effects === */
+.amountSuggestion:hover {
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+  border-color: #94a3b8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.suggestionItem:hover {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  transform: translateX(4px);
+}
+
+/* === Micro-interactions === */
+.formInput:focus,
+.amountInput:focus {
+  transform: scale(1.02);
+}
+
+.radioLabelText:hover {
+  transform: translateX(2px);
 }
