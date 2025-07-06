@@ -33,7 +33,7 @@ const formatCurrency = (amount) => {
 };
 
 const TransactionItem = forwardRef(
-  ({ transaction, onEditRequest, onDeleteRequest }, ref) => {
+  ({ transaction, onEditRequest, onDeleteRequest, onCategoryClick }, ref) => {
     const navigate = useNavigate();
 
     if (!transaction) return null;
@@ -53,8 +53,22 @@ const TransactionItem = forwardRef(
     const handleDelete = () => onDeleteRequest(id);
 
     const handleCategoryClick = () => {
-      if (category && category.id) {
-        navigate(`/transactions?categoryId=${category.id}`);
+      console.log("Category clicked:", category);
+      const categoryId = category?.id || category?._id;
+      console.log("Category ID:", categoryId);
+      
+      if (category && categoryId) {
+        // Nếu có callback từ parent thì dùng callback đó
+        if (onCategoryClick) {
+          console.log("Calling onCategoryClick with:", categoryId, category.name);
+          onCategoryClick(categoryId, category.name);
+        } else {
+          // Fallback về behavior cũ
+          console.log("Fallback navigation to transactions");
+          navigate(`/transactions?categoryId=${categoryId}`);
+        }
+      } else {
+        console.log("No category or category ID found");
       }
     };
 
@@ -89,7 +103,7 @@ const TransactionItem = forwardRef(
           <span
             className={styles.categoryNameLink}
             onClick={handleCategoryClick}
-            title={`Xem các giao dịch trong mục "${category?.name}"`}
+            title={`Click để xem chi tiết danh mục "${category?.name}"`}
           >
             {category?.name || "N/A"}
           </span>

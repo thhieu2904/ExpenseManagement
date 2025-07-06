@@ -78,7 +78,7 @@ const StatsOverview = ({ stats, loading, onTransactionAdded }) => {
         </Button>
       }
     >
-      {/* Stats Cards - custom content trong ExtendedHeaderCard */}
+      {/* Stats Cards - áp dụng hệ thống title hierarchy */}
       <div className={styles.statsCards}>
         {/* Card Thu nhập */}
         <div className={`${styles.statCard} ${styles.incomeCard}`}>

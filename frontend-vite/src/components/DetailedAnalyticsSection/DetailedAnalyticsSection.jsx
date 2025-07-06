@@ -5,6 +5,8 @@ import CategoryExpenseChart from "./CategoryExpenseChart";
 import styles from "./DetailedAnalyticsSection.module.css";
 import { Link } from "react-router-dom";
 import { getYear, getMonth, startOfWeek } from "date-fns";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChartArea } from "@fortawesome/free-solid-svg-icons";
 // MỚI: Import service đã được trừu tượng hóa
 import { getDetailedAnalyticsData } from "../../api/analyticsService";
 // MỚI: import service riêng lẻ
@@ -186,7 +188,11 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
   return (
     <div className={styles.analyticsContainer}>
       <div className={styles.header}>
-        <h2 className={styles.analyticsTitle}>{getDynamicTitle()}</h2>
+        {/* Cấp trung (H2): Title của section lớn với icon */}
+        <h2 className={styles.analyticsTitle}>
+          <FontAwesomeIcon icon={faChartArea} className={styles.titleIcon} />
+          {getDynamicTitle()}
+        </h2>
       </div>
 
       <div className={styles.sectionHeader}>
@@ -205,6 +211,7 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
 
       <div className={styles.chartsRow}>
         <div className={styles.trendChartContainer}>
+          {/* Cấp thấp nhất (H3): Title của component biểu đồ con */}
           <h3 className={styles.chartTitle}>
             {activeCategoryName 
               ? `Xu hướng thu nhập và chi tiêu - ${activeCategoryName}`
@@ -230,6 +237,7 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
           />
         </div>
         <div className={styles.categoryChartContainer}>
+          {/* Cấp thấp nhất (H3): Title của component biểu đồ con */}
           <h3 className={styles.chartTitle}>Phân bổ chi tiêu theo danh mục</h3>
           <CategoryExpenseChart
             data={categoryData}

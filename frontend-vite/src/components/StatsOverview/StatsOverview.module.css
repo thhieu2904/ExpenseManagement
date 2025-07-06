@@ -162,11 +162,14 @@
 }
 
 .cardTitle {
-  font-size: 1rem;
-  color: #495057;
-  margin: 0;
+  /* Áp dụng hệ thống title hierarchy - Cấp thấp nhất cho component cards */
+  font-size: var(--title-font-size-h3);
   font-weight: 600;
-  letter-spacing: 0.02em;
+  color: var(--color-text-primary);
+  margin: 0;
+  letter-spacing: -0.3px;
+  line-height: 1.4;
+  /* Tương đương .title-h3/.title-component từ globals.css */
 }
 
 .cardPeriod {
@@ -326,6 +329,7 @@
   }
   
   .cardTitle {
-    font-size: 0.9rem;
+    /* Responsive: Giảm kích thước tương ứng với --title-font-size-h3 trong mobile */
+    font-size: var(--title-font-size-h3);
   }
 }

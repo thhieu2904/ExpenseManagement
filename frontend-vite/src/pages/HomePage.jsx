@@ -1,6 +1,7 @@
 // Mở và THAY THẾ file: frontend-vite/src/pages/HomePage.jsx
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../components/Header/Header";
 import Navbar from "../components/Navbar/Navbar";
 import StatsOverview from "../components/StatsOverview/StatsOverview";
@@ -13,12 +14,14 @@ import { getTransactions, deleteTransaction } from "../api/transactionsService";
 const ITEMS_PER_PAGE = 5;
 
 const HomePage = () => {
+  const navigate = useNavigate();
   const [userData, setUserData] = useState({ name: "", avatarUrl: null });
   const [statsData, setStatsData] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     hasMore: true,
+    totalCount: 0,
   });
   const [transactionFilters, setTransactionFilters] = useState({});
   const [isLoading, setIsLoading] = useState({
@@ -52,12 +55,17 @@ const HomePage = () => {
 
       try {
         const response = await getTransactions(page, ITEMS_PER_PAGE, filters);
-        const { data, totalPages, currentPage } = response.data;
+        const { data, totalPages, currentPage, totalCount } = response.data;
+        console.log("HomePage: Transactions fetched:", { data, totalPages, currentPage, totalCount });
         if (data) {
           setTransactions((prev) =>
             shouldRefresh ? data : [...prev, ...data]
           );
-          setPagination({ currentPage, hasMore: currentPage < totalPages });
+          setPagination({ 
+            currentPage, 
+            hasMore: currentPage < totalPages,
+            totalCount: totalCount || 0
+          });
         }
       } catch (err) {
         setError("Không thể tải danh sách giao dịch.");
@@ -83,6 +91,7 @@ const HomePage = () => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUserData(JSON.parse(storedUser));
 
+    console.log("HomePage: Initial data load");
     refreshStatsAndTransactions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -107,6 +116,13 @@ const HomePage = () => {
     const newFilters = categoryId ? { categoryId } : {};
     setTransactionFilters(newFilters);
   }, []);
+
+  const handleCategoryClickFromTransaction = useCallback((categoryId, categoryName) => {
+    console.log("HomePage: handleCategoryClickFromTransaction called with:", categoryId, categoryName);
+    // Navigate đến Categories page với query param để highlight slice
+    navigate(`/categories?highlight=${categoryId}`);
+    console.log("HomePage: Navigated to /categories?highlight=" + categoryId);
+  }, [navigate]);
 
   const handleEditRequest = (transaction) => {
     setEditingTransaction(transaction);
@@ -138,6 +154,11 @@ const HomePage = () => {
     await refreshStatsAndTransactions(transactionFilters);
   };
 
+  const handleAddRequest = () => {
+    setEditingTransaction(null);
+    setIsModalOpen(true);
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingTransaction(null);
@@ -164,6 +185,9 @@ const HomePage = () => {
           isLoading={isLoading.transactions}
           error={error}
           hasMore={pagination.hasMore}
+          totalCount={pagination.totalCount}
+          currentPage={pagination.currentPage}
+          itemsPerPage={ITEMS_PER_PAGE}
           onLoadMore={handleLoadMore}
           onEditRequest={handleEditRequest}
           onDeleteRequest={handleDeleteRequest}
@@ -171,6 +195,8 @@ const HomePage = () => {
           onSubmitSuccess={handleSubmitSuccess}
           onCloseModal={closeModal}
           onCloseConfirm={closeConfirm}
+          onAddRequest={handleAddRequest}
+          onCategoryClick={handleCategoryClickFromTransaction}
           isModalOpen={isModalOpen}
           isConfirmOpen={isConfirmOpen}
           editingTransaction={editingTransaction}

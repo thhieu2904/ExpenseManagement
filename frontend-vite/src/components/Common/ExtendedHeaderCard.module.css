@@ -24,11 +24,14 @@
 }
 
 .title {
+  /* Áp dụng hệ thống title hierarchy mới - Cấp cao nhất */
   font-size: var(--title-font-size-h1);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-text-primary);
   margin: 0;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.8px;
+  line-height: 1.2;
+  /* Tương đương .title-h1 từ globals.css */
 }
 
 .extra {

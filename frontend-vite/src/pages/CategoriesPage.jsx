@@ -1,6 +1,7 @@
 // GHI ĐÈ VÀO FILE: frontend-vite/src/pages/CategoriesPage.jsx
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useLocation, useSearchParams } from "react-router-dom";
 // Bỏ axios
 import {
   getCategories,
@@ -33,6 +34,10 @@ const COLORS = [
 ];
 
 const CategoriesPage = () => {
+  const [searchParams] = useSearchParams();
+  const highlightCategoryId = searchParams.get("highlight");
+  console.log("CategoriesPage: highlightCategoryId from URL:", highlightCategoryId);
+  
   // State quản lý bộ lọc và modal
   const [activeType, setActiveType] = useState(CATEGORY_TYPE.ALL);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -64,9 +69,7 @@ const CategoriesPage = () => {
         params.date = currentDate.toISOString().split("T")[0];
       }
 
-      console.log('CategoriesPage - Fetching with params:', params);
       const data = await getCategories(params);
-      console.log('CategoriesPage - Fetched data:', data);
       setCategoriesData(data || []);
     } catch (err) {
       console.error("Lỗi khi tải dữ liệu trang danh mục:", err);
@@ -80,6 +83,31 @@ const CategoriesPage = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Effect để auto-highlight category từ URL parameter
+  useEffect(() => {
+    console.log("CategoriesPage: useEffect for highlight, highlightCategoryId:", highlightCategoryId);
+    console.log("CategoriesPage: categoriesData:", categoriesData);
+    if (highlightCategoryId && categoriesData.length > 0) {
+      const categoryToHighlight = categoriesData.find(
+        (cat) => cat.id === highlightCategoryId || cat._id === highlightCategoryId
+      );
+      console.log("CategoriesPage: categoryToHighlight found:", categoryToHighlight);
+      if (categoryToHighlight) {
+        // Tìm color cho category này
+        const categoryIndex = categoriesData.indexOf(categoryToHighlight);
+        const color = COLORS[categoryIndex % COLORS.length];
+        const highlightData = {
+          id: categoryToHighlight.id || categoryToHighlight._id,
+          color: color,
+          name: categoryToHighlight.name,
+        };
+        console.log("CategoriesPage: Setting activeCategory to:", highlightData);
+        setActiveCategory(highlightData);
+        // Có thể thêm smooth scroll đến category đó nữa
+      }
+    }
+  }, [highlightCategoryId, categoriesData]);
 
   // Các hàm handler (không thay đổi nhiều)
   const handlePeriodChange = (newPeriod) => setPeriod(newPeriod);
@@ -144,26 +172,22 @@ const CategoriesPage = () => {
 
   // ✅ SỬA: Dùng `useMemo` để tối ưu việc lọc và tính toán dữ liệu
   const { listData, chartData, chartTotal } = useMemo(() => {
-    console.log('CategoriesPage - Processing data:', { categoriesData, activeType });
-    
     const filteredList =
       activeType === CATEGORY_TYPE.ALL
         ? categoriesData
         : categoriesData.filter((cat) => cat.type === activeType);
 
     const finalChartData = filteredList
-      .filter((cat) => (cat.totalAmount || cat.total || 0) > 0) // Hỗ trợ cả totalAmount và total
+      .filter((cat) => cat.totalAmount > 0)
       .map((cat, index) => ({
         id: cat._id || cat.id,
         name: cat.name,
-        value: cat.totalAmount || cat.total || 0, // Hỗ trợ cả totalAmount và total
+        value: cat.totalAmount,
         icon: cat.icon,
         color: COLORS[index % COLORS.length], // Gán màu ở đây
       }));
 
     const total = finalChartData.reduce((sum, item) => sum + item.value, 0);
-
-    console.log('CategoriesPage - Processed chart data:', { finalChartData, total });
 
     return {
       listData: filteredList,
@@ -198,7 +222,6 @@ const CategoriesPage = () => {
                 error={error}
                 onSliceClick={handleSelectCategory}
                 activeCategoryId={activeCategory ? activeCategory.id : null}
-                showDetailsButton={false} // Không hiển thị nút ở CategoriesPage
               />
             </div>
 
