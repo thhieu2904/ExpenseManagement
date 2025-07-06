@@ -13,12 +13,13 @@ import statisticsService from "../../api/statisticsService";
 import DateRangeNavigator from "../Common/DateRangeNavigator";
 
 const DetailedAnalyticsSection = ({ onCategorySelect }) => {
-  // State cho bộ lọc thời gian
+  // State cho bộ lọc thời gian - Mặc định hiển thị theo tháng
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [period, setPeriod] = useState("month");
+  const [period, setPeriod] = useState("month"); // Có thể thay đổi thành "week" hoặc "year" nếu muốn
 
   // State cho dữ liệu của cả 2 biểu đồ
   const [trendData, setTrendData] = useState([]);
+  const [baseTrendData, setBaseTrendData] = useState([]); // Dữ liệu gốc (toàn bộ thu nhập/chi tiêu)
   const [categoryData, setCategoryData] = useState([]);
   const [totalExpense, setTotalExpense] = useState(0);
 
@@ -30,6 +31,7 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
   // State quản lý danh mục được chọn
   const [activeCategoryId, setActiveCategoryId] = useState(null);
   const [activeCategoryName, setActiveCategoryName] = useState(null);
+  const [activeCategoryTotal, setActiveCategoryTotal] = useState(0);
 
   const isInitialMount = useRef(true);
 
@@ -44,6 +46,7 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
         const { trendData, categoryData, totalExpense } =
           await getDetailedAnalyticsData(period, currentDate, null); // Luôn fetch trend chung ban đầu
         setTrendData(trendData);
+        setBaseTrendData(trendData); // Lưu dữ liệu gốc
         setCategoryData(categoryData);
         setTotalExpense(totalExpense);
       } catch (err) {
@@ -78,28 +81,41 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
         const month = getMonth(currentDate) + 1;
         const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
 
-        // SỬA LỖI: Xây dựng lại params cho ĐÚNG với API của trend
-        let trendParams = {};
-        if (period === "week") {
-          trendParams = {
-            period: "day",
-            startDate: weekStart.toISOString().split("T")[0],
-            days: 7,
-          };
-        } else if (period === "month") {
-          trendParams = { period: "day", year, month };
-        } else if (period === "year") {
-          trendParams = { period: "month", year };
-        }
+        if (!activeCategoryId) {
+          // Nếu bỏ chọn category, quay về dữ liệu gốc
+          setTrendData(baseTrendData);
+        } else {
+          // Nếu chọn category, fetch dữ liệu chi tiêu riêng cho category đó
+          let trendParams = {};
+          if (period === "week") {
+            trendParams = {
+              period: "day",
+              startDate: weekStart.toISOString().split("T")[0],
+              days: 7,
+              categoryId: activeCategoryId,
+            };
+          } else if (period === "month") {
+            trendParams = { period: "day", year, month, categoryId: activeCategoryId };
+          } else if (period === "year") {
+            trendParams = { period: "month", year, categoryId: activeCategoryId };
+          }
 
-        // Nếu có categoryId được chọn, thêm vào params
-        // Nếu không (bỏ chọn), fetch lại trend chung cho khoảng thời gian đó
-        if (activeCategoryId) {
-          trendParams.categoryId = activeCategoryId;
+          const categoryTrendRes = await statisticsService.getTrendData(trendParams);
+          
+          // Kết hợp dữ liệu: giữ thu nhập từ baseTrendData, chi tiêu từ categoryTrendRes
+          const combinedData = baseTrendData.map((baseItem) => {
+            const categoryItem = categoryTrendRes?.find(
+              (catItem) => catItem.name === baseItem.name
+            );
+            return {
+              ...baseItem,
+              expense: categoryItem ? categoryItem.expense : 0, // Chi tiêu của category hoặc 0
+              income: baseItem.income, // Giữ nguyên thu nhập
+            };
+          });
+          
+          setTrendData(combinedData);
         }
-
-        const res = await statisticsService.getTrendData(trendParams);
-        setTrendData(res || []);
       } catch (err) {
         setError("Lỗi cập nhật biểu đồ xu hướng.");
         console.error(err);
@@ -109,19 +125,21 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
     };
 
     fetchTrendOnly();
-  }, [activeCategoryId, currentDate, period, onCategorySelect]);
+  }, [activeCategoryId, baseTrendData]); // Thêm baseTrendData vào dependency
 
   const handlePeriodChange = (newPeriod) => {
     setPeriod(newPeriod);
     setCurrentDate(new Date());
     setActiveCategoryId(null);
     setActiveCategoryName(null);
+    setActiveCategoryTotal(0);
   };
 
   const handleDateChange = (newDate) => {
     setCurrentDate(newDate);
     setActiveCategoryId(null);
     setActiveCategoryName(null);
+    setActiveCategoryTotal(0);
   };
 
   const handleCategorySelect = (sliceData, index) => {
@@ -129,6 +147,7 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
     if (!sliceData) {
       setActiveCategoryId(null);
       setActiveCategoryName(null);
+      setActiveCategoryTotal(0);
       return;
     }
 
@@ -139,10 +158,12 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
     if (categoryId === activeCategoryId) {
       setActiveCategoryId(null);
       setActiveCategoryName(null);
+      setActiveCategoryTotal(0);
     } else {
       // Chọn slice mới
       setActiveCategoryId(categoryId);
       setActiveCategoryName(sliceData.name);
+      setActiveCategoryTotal(sliceData.value || 0);
     }
   };
 
@@ -175,6 +196,11 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
           onPeriodChange={handlePeriodChange}
           onDateChange={handleDateChange}
         />
+        <div className={styles.periodInfo}>
+          <span className={styles.periodLabel}>
+            Đang xem: {period === "week" ? "Tuần" : period === "month" ? "Tháng" : "Năm"}
+          </span>
+        </div>
       </div>
 
       <div className={styles.chartsRow}>
@@ -185,6 +211,15 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
               : "Xu hướng thu nhập và chi tiêu theo ngày"
             }
           </h3>
+          {activeCategoryName && (
+            <div className={styles.categoryNote}>
+              <p className={styles.noteText}>
+                <strong>Ghi chú:</strong> Đường thu nhập (nét đứt) hiển thị tổng thu nhập chung, 
+                đường chi tiêu (nét liền) hiển thị chi tiêu riêng cho danh mục "{activeCategoryName}" 
+                (Tổng: {activeCategoryTotal.toLocaleString("vi-VN")} ₫).
+              </p>
+            </div>
+          )}
           <IncomeExpenseTrendChart
             data={trendData}
             period={period}

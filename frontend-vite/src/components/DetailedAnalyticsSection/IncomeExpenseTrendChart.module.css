@@ -57,6 +57,8 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Wrapper cho phần biểu đồ để sử dụng toàn bộ không gian */
@@ -66,6 +68,9 @@
   flex-direction: column;
   min-height: 500px; /* Tăng để phù hợp với ResponsiveContainer */
   max-height: 550px; /* Tăng giới hạn */
+  width: 100%;
+  position: relative;
+  margin: 0 auto; /* Căn giữa */
 }
 
 /* Container chính cho header của biểu đồ */
@@ -165,6 +170,90 @@
 
 .errorText {
   color: #c0392b;
+}
+
+/* Custom Tooltip Styles */
+.customTooltip {
+  background: rgba(255, 255, 255, 0.98);
+  padding: 16px 20px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.12),
+    0 4px 10px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(8px);
+  font-size: 14px;
+  min-width: 200px;
+  transform: translateY(-8px);
+}
+
+.tooltipLabel {
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 8px;
+  font-size: 15px;
+  text-align: center;
+}
+
+.tooltipEntry {
+  margin: 8px 0;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tooltipCategory {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 12px;
+  font-style: italic;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 8px;
+  text-align: center;
+  background: rgba(99, 102, 241, 0.05);
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+/* Legend Styles */
+.recharts-legend-wrapper {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 16px !important;
+  margin-top: 16px;
+}
+
+.recharts-legend-item {
+  transition: all 0.2s ease;
+}
+
+.recharts-legend-item:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+/* Recharts styling overrides */
+.chartWrapper :global(.recharts-wrapper) {
+  margin: 0 auto;
+  display: block;
+}
+
+.chartWrapper :global(.recharts-surface) {
+  margin: 0 auto;
+}
+
+/* Căn giữa Y-axis labels */
+.chartWrapper :global(.recharts-cartesian-axis-tick-value) {
+  text-anchor: middle;
+}
+
+/* Đảm bảo X-axis labels căn giữa */
+.chartWrapper :global(.recharts-xAxis .recharts-cartesian-axis-tick-value) {
+  text-anchor: middle;
 }
 
 /* Responsive */
