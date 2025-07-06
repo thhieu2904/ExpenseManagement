@@ -1,4 +1,4 @@
-// frontend-vite/src/pages/CategoriesPage.jsx
+// frontend-vite/src/pages/CategoriesPage_simple.jsx
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -15,7 +15,7 @@ import Footer from "../components/Footer/Footer";
 import CategoryPageHeader, { CATEGORY_TYPE } from "../components/Categories/CategoryPageHeader";
 import CategoryList from "../components/Categories/CategoryList";
 import AddEditCategoryModal from "../components/Categories/AddEditCategoryModal";
-import CategoryAnalysisChart from "../components/Categories/CategoryAnalysisChart";
+import CategoryAnalysisChart from "../components/Categories/CategoryAnalysisChart_new";
 import styles from "../styles/CategoriesPage.module.css";
 
 const COLORS = [
@@ -168,6 +168,7 @@ const CategoriesPage = () => {
       <Header />
       <Navbar />
       <main className={styles.pageContainer}>
+        {/* Header với props từ parent */}
         <CategoryPageHeader
           activeCategoryType={activeType}
           onCategoryTypeChange={handleCategoryTypeChange}
@@ -178,26 +179,12 @@ const CategoriesPage = () => {
           onDateChange={handleDateChange}
         />
         
+        {/* Analytics Section với layout 6/4 */}
         <div className={styles.analyticsSection}>
-          <div>
-            <h2 className="title-h2">📊 Phân tích danh mục</h2>
-          </div>
+          <h2 className="title-h2">Phân tích chi tiết</h2>
+          
           <div className={styles.contentRow}>
-            <div className={styles.chartContainer}>
-              <CategoryAnalysisChart
-                data={chartData}
-                total={chartTotal}
-                loading={isLoading}
-                error={error}
-                categoryType={activeType}
-                period={period}
-                currentDate={currentDate}
-                onPeriodChange={handlePeriodChange}
-                onDateChange={handleDateChange}
-                onActiveCategoryChange={handleSelectCategory}
-              />
-            </div>
-
+            {/* Left: Category List (60% width) */}
             <div className={styles.listContainer}>
               <CategoryList
                 onEditCategory={handleOpenEditModal}
@@ -208,6 +195,19 @@ const CategoriesPage = () => {
                 activeCategory={activeCategory}
                 onSelectCategory={handleSelectCategory}
                 chartData={chartData}
+              />
+            </div>
+
+            {/* Right: Chart (40% width) */}
+            <div className={styles.chartContainer}>
+              <CategoryAnalysisChart
+                data={chartData}
+                total={chartTotal}
+                loading={isLoading}
+                error={error}
+                categoryType={activeType}
+                onActiveCategoryChange={handleSelectCategory}
+                activeCategory={activeCategory}
               />
             </div>
           </div>

@@ -6,8 +6,10 @@
 }
 
 .titleIcon {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   color: #4f46e5;
+  margin-right: 12px;
+  text-shadow: 0 1px 3px rgba(79, 70, 229, 0.3);
 }
 
 /* Container cho tab buttons và control group */

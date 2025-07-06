@@ -1,5 +1,6 @@
 // frontend-vite/src/components/Categories/CategoryAnalysisChart.jsx
 import React, { useState } from "react";
+import { Sector } from "recharts";
 import BasePieChart from "../Common/BasePieChart";
 import DateRangeNavigator from "../Common/DateRangeNavigator";
 import styles from "../DetailedAnalyticsSection/IncomeExpenseTrendChart.module.css";
@@ -26,43 +27,11 @@ const CategoryAnalysisChart = ({
   loading,
   error,
   categoryType,
-  period,
-  currentDate,
-  onPeriodChange,
-  onDateChange,
   onActiveCategoryChange,
 }) => {
   const [activeIndex, setActiveIndex] = useState(null);
 
-  // Navigation handlers
-  const handlePrev = () => {
-    const newDate = new Date(currentDate);
-    if (period === "week") newDate.setDate(newDate.getDate() - 7);
-    if (period === "month") newDate.setMonth(newDate.getMonth() - 1);
-    if (period === "year") newDate.setFullYear(newDate.getFullYear() - 1);
-    onDateChange(newDate);
-  };
-
-  const handleNext = () => {
-    const newDate = new Date(currentDate);
-    if (period === "week") newDate.setDate(newDate.getDate() + 7);
-    if (period === "month") newDate.setMonth(newDate.getMonth() + 1);
-    if (period === "year") newDate.setFullYear(newDate.getFullYear() + 1);
-    onDateChange(newDate);
-  };
-
-  const getDateLabel = () => {
-    if (period === "week") {
-      const start = new Date(currentDate);
-      start.setDate(start.getDate() - start.getDay() + 1);
-      const end = new Date(start);
-      end.setDate(start.getDate() + 6);
-      return `${start.getDate()}/${start.getMonth() + 1} - ${end.getDate()}/${end.getMonth() + 1}`;
-    }
-    if (period === "month") return `${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
-    if (period === "year") return `Năm ${currentDate.getFullYear()}`;
-    return "";
-  };
+  // Loại bỏ logic điều hướng vì đã có ở CategoryPageHeader
 
   const chartTitle =
     categoryType === "THUNHAP"
@@ -71,55 +40,83 @@ const CategoryAnalysisChart = ({
       ? "Cơ cấu Chi tiêu"
       : "Cơ cấu Thu chi";
 
+  // Custom active shape renderer - subtle highlight
+  const renderCustomActiveShape = (props) => {
+    const {
+      cx,
+      cy,
+      innerRadius,
+      outerRadius,
+      startAngle,
+      endAngle,
+      fill,
+    } = props;
+
+    return (
+      <g>
+        {/* Subtle glow effect */}
+        <defs>
+          <filter id={`glow-${fill.replace('#', '')}`}>
+            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feMerge> 
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        
+        {/* Main slice with subtle expansion */}
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius + 4}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+          style={{
+            filter: `url(#glow-${fill.replace('#', '')})`,
+            opacity: 0.95,
+          }}
+        />
+        
+        {/* Subtle border */}
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius + 4}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill="none"
+          stroke="#fff"
+          strokeWidth={2}
+        />
+      </g>
+    );
+  };
+
   const handlePieClick = (sliceData, index) => {
     const newIndex = activeIndex === index ? null : index;
     setActiveIndex(newIndex);
     if (onActiveCategoryChange) {
-      onActiveCategoryChange(newIndex !== null ? sliceData._id || sliceData.id : null);
+      // Truyền đúng format {id, color, name} cho parent
+      const categoryData = newIndex !== null ? {
+        id: sliceData._id || sliceData.id,
+        color: sliceData.color,
+        name: sliceData.name
+      } : null;
+      onActiveCategoryChange(categoryData);
     }
   };
 
   return (
-    <div className={styles.chartContainer}>
-      <div className={styles.headerContainer}>
-        <div className={styles.controlsGroup}>
-          <div className={styles.filterButtons}>
-            <button
-              onClick={() => onPeriodChange("week")}
-              className={period === "week" ? styles.active : ""}
-            >
-              Tuần
-            </button>
-            <button
-              onClick={() => onPeriodChange("month")}
-              className={period === "month" ? styles.active : ""}
-            >
-              Tháng
-            </button>
-            <button
-              onClick={() => onPeriodChange("year")}
-              className={period === "year" ? styles.active : ""}
-            >
-              Năm
-            </button>
-          </div>
-
-          <div className={styles.navButtonsBox}>
-            <button onClick={handlePrev} aria-label="Kỳ trước">
-              ‹
-            </button>
-            <div className={styles.navDateBox}>{getDateLabel()}</div>
-            <button onClick={handleNext} aria-label="Kỳ sau">
-              ›
-            </button>
-          </div>
-        </div>
+    <div className={customChartStyles.chartWrapper}>
+      <div className={customChartStyles.chartTitle}>
+        <h3>{chartTitle}</h3>
       </div>
 
-      <div className={customChartStyles.chartTitle}>{chartTitle}</div>
-
       <BasePieChart
-        title={`Phân tích ${categoryType === 'income' ? 'thu nhập' : 'chi tiêu'} theo danh mục`}
         data={data}
         total={total}
         loading={loading}
@@ -132,24 +129,27 @@ const CategoryAnalysisChart = ({
         showLabels={true}
         showTooltip={true}
         showActiveShape={true}
+        renderCustomActiveShape={renderCustomActiveShape}
         detailsLink={{
           url: "/transactions",
           text: "Xem giao dịch",
           title: "Xem trang quản lý giao dịch"
         }}
         chartConfig={{
-          innerRadius: 80,
-          outerRadius: 120,
+          innerRadius: 66,
+          outerRadius: 121,
           paddingAngle: 2,
-          height: 400,
+          height: 418,
         }}
         labelConfig={{
-          fontSize: 13,
+          fontSize: 12,
           activeFontSize: 15,
           fontWeight: 600,
           activeFontWeight: 700,
-          labelRadius: 60,
-          activeLabelRadius: 60,
+          strokeWidth: 1.5,
+          activeStrokeWidth: 3,
+          labelRadius: 55,
+          activeLabelRadius: 70,
         }}
       />
     </div>

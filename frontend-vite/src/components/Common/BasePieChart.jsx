@@ -114,6 +114,7 @@ const BasePieChart = ({
   showActiveShape = true,
   renderCustomLabel,
   renderCustomTooltip,
+  renderCustomActiveShape,
   detailsLink,
   labelConfig = {},
 }) => {
@@ -378,7 +379,7 @@ const BasePieChart = ({
                 onClick={handlePieClick}
                 isAnimationActive={true}
                 activeIndex={activeIndex}
-                activeShape={showActiveShape ? defaultRenderActiveShape : null}
+                activeShape={showActiveShape ? (renderCustomActiveShape || defaultRenderActiveShape) : null}
                 label={showLabels ? (props) => {
                   const isActive = props.index === activeIndex;
                   

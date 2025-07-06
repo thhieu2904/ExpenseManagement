@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { getIconObject } from "../../utils/iconMap";
 import ConfirmDialog from "../Common/ConfirmDialog";
+import Badge from "../Common/Badge";
 import { deleteCategory } from "../../api/categoriesService"; // ✅ THAY ĐỔI: Dùng service
 
 // Hàm định dạng tiền tệ (Không đổi)
@@ -101,7 +102,7 @@ const CategoryList = ({
     if (activeItemRef.current) {
       activeItemRef.current.scrollIntoView({
         behavior: "smooth",
-        block: "nearest",
+        block: "center", // Thay đổi từ "nearest" thành "center" để đảm bảo hiển thị đầy đủ
         inline: "start",
       });
     }
@@ -141,19 +142,46 @@ const CategoryList = ({
     }
   };
 
-  // ✅ THÊM: Hàm xử lý click vào category để mở hộp thoại xác nhận
-  const handleCategoryClick = (category) => {
-    // Luôn highlight trước khi hỏi
+  // ✅ THÊM: Hàm xử lý click vào badge
+  const handleBadgeClick = (e, category) => {
+    e.stopPropagation(); // Ngăn không trigger click của row
+    
+    // Highlight category trước khi navigate
     const chartEquivalent = chartData.find(
       (c) => c.id === (category._id || category.id)
     );
-    // Nếu không có trong chart (giá trị = 0), không cần màu, chỉ cần ID
     const payload = chartEquivalent
       ? chartEquivalent
       : { id: category._id || category.id };
     onSelectCategory(payload);
+    
+    // Navigate đến transactions page với category filter và focus
+    navigate(
+      `/transactions?categoryId=${category._id || category.id}&focus=true`
+    );
+  };
 
-    // Sau đó mở dialog
+  // ✅ THÊM: Hàm xử lý click vào category để toggle highlight hoặc mở dialog
+  const handleCategoryClick = (category) => {
+    // Tìm category tương ứng trong chart data
+    const chartEquivalent = chartData.find(
+      (c) => c.id === (category._id || category.id)
+    );
+    const payload = chartEquivalent
+      ? chartEquivalent
+      : { id: category._id || category.id };
+    
+    // Nếu category này đang được chọn, chỉ cần toggle (bỏ chọn)
+    const currentActiveId = activeCategoryId;
+    if (currentActiveId === (category._id || category.id)) {
+      onSelectCategory(null); // Bỏ chọn
+      return;
+    }
+    
+    // Nếu chưa được chọn, highlight trước
+    onSelectCategory(payload);
+    
+    // Sau đó mở dialog để hỏi có muốn xem transactions không
     setCategoryToNavigate(category);
     setIsNavigateConfirmOpen(true);
   };
@@ -188,8 +216,6 @@ const CategoryList = ({
   return (
     <>
       <div className={styles.categoryListContainer}>
-        <div></div>
-
         {/* Hiển thị lỗi fetch ngay cả khi có dữ liệu cũ */}
         {error && <p className={styles.inlineError}>{error}</p>}
 
@@ -205,6 +231,7 @@ const CategoryList = ({
                 <tr>
                   <th scope="col">Mục</th>
                   <th scope="col">Tổng tiền</th>
+                  <th scope="col">Số giao dịch</th>
                   <th scope="col">Hành động</th>
                 </tr>
               </thead>
@@ -213,25 +240,43 @@ const CategoryList = ({
                   const isSelected =
                     activeCategoryId &&
                     (category._id || category.id) === activeCategoryId;
+                  
+                  // Tìm màu sắc tương ứng từ chartData
+                  const chartEntry = chartData?.find(
+                    (c) => c.id === (category._id || category.id)
+                  );
+                  const sliceColor = chartEntry?.color || '#3f51b5';
+                  
+                  // Tạo màu tối hơn cho hover
+                  const hexToRgb = (hex) => {
+                    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                    return result ? {
+                      r: parseInt(result[1], 16),
+                      g: parseInt(result[2], 16),
+                      b: parseInt(result[3], 16)
+                    } : null;
+                  };
+                  
+                  const rgb = hexToRgb(sliceColor);
+                  const sliceColorLight = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)` : 'rgba(63, 81, 181, 0.3)';
+                  const sliceColorDark = rgb ? `rgba(${Math.max(0, rgb.r - 30)}, ${Math.max(0, rgb.g - 30)}, ${Math.max(0, rgb.b - 30)}, 1)` : '#32408f';
 
                   return (
                     <tr
                       key={category._id || category.id}
-                      ref={isSelected ? activeItemRef : null} // Gán ref nếu item được chọn
+                      ref={isSelected ? activeItemRef : null}
                       className={`${styles.row} ${
                         isSelected ? styles.highlight : ""
                       }`}
-                      style={
-                        isSelected && activeCategory.color
-                          ? {
-                              backgroundColor: `${activeCategory.color}20`,
-                              borderLeft: `4px solid ${activeCategory.color}`,
-                            }
-                          : {}
-                      }
+                      data-category-name={category.name}
                       onClick={() => handleCategoryClick(category)}
                       role="button"
                       aria-selected={isSelected}
+                      style={isSelected ? {
+                        '--slice-color': sliceColor,
+                        '--slice-color-light': sliceColorLight,
+                        '--slice-color-dark': sliceColorDark,
+                      } : {}}
                     >
                       <td>
                         <FontAwesomeIcon
@@ -243,38 +288,51 @@ const CategoryList = ({
                         </span>
                       </td>
                       <td
-                        className={
+                        className={`${styles.totalAmount} ${
                           category.type === "THUNHAP"
                             ? styles.incomeAmount
                             : styles.expenseAmount
-                        }
+                        }`}
                       >
                         {formatCurrency(category.totalAmount)}
                       </td>
+                      <td className={styles.transactionCount}>
+                        <Badge 
+                          variant="default"
+                          size="small"
+                          className={`${styles.transactionBadge} ${isSelected ? styles.selectedBadge : ""}`}
+                          onClick={(e) => handleBadgeClick(e, category)}
+                          title={`Xem ${category.transactionCount || 0} giao dịch của ${category.name}`}
+                        >
+                          {category.transactionCount || 0} giao dịch
+                        </Badge>
+                      </td>
                       <td>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation(); // Ngăn event click của tr
-                            handleEditCategory(category);
-                          }}
-                          className={`${styles.actionButton} ${styles.editButton}`}
-                          title="Sửa"
-                        >
-                          <FontAwesomeIcon icon={faEdit} />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation(); // Ngăn event click của tr
-                            requestDeleteCategory(
-                              category._id || category.id,
-                              category.name
-                            );
-                          }}
-                          className={`${styles.actionButton} ${styles.deleteButton}`}
-                          title="Xóa"
-                        >
-                          <FontAwesomeIcon icon={faTrashAlt} />
-                        </button>
+                        <div className={styles.categoryActions}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditCategory(category);
+                            }}
+                            className={`${styles.actionButton} ${styles.editButton}`}
+                            title="Sửa"
+                          >
+                            <FontAwesomeIcon icon={faEdit} />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              requestDeleteCategory(
+                                category._id || category.id,
+                                category.name
+                              );
+                            }}
+                            className={`${styles.actionButton} ${styles.deleteButton}`}
+                            title="Xóa"
+                          >
+                            <FontAwesomeIcon icon={faTrashAlt} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

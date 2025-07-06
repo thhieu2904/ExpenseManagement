@@ -55,13 +55,14 @@ const getCategories = async (req, res) => {
       }
     }
 
-    // Tính tổng giao dịch theo danh mục với bộ lọc thời gian
+    // Tính tổng giao dịch và số lượng giao dịch theo danh mục với bộ lọc thời gian
     const totals = await Transaction.aggregate([
       { $match: { userId: userObjectId, ...matchTimeFilter } }, // <-- Thêm bộ lọc thời gian vào đây
       {
         $group: {
           _id: "$categoryId",
           totalAmount: { $sum: "$amount" },
+          transactionCount: { $sum: 1 }, // Đếm số lượng giao dịch
         },
       },
     ]);
@@ -70,15 +71,19 @@ const getCategories = async (req, res) => {
     // Chuyển totals thành object dễ lookup (không thay đổi)
     const totalMap = {};
     totals.forEach((item) => {
-      totalMap[item._id.toString()] = item.totalAmount;
+      totalMap[item._id.toString()] = {
+        totalAmount: item.totalAmount,
+        transactionCount: item.transactionCount,
+      };
     });
 
-    // Gắn thêm totalAmount vào từng danh mục (không thay đổi)
+    // Gắn thêm totalAmount và transactionCount vào từng danh mục
     const categoriesWithTotal = categories.map((cat) => {
-      const total = totalMap[cat._id.toString()] || 0;
+      const data = totalMap[cat._id.toString()] || { totalAmount: 0, transactionCount: 0 };
       return {
         ...cat.toObject(),
-        totalAmount: total,
+        totalAmount: data.totalAmount,
+        transactionCount: data.transactionCount,
       };
     });
 

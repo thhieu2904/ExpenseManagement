@@ -18,22 +18,84 @@
   border: 1px solid #e9ecef;
 }
 
-/* ✅ SỬA LẠI TÊN CLASS Ở ĐÂY */
-/* Container chứa 2 cột biểu đồ và danh sách */
+/* Container chứa 2 cột: chart bên trái, list bên phải */
 .contentRow {
   display: flex;
-  gap: 24px; /* Tăng khoảng cách cho đẹp hơn */
-  align-items: flex-start; /* Căn các cột theo đỉnh */
+  gap: 24px;
+  align-items: stretch;
+  min-height: 500px;
 }
 
-/* Cột chứa biểu đồ */
+/* Cột chứa biểu đồ - 4/10 chiều ngang (bên trái) */
 .chartContainer {
-  flex: 1; /* Chiếm 50% */
-  min-width: 0; /* Cần thiết để flexbox hoạt động đúng */
+  flex: 4;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Cột chứa danh sách */
+/* Cột chứa danh sách - 6/10 chiều ngang (bên phải) */
 .listContainer {
-  flex: 1; /* Chiếm 50% */
+  flex: 6;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Loading and error states */
+.loading, .error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  font-size: 1.1rem;
+  color: #6c757d;
+}
+
+.error {
+  color: #dc3545;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .contentRow {
+    gap: 20px;
+  }
+  
+  /* Giữ tỷ lệ 4-6 trên desktop nhỏ (chart-list) */
+  .chartContainer {
+    flex: 4;
+    min-width: 250px;
+  }
+  
+  .listContainer {
+    flex: 6;
+  }
+}
+
+@media (max-width: 992px) {
+  .contentRow {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .chartContainer,
+  .listContainer {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .container {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 12px;
+  }
+  
+  .contentRow {
+    gap: 16px;
+  }
 }

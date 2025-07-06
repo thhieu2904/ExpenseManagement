@@ -168,6 +168,22 @@ const TransactionsPage = () => {
           }, 2000);
         }
       }, 100);
+    } else if (shouldFocus === "true") {
+      // Focus từ categories page - scroll to filter panel
+      setTimeout(() => {
+        const filterPanel = document.querySelector('[data-filter-panel]');
+        if (filterPanel) {
+          filterPanel.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+          // Highlight briefly để user biết đã filter
+          filterPanel.style.boxShadow = '0 0 0 3px rgba(63, 81, 181, 0.5)';
+          setTimeout(() => {
+            filterPanel.style.boxShadow = '';
+          }, 2000);
+        }
+      }, 100);
     }
     
     // Clean up URL params

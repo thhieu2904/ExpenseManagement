@@ -33,10 +33,10 @@ const CategoryPageHeader = ({
     <HeaderCard
       className={styles.categoryHeaderCard}
       title={
-        <>
+        <h1 className="title-h1">
           <FontAwesomeIcon icon={faTag} className={styles.titleIcon} />
           Quản lí danh mục
-        </>
+        </h1>
       }
       action={
         <Button

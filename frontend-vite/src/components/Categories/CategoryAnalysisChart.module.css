@@ -1,45 +1,46 @@
-/* Container chính cho biểu đồ */
-.chartContainer {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Wrapper cho biểu đồ - không có viền nếu được sử dụng trong card khác */
 .chartWrapper {
-  background-color: transparent;
-  padding: 0;
-  border-radius: 0;
-  box-shadow: none;
-  flex: 1;
+  background-color: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e9ecef;
+  height: fit-content;
 }
 
-/* Tiêu đề biểu đồ */
 .chartTitle {
   text-align: center;
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
-/* Các trạng thái loading, error, no data */
-.loadingText,
-.errorText,
-.noDataText {
-  text-align: center;
-  padding: 40px 20px;
-  color: #7f8c8d;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 200px;
+.chartTitle h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative;
+}
+
+.chartTitle h3::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
 }
 
 .errorText {
-  color: #c0392b;
+  color: #dc3545;
+  text-align: center;
+  padding: 20px;
 }
 
 .customTooltip {
@@ -61,8 +62,6 @@
   color: #555;
   font-size: 0.9em;
 }
-
-/* Label tổng cộng ở giữa biểu đồ tròn */
 .centerLabel {
   position: absolute;
   top: 50%;
@@ -70,22 +69,19 @@
   transform: translate(-50%, -50%);
   text-align: center;
   pointer-events: none;
-  z-index: 10;
 }
 
 .centerLabel span {
   display: block;
   font-size: 0.9rem;
-  color: #7f8c8d;
-  font-weight: 500;
-  margin-bottom: 5px;
+  color: #6c757d;
 }
 
 .centerLabel strong {
   display: block;
-  font-size: 1.2rem;
-  color: #2c3e50;
+  font-size: 1.5rem;
   font-weight: 700;
+  color: #2c3e50;
 }
 
 .headerContainer {
