@@ -1,0 +1,97 @@
+.headerCard {
+  display: grid;
+  grid-template-rows: auto auto;
+  grid-template-columns: 1fr auto;
+  row-gap: var(--component-gap);
+  column-gap: var(--component-gap);
+  background: var(--color-background);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-base);
+  border: 1.5px solid var(--color-border);
+  padding: var(--component-padding);
+  min-height: var(--header-card-min-height);
+  margin-bottom: var(--component-margin-bottom);
+  align-items: center;
+}
+
+.title {
+  grid-row: 1;
+  grid-column: 1;
+  font-size: var(--title-font-size-h1);
+  font-weight: 600;
+  letter-spacing: -0.5px;
+
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  line-height: 1.2;
+  align-self: start;
+  text-shadow: none;
+  transition: none;
+
+  color: var(--color-text-primary);
+}
+
+.extra {
+  grid-row: 1;
+  grid-column: 2;
+  justify-self: end;
+  align-self: start;
+}
+
+.filter {
+  grid-row: 2;
+  grid-column: 1;
+  align-self: end;
+  justify-self: start;
+}
+
+.action {
+  grid-row: 2;
+  grid-column: 2;
+  justify-self: end;
+  align-self: end;
+}
+
+/* Responsive: xếp dọc khi mobile */
+@media (max-width: 992px) {
+  .headerCard {
+    padding: var(--component-padding);
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    row-gap: var(--component-gap);
+  }
+  .title,
+  .extra,
+  .filter,
+  .action {
+    grid-column: 1 !important;
+    justify-self: stretch;
+    align-self: start;
+  }
+
+  .extra {
+    justify-self: start;
+    width: 100%;
+  }
+
+  .action {
+    margin-top: 0.5rem;
+    justify-self: stretch;
+  }
+  .title {
+    font-size: var(--title-font-size-h1);
+    margin-bottom: 0.7rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .filter {
+    width: 100%;
+  }
+  .filter > * {
+    width: 100%;
+  }
+}
+
+/* Chỉ áp dụng cho DateRangeNavigator khi nằm trong .headerCard */

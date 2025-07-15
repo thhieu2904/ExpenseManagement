@@ -1,0 +1,108 @@
+/* Mở và THAY THẾ TOÀN BỘ file: TransactionsPage.module.css */
+
+/* --- 1. BỐ CỤC TỔNG THỂ CỦA TRANG --- */
+.pageWrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.overviewSection {
+  width: 100%;
+}
+
+/* ✅ THAY ĐỔI QUAN TRỌNG Ở ĐÂY */
+.mainContent {
+  display: flex;
+  flex-direction: column; /* Sắp xếp các card con theo chiều dọc */
+  gap: 24px; /* Khoảng cách giữa card Lịch và card Danh sách */
+}
+
+/* 
+  CÁC CLASS .leftColumn và .rightColumn ĐÃ ĐƯỢC XÓA VÌ KHÔNG CÒN SỬ DỤNG
+*/
+
+/* --- 3. STYLE CHO "THẺ" (CARD) CHUNG --- */
+.contentCard {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  width: 100%;
+  border: 1px solid #eef2f7;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eef2f7;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0;
+}
+
+/* --- 4. STYLE CHO CÁC KHU VỰC CỤ THỂ --- */
+.filterSection {
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+/* --- 5. RESPONSIVE DESIGN (CHO MÀN HÌNH NHỎ) --- */
+/*
+  MEDIA QUERY cũ đã được xóa vì layout mới đã tự động responsive.
+  Chúng ta chỉ giữ lại các thay đổi nhỏ về padding/font-size.
+*/
+@media (max-width: 576px) {
+  .pageWrapper {
+    padding: 12px;
+  }
+
+  .contentCard {
+    padding: 16px;
+  }
+
+  .cardTitle {
+    font-size: 1.1rem;
+  }
+
+  .cardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+/* THÊM VÀO CUỐI FILE: TransactionsPage.module.css */
+
+.filterFieldset {
+  border: 1px solid #e5e7eb;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  margin-bottom: 2rem; /* Khoảng cách với danh sách bên dưới */
+}
+
+.fieldsetLegend {
+  padding: 0 0.75rem;
+  margin-left: 1rem; /* Căn lề cho đẹp */
+  font-size: 1rem;
+  font-weight: 600;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legendIcon {
+  color: #6366f1; /* Màu tím indigo */
+}

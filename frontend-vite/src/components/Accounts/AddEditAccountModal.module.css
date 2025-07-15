@@ -1,0 +1,303 @@
+/* === General Modal Styles === */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: 1rem;
+  animation: fadeInOverlay 0.2s ease-out;
+}
+
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modalContent {
+  background-color: #ffffff;
+  padding: 0;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.95);
+  opacity: 0;
+  animation: scaleInModal 0.3s ease-out forwards;
+}
+
+@keyframes scaleInModal {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* === Modal Header === */
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.closeButton:hover {
+  background-color: #f3f4f6;
+  color: #e74c3c;
+}
+
+/* === Form Styles === */
+.accountForm {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.formGroup {
+  margin-bottom: 1.25rem;
+  text-align: left;
+}
+
+.formLabel {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.requiredStar {
+  color: #ef4444;
+}
+
+.formInput {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.formInput:focus {
+  border-color: #4f46e5;
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.formInput:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.formHint {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+/* === Balance Input === */
+.balanceInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.balanceInput {
+  font-size: 1.5rem; /* Tăng kích thước số dư */
+  font-weight: 600;
+  color: #111827;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  text-align: right;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.balanceInput:focus {
+  border-color: #4f46e5;
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+.balanceInput:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.currencySymbol {
+  position: absolute;
+  right: 1rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #6b7280;
+  pointer-events: none;
+}
+
+/* === Custom Radio Buttons === */
+.radioGroup {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.radioInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.radioInput:disabled + .radioLabelText {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #f3f4f6;
+}
+.radioInput:disabled + .radioLabelText:hover {
+  border-color: #e5e7eb;
+}
+
+.radioLabelText {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  text-align: center;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-weight: 600;
+  border: 1px solid #e5e7eb;
+}
+
+.radioIcon {
+  font-size: 1rem;
+}
+
+.cash,
+.bank {
+  color: #4b5563;
+  background-color: #f9fafb;
+}
+.cash:hover,
+.bank:hover {
+  border-color: #d1d5db;
+}
+
+/* ✅ Style riêng cho từng loại tài khoản */
+.radioInput:checked + .cash {
+  background-color: #ecfdf5;
+  color: #16a34a;
+  border-color: #a7f3d0;
+}
+
+.radioInput:checked + .bank {
+  background-color: #eef2ff;
+  color: #4f46e5;
+  border-color: #c7d2fe;
+}
+
+/* === Form Actions & Error Message === */
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  margin-top: 0.5rem;
+  background-color: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.formButton {
+  padding: 0.6rem 1.25rem;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease-in-out;
+}
+.cancelButton {
+  background-color: #ffffff;
+  color: #374151;
+  border-color: #d1d5db;
+}
+.cancelButton:hover:not(:disabled) {
+  background-color: #f3f4f6;
+}
+.submitButton {
+  background-color: #4f46e5;
+  color: white;
+  border-color: #4f46e5;
+}
+.submitButton:hover:not(:disabled) {
+  background-color: #4338ca;
+  border-color: #4338ca;
+}
+.formButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.errorMessage {
+  color: #be123c;
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0.375rem;
+  text-align: center;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .modalContent {
+    max-width: 98vw;
+    padding: 0;
+  }
+}

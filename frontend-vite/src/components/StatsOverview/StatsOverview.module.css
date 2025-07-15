@@ -1,0 +1,335 @@
+/* src/components/StatsOverview/StatsOverview.module.css */
+
+/* Loading và No Data styles */
+.loading {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lg);
+}
+
+.noData {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lg);
+}
+
+/* Title Icon - được sử dụng trong ExtendedHeaderCard */
+.titleIcon {
+  margin-right: 0.85rem;
+  color: var(--color-primary);
+  font-size: 1.9rem;
+}
+
+/* Stats Cards - Custom content trong ExtendedHeaderCard */
+.statsCards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-lg);
+  width: 100%;
+}
+
+/* Individual stat card styles */
+.statCard {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-lg);
+  background: #ffffff;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid #ececf3;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  min-height: 120px;
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.incomeCard::before {
+  background: linear-gradient(90deg, #4CAF50, #66BB6A);
+}
+
+.expenseCard::before {
+  background: linear-gradient(90deg, #f44336, #EF5350);
+}
+
+.cashFlowCard::before {
+  background: linear-gradient(90deg, #3f51b5, #5c6bc0);
+}
+
+.positiveCashFlow::before {
+  background: linear-gradient(90deg, #3f51b5, #5c6bc0);
+}
+
+.negativeCashFlow::before {
+  background: linear-gradient(90deg, #3f51b5, #5c6bc0);
+}
+
+.statCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(80, 80, 120, 0.15);
+  border-color: #d0d7de;
+}
+
+.cardIconWrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1.2rem;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.incomeCard .cardIconWrapper {
+  background: rgba(76, 175, 80, 0.1);
+  border: 2px solid rgba(76, 175, 80, 0.2);
+}
+
+.expenseCard .cardIconWrapper {
+  background: rgba(244, 67, 54, 0.1);
+  border: 2px solid rgba(244, 67, 54, 0.2);
+}
+
+.cashFlowCard .cardIconWrapper {
+  background: rgba(63, 81, 181, 0.1);
+  border: 2px solid rgba(63, 81, 181, 0.2);
+}
+
+.positiveCashFlow .cardIconWrapper {
+  background: rgba(63, 81, 181, 0.1);
+  border: 2px solid rgba(63, 81, 181, 0.2);
+}
+
+.negativeCashFlow .cardIconWrapper {
+  background: rgba(63, 81, 181, 0.1);
+  border: 2px solid rgba(63, 81, 181, 0.2);
+}
+
+.cardIcon {
+  font-size: 1.4rem;
+  transition: all 0.3s ease;
+}
+
+.incomeCard .cardIcon {
+  color: #4CAF50;
+}
+
+.expenseCard .cardIcon {
+  color: #f44336;
+}
+
+.cashFlowCard .cardIcon {
+  color: #3f51b5;
+}
+
+.positiveCashFlow .cardIcon {
+  color: #3f51b5;
+}
+
+.negativeCashFlow .cardIcon {
+  color: #3f51b5;
+}
+
+.statCard:hover .cardIcon {
+  transform: scale(1.1);
+}
+
+.cardContent {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.8rem;
+}
+
+.cardTitle {
+  /* Áp dụng hệ thống title hierarchy - Cấp thấp nhất cho component cards */
+  font-size: var(--title-font-size-h3);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  letter-spacing: -0.3px;
+  line-height: 1.4;
+  /* Tương đương .title-h3/.title-component từ globals.css */
+}
+
+.cardPeriod {
+  font-size: 0.75rem;
+  color: #8e9aaf;
+  font-weight: 500;
+  background: #f8f9fa;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.cardAmount {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 0.8rem 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* Màu sắc cho số tiền dựa trên loại card */
+.incomeCard .cardAmount {
+  color: #4caf50;
+}
+
+.expenseCard .cardAmount {
+  color: #f44336;
+}
+
+.cashFlowCard .cardAmount {
+  color: #3f51b5;
+}
+
+.positiveCashFlow .cardAmount {
+  color: #3f51b5;
+}
+
+.negativeCashFlow .cardAmount {
+  color: #3f51b5;
+}
+
+.cardChange {
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+  padding: 0.4rem 0.7rem;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.02);
+  width: fit-content;
+  margin-top: 0.3rem;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.cardChange:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.positiveChange {
+  color: #4caf50;
+  background: rgba(76, 175, 80, 0.08);
+}
+
+.negativeChange {
+  color: #f44336;
+  background: rgba(244, 67, 54, 0.08);
+}
+
+.neutralChange {
+  color: #6c757d;
+  background: rgba(108, 117, 125, 0.08);
+}
+
+.cashFlowNeutral {
+  color: #3f51b5;
+  background: rgba(63, 81, 181, 0.08);
+  border-color: rgba(63, 81, 181, 0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .statsCards {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+}
+
+@media (max-width: 768px) {
+  .statsOverviewContainer {
+    grid-template-columns: 1fr;
+    grid-template-areas: 
+      "title"
+      "cards"
+      "action";
+    gap: var(--spacing-md);
+  }
+  
+  .actionSection {
+    justify-self: center;
+  }
+  
+  .statsCards {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  .statCard {
+    padding: var(--spacing-md);
+    min-height: unset;
+  }
+  
+  .cardAmount {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) and (min-width: 577px) {
+  /* Tablet: hiển thị 2 cột, card thứ 3 xuống dòng */
+  .statsCards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+  }
+}
+
+@media (max-width: 576px) {
+  .statsOverviewContainer {
+    gap: var(--spacing-sm);
+  }
+  
+  .title {
+    font-size: var(--font-size-xl);
+  }
+  
+  .statCard {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-xs);
+  }
+  
+  .cardIconWrapper {
+    width: 40px;
+    height: 40px;
+    margin-right: var(--spacing-sm);
+  }
+  
+  .cardIcon {
+    font-size: 1rem;
+  }
+  
+  .cardAmount {
+    font-size: 1.2rem;
+  }
+  
+  .cardChange {
+    font-size: 0.7rem;
+  }
+  
+  .cardTitle {
+    /* Responsive: Giảm kích thước tương ứng với --title-font-size-h3 trong mobile */
+    font-size: var(--title-font-size-h3);
+  }
+}

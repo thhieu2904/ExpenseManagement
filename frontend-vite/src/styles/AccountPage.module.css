@@ -1,0 +1,28 @@
+/* src/styles/AccountPage.module.css */
+.pageWrapper {
+  padding: 20px 30px;
+  background-color: #f9fafb; /* Màu nền chung cho trang */
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+@media (min-width: 992px) {
+  .mainContent {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.leftColumn {
+  flex: 1;
+  min-width: 280px;
+}
+
+.rightColumn {
+  flex: 2.5;
+  min-width: 0; /* Quan trọng để flexbox hoạt động đúng */
+}

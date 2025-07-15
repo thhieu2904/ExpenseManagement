@@ -1,0 +1,299 @@
+/* src/components/Goals/GoalCard.module.css */
+
+.card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eef2f7;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.07);
+}
+
+.completedCard {
+  background-color: #f0fdf4; /* Màu xanh lá cây rất nhạt */
+  border-color: #bbf7d0;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.iconWrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  flex-shrink: 0;
+}
+
+.icon {
+  font-size: 1.5rem;
+}
+
+.goalName {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0;
+  flex-grow: 1; /* Để tên chiếm hết không gian còn lại */
+  line-height: 1.4;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progressInfo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.progressPercentage {
+  font-weight: 600;
+  color: #374151;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: #4f46e5;
+  border-radius: 4px;
+  transition: width 0.4s ease-out;
+}
+
+.completedCard .progressFill {
+  background-color: #22c55e; /* Màu xanh lá cây khi hoàn thành */
+}
+
+.amountInfo {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.currentAmount {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.targetAmount {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.cardFooter {
+  border-top: 1px solid #eef2f7;
+  padding-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.deadlineInfo {
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.deadlineOverdue {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.addFundsButton {
+  background-color: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.addFundsButton:hover {
+  background-color: #d1fae5;
+  color: #047857;
+}
+/* THÊM VÀO CUỐI FILE: src/components/Goals/GoalCard.module.css */
+
+.actionsMenu {
+  position: relative; /* Cần thiết để định vị dropdown */
+}
+
+.menuButton {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  font-size: 1rem;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+}
+
+.menuButton:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  border: 1px solid #e5e7eb;
+  z-index: 10;
+  width: 120px;
+  overflow: hidden; /* Để bo góc các button bên trong */
+  padding: 4px;
+}
+
+.dropdownMenu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background-color: transparent;
+  text-align: left;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #374151;
+}
+
+.dropdownMenu button:hover {
+  background-color: #f3f4f6;
+}
+
+.dropdownMenu .deleteButton {
+  color: #ef4444; /* Màu đỏ cho nút xóa */
+}
+
+.dropdownMenu .deleteButton:hover {
+  background-color: #fee2e2;
+}
+
+.completed {
+  background: linear-gradient(120deg, #eafff2 60%, #fffbe0 100%);
+  border: 2px solid #1abc9c;
+  position: relative;
+  box-shadow: 0 0 10px 1px #b6f5c6;
+  animation: glow 1.5s infinite alternate;
+}
+@keyframes glow {
+  from {
+    box-shadow: 0 0 6px 0 #b6f5c6;
+  }
+  to {
+    box-shadow: 0 0 14px 2px #1abc9c;
+  }
+}
+.completedBanner {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #fffbe0;
+  color: #e67e22;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 16px;
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  z-index: 2;
+  box-shadow: 0 2px 8px #f9e79f80;
+  font-size: 0.92rem;
+  letter-spacing: 0.2px;
+}
+.trophyIcon {
+  color: #f1c40f;
+  font-size: 0.95em;
+}
+.congratsText {
+  margin-top: 24px;
+  color: #16a085;
+  font-size: 1.18em;
+  text-align: center;
+  font-weight: 700;
+  animation: pop 0.7s;
+  letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  padding: 6px 0;
+  box-shadow: 0 1px 6px #b6f5c680;
+  display: inline-block;
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  80% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.overdue {
+  border: 2px solid #ff7675;
+  background: linear-gradient(120deg, #fff0f0 60%, #fffbe0 100%);
+  position: relative;
+}
+.overdueBanner {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffeaea;
+  color: #d63031;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 16px;
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  z-index: 2;
+  box-shadow: 0 2px 8px #ff767580;
+  font-size: 0.92rem;
+  letter-spacing: 0.2px;
+}
+.overdueIcon {
+  color: #d63031;
+  font-size: 1em;
+}
