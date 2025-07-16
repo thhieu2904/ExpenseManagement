@@ -17,4 +17,18 @@ router.post(
   aiController.createTransaction.bind(aiController)
 );
 
+// Route để tạo danh mục sau khi AI đã phân tích và người dùng xác nhận
+router.post(
+  "/create-category",
+  verifyToken,
+  aiController.createCategory.bind(aiController)
+);
+
+// Route để tạo mục tiêu sau khi AI đã phân tích và người dùng xác nhận
+router.post(
+  "/create-goal",
+  verifyToken,
+  aiController.createGoal.bind(aiController)
+);
+
 module.exports = router;

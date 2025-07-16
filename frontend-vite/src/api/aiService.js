@@ -1,5 +1,9 @@
 // src/api/aiService.js
 import axiosInstance from "./axiosConfig";
+import { addTransaction } from "./transactionsService";
+import { addCategory } from "./categoriesService";
+import { createGoal } from "./goalService";
+import { getAccounts } from "./accountsService";
 
 class AIService {
   // Xử lý tin nhắn từ người dùng và trả về phản hồi AI
@@ -219,22 +223,192 @@ class AIService {
     };
   }
 
-  // Tạo giao dịch tự động thông qua AI
+  // Tạo giao dịch tự động thông qua AI - sử dụng transactionsService
   async createTransactionFromAI(transactionData) {
     try {
-      const response = await axiosInstance.post(
-        "/ai-assistant/create-transaction",
-        {
-          amount: transactionData.amount,
-          type: transactionData.type === "CHITIEU" ? "expense" : "income",
-          category: transactionData.categoryGuess,
-          description: transactionData.name || transactionData.note,
-        }
+      // Resolve account and category từ guess
+      const account = await this.resolveAccount(transactionData.accountGuess);
+      const category = await this.resolveCategory(
+        transactionData.categoryGuess,
+        transactionData.type
       );
-      return response.data;
+
+      // Nếu không tìm được account hoặc category, fallback to AI endpoint
+      if (!account || !category) {
+        console.log("Cannot resolve account/category, using AI endpoint...");
+        const response = await axiosInstance.post(
+          "/ai-assistant/create-transaction",
+          {
+            amount: transactionData.amount,
+            type: transactionData.type === "CHITIEU" ? "expense" : "income",
+            name: transactionData.name,
+            description: transactionData.name || transactionData.note,
+            categoryGuess: transactionData.categoryGuess,
+            accountGuess: transactionData.accountGuess,
+          }
+        );
+        return response.data;
+      }
+
+      // Convert AI data format to transaction service format
+      const transactionPayload = {
+        name: transactionData.name,
+        amount: transactionData.amount,
+        type: transactionData.type, // CHITIEU hoặc THUNHAP
+        categoryId: category._id,
+        accountId: account._id,
+        date: new Date(),
+        note: transactionData.description || transactionData.name,
+      };
+
+      console.log(
+        "Creating transaction with resolved data:",
+        transactionPayload
+      );
+
+      // Sử dụng transactionsService để tạo giao dịch
+      const response = await addTransaction(transactionPayload);
+      return {
+        success: true,
+        message: "Giao dịch đã được tạo thành công",
+        transaction: response.data,
+      };
     } catch (error) {
       console.error("Error creating transaction from AI:", error);
-      throw error;
+
+      // Fallback to AI endpoint nếu có lỗi
+      try {
+        console.log("Fallback to AI endpoint due to error...");
+        const response = await axiosInstance.post(
+          "/ai-assistant/create-transaction",
+          {
+            amount: transactionData.amount,
+            type: transactionData.type === "CHITIEU" ? "expense" : "income",
+            name: transactionData.name,
+            description: transactionData.name || transactionData.note,
+            categoryGuess: transactionData.categoryGuess,
+            accountGuess: transactionData.accountGuess,
+          }
+        );
+        return response.data;
+      } catch (fallbackError) {
+        console.error("Fallback also failed:", fallbackError);
+        throw error;
+      }
+    }
+  }
+
+  // Tạo danh mục tự động thông qua AI - sử dụng categoriesService
+  async createCategoryFromAI(categoryData) {
+    try {
+      // Convert AI data format to category service format
+      const categoryPayload = {
+        name: categoryData.name,
+        type: categoryData.type, // CHITIEU hoặc THUNHAP
+        budget: categoryData.budget || 0,
+        description: categoryData.description || "",
+        icon: categoryData.icon || "fa-question-circle",
+      };
+
+      console.log("Creating category with data:", categoryPayload);
+
+      // Sử dụng categoriesService để tạo danh mục
+      const response = await addCategory(categoryPayload);
+      return {
+        success: true,
+        message: "Danh mục đã được tạo thành công",
+        category: response.data,
+      };
+    } catch (error) {
+      console.error("Error creating category from AI:", error);
+
+      // Fallback to AI endpoint nếu có lỗi
+      try {
+        console.log("Fallback to AI endpoint due to error...");
+        const response = await axiosInstance.post(
+          "/ai-assistant/create-category",
+          categoryData
+        );
+        return response.data;
+      } catch (fallbackError) {
+        console.error("Fallback also failed:", fallbackError);
+        throw error;
+      }
+    }
+  }
+
+  // Tạo mục tiêu tự động thông qua AI - sử dụng goalService
+  async createGoalFromAI(goalData) {
+    try {
+      // Convert AI data format to goal service format
+      const goalPayload = {
+        name: goalData.name,
+        targetAmount: goalData.targetAmount,
+        deadline: goalData.deadline
+          ? new Date(goalData.deadline)
+          : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Default 1 year
+        description: goalData.description || "",
+      };
+
+      console.log("Creating goal with data:", goalPayload);
+
+      // Sử dụng goalService để tạo mục tiêu
+      const response = await createGoal(goalPayload);
+      return {
+        success: true,
+        message: "Mục tiêu đã được tạo thành công",
+        goal: response.data,
+      };
+    } catch (error) {
+      console.error("Error creating goal from AI:", error);
+
+      // Fallback to AI endpoint nếu có lỗi
+      try {
+        console.log("Fallback to AI endpoint due to error...");
+        const response = await axiosInstance.post(
+          "/ai-assistant/create-goal",
+          goalData
+        );
+        return response.data;
+      } catch (fallbackError) {
+        console.error("Fallback also failed:", fallbackError);
+        throw error;
+      }
+    }
+  }
+
+  // Helper method để resolve account từ accountGuess
+  async resolveAccount(accountGuess) {
+    try {
+      if (!accountGuess) return null;
+
+      const accounts = await getAccounts({});
+      const foundAccount = accounts.find((account) =>
+        account.name.toLowerCase().includes(accountGuess.toLowerCase())
+      );
+
+      return foundAccount || accounts[0]; // Fallback to first account
+    } catch (error) {
+      console.error("Error resolving account:", error);
+      return null;
+    }
+  }
+
+  // Helper method để resolve category từ categoryGuess
+  async resolveCategory(categoryGuess, transactionType) {
+    try {
+      if (!categoryGuess) return null;
+
+      const { getCategories } = await import("./categoriesService");
+      const categories = await getCategories({ type: transactionType });
+      const foundCategory = categories.find((category) =>
+        category.name.toLowerCase().includes(categoryGuess.toLowerCase())
+      );
+
+      return foundCategory;
+    } catch (error) {
+      console.error("Error resolving category:", error);
+      return null;
     }
   }
 }

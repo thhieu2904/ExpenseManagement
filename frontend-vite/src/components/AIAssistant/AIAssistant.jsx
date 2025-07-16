@@ -8,6 +8,7 @@ import {
 } from "react-icons/fa";
 import { useNavigate, useLocation } from "react-router-dom";
 import aiService from "../../api/aiService";
+import AIMessageRenderer from "./AIMessageRenderer";
 import styles from "./AIAssistant.module.css";
 
 const AIAssistant = () => {
@@ -219,6 +220,26 @@ const AIAssistant = () => {
         }, 1500);
         break;
 
+      case "SHOW_STATS":
+        // Hiển thị thống kê với styled format
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: "assistant",
+            content: `📊 **Thống kê tháng ${data.month}/${data.year}**
+
+💰 **Thu nhập:** ${data.formatted.income}
+💸 **Chi tiêu:** ${data.formatted.expense}  
+🏦 **Số dư:** ${data.formatted.balance}
+📈 **Còn lại:** ${data.formatted.remaining}
+
+${data.formatted.isPositive ? "✅ Tháng này bạn đã tiết kiệm được tiền!" : "⚠️ Tháng này bạn đã chi tiêu vượt thu nhập."}`,
+            showStatsCard: true,
+            statsData: data,
+          },
+        ]);
+        break;
+
       default:
         break;
     }
@@ -275,20 +296,9 @@ const AIAssistant = () => {
     try {
       setIsLoading(true);
 
-      // Gọi API tạo category
-      const response = await fetch("/api/categories", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          name: categoryData.name,
-          type: categoryData.type,
-        }),
-      });
+      const result = await aiService.createCategoryFromAI(categoryData);
 
-      if (response.ok) {
+      if (result.success) {
         setMessages((prev) => [
           ...prev,
           {
@@ -296,8 +306,15 @@ const AIAssistant = () => {
             content: `✅ Đã tạo thành công danh mục "${categoryData.name}"!`,
           },
         ]);
+        playNotificationSound();
       } else {
-        throw new Error("Không thể tạo danh mục");
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: "assistant",
+            content: "❌ Có lỗi xảy ra khi tạo danh mục. Vui lòng thử lại.",
+          },
+        ]);
       }
     } catch (error) {
       console.error("Error creating category:", error);
@@ -317,21 +334,9 @@ const AIAssistant = () => {
     try {
       setIsLoading(true);
 
-      // Gọi API tạo goal
-      const response = await fetch("/api/goals", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          name: goalData.name,
-          targetAmount: goalData.targetAmount,
-          deadline: goalData.deadline,
-        }),
-      });
+      const result = await aiService.createGoalFromAI(goalData);
 
-      if (response.ok) {
+      if (result.success) {
         setMessages((prev) => [
           ...prev,
           {
@@ -339,8 +344,15 @@ const AIAssistant = () => {
             content: `✅ Đã tạo thành công mục tiêu "${goalData.name}"!`,
           },
         ]);
+        playNotificationSound();
       } else {
-        throw new Error("Không thể tạo mục tiêu");
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: "assistant",
+            content: "❌ Có lỗi xảy ra khi tạo mục tiêu. Vui lòng thử lại.",
+          },
+        ]);
       }
     } catch (error) {
       console.error("Error creating goal:", error);
@@ -484,7 +496,7 @@ const AIAssistant = () => {
                     className={`${styles.message} ${styles[msg.type]}`}
                   >
                     <div className={styles.messageContent}>
-                      {msg.content}
+                      <AIMessageRenderer content={msg.content} />
                       {msg.showConfirmButtons && (
                         <div className={styles.confirmButtons}>
                           <button
@@ -507,6 +519,66 @@ const AIAssistant = () => {
                           >
                             ❌ Hủy
                           </button>
+                        </div>
+                      )}
+                      {msg.showStatsCard && (
+                        <div className={styles.statsCard}>
+                          <div className={styles.statsGrid}>
+                            <div
+                              className={`${styles.statItem} ${styles.income}`}
+                            >
+                              <span className={styles.statIcon}>💰</span>
+                              <div className={styles.statInfo}>
+                                <span className={styles.statLabel}>
+                                  Thu nhập
+                                </span>
+                                <span className={styles.statValue}>
+                                  {msg.statsData.formatted.income}
+                                </span>
+                              </div>
+                            </div>
+                            <div
+                              className={`${styles.statItem} ${styles.expense}`}
+                            >
+                              <span className={styles.statIcon}>💸</span>
+                              <div className={styles.statInfo}>
+                                <span className={styles.statLabel}>
+                                  Chi tiêu
+                                </span>
+                                <span className={styles.statValue}>
+                                  {msg.statsData.formatted.expense}
+                                </span>
+                              </div>
+                            </div>
+                            <div
+                              className={`${styles.statItem} ${styles.balance}`}
+                            >
+                              <span className={styles.statIcon}>🏦</span>
+                              <div className={styles.statInfo}>
+                                <span className={styles.statLabel}>Số dư</span>
+                                <span className={styles.statValue}>
+                                  {msg.statsData.formatted.balance}
+                                </span>
+                              </div>
+                            </div>
+                            <div
+                              className={`${styles.statItem} ${styles.remaining} ${
+                                msg.statsData.formatted.isPositive
+                                  ? styles.positive
+                                  : styles.negative
+                              }`}
+                            >
+                              <span className={styles.statIcon}>📈</span>
+                              <div className={styles.statInfo}>
+                                <span className={styles.statLabel}>
+                                  Còn lại
+                                </span>
+                                <span className={styles.statValue}>
+                                  {msg.statsData.formatted.remaining}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>

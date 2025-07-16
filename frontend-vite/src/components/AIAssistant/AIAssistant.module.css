@@ -407,7 +407,80 @@
   transform: translateY(-1px);
 }
 
-/* Responsive */
+/* Stats Card Styles */
+.statsCard {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 12px;
+  color: white;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.statItem {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.statIcon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.statInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.statLabel {
+  font-size: 12px;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.statValue {
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+}
+
+.statItem.income {
+  background: rgba(74, 222, 128, 0.2);
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+.statItem.expense {
+  background: rgba(248, 113, 113, 0.2);
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.statItem.balance {
+  background: rgba(96, 165, 250, 0.2);
+  border-color: rgba(96, 165, 250, 0.3);
+}
+
+.statItem.remaining.positive {
+  background: rgba(52, 211, 153, 0.2);
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.statItem.remaining.negative {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
 @media (max-width: 768px) {
   .floatingButton {
     bottom: 20px;
@@ -442,6 +515,10 @@
     max-width: 90%;
     font-size: 13px;
   }
+
+  .statsCard {
+    padding: 12px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -455,5 +532,10 @@
   .messageInput {
     padding: 10px 14px;
     font-size: 13px;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 }
