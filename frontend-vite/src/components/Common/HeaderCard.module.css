@@ -1,97 +1,253 @@
+/* === LAYOUT THUẦN TÚY - CHỈ CHỨA STRUCTURE, KHÔNG CHỨA STYLE UI === */
+
+/* Base header card container */
 .headerCard {
-  display: grid;
-  grid-template-rows: auto auto;
-  grid-template-columns: 1fr auto;
-  row-gap: var(--component-gap);
-  column-gap: var(--component-gap);
   background: var(--color-background);
   border-radius: var(--border-radius-xl);
   box-shadow: var(--shadow-base);
   border: 1.5px solid var(--color-border);
   padding: var(--component-padding);
-  min-height: var(--header-card-min-height);
+  min-height: 240px;
   margin-bottom: var(--component-margin-bottom);
+  position: relative;
+}
+
+/* Layout mặc định (backward compatible) */
+.defaultLayout {
+  display: grid;
+  grid-template-rows: auto auto;
+  grid-template-columns: 1fr auto;
+  row-gap: var(--component-gap);
+  column-gap: var(--component-gap);
   align-items: center;
 }
 
-.title {
+/* Layout linh hoạt cho custom content */
+.flexibleLayout {
+  display: block;
+}
+
+/* Layout 2x2 Grid chuẩn cho tất cả pages - CHỈ LAYOUT, KHÔNG STYLE UI */
+.gridLayout {
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  grid-template-rows: auto auto !important;
+  gap: 2rem !important;
+  align-items: start !important;
+}
+
+/* Position slots cho default layout - CHỈ VỊ TRÍ */
+.defaultLayout .title {
   grid-row: 1;
   grid-column: 1;
-  font-size: var(--title-font-size-h1);
-  font-weight: 600;
-  letter-spacing: -0.5px;
-
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  line-height: 1.2;
   align-self: start;
-  text-shadow: none;
-  transition: none;
-
-  color: var(--color-text-primary);
 }
 
-.extra {
+.defaultLayout .extra {
   grid-row: 1;
   grid-column: 2;
   justify-self: end;
   align-self: start;
 }
 
-.filter {
+.defaultLayout .filter {
   grid-row: 2;
   grid-column: 1;
   align-self: end;
   justify-self: start;
 }
 
-.action {
+.defaultLayout .action {
   grid-row: 2;
   grid-column: 2;
   justify-self: end;
   align-self: end;
 }
 
-/* Responsive: xếp dọc khi mobile */
+/* Standard Grid Item Classes - CHỈ VỊ TRÍ, KHÔNG STYLE UI */
+.gridItem1_1 {
+  grid-row: 1;
+  grid-column: 1;
+  z-index: 1;
+  display: flex;
+  flex-direction: row; /* Đảm bảo icon và text nằm ngang */
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.gridItem1_2 {
+  grid-row: 1;
+  grid-column: 2;
+  justify-self: stretch;   /* Đổi từ end sang stretch */
+  align-self: stretch;     /* Đổi từ start sang stretch */
+  min-width: 220px;
+  width: 100%;             /* Thêm dòng này */
+  max-width: none;         /* Thêm dòng này */
+  display: flex;           /* Thêm dòng này để con kéo giãn */
+  align-items: center;     /* Căn giữa dọc */
+}
+
+.gridItem2_1 {
+  grid-row: 2;
+  grid-column: 1;
+  align-self: end;
+  z-index: 1;
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.gridItem2_2 {
+  grid-row: 2;
+  grid-column: 2;
+  justify-self: end;
+  align-self: end;
+  z-index: 1;
+  min-width: 160px;
+}
+
+/* === RESPONSIVE LAYOUT - CHỈ LAYOUT, KHÔNG STYLE UI === */
+
+/* Responsive cho default layout */
 @media (max-width: 992px) {
-  .headerCard {
-    padding: var(--component-padding);
+  .defaultLayout {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto auto;
     row-gap: var(--component-gap);
   }
-  .title,
-  .extra,
-  .filter,
-  .action {
+
+  .defaultLayout .title,
+  .defaultLayout .extra,
+  .defaultLayout .filter,
+  .defaultLayout .action {
     grid-column: 1 !important;
     justify-self: stretch;
     align-self: start;
   }
 
-  .extra {
+  .defaultLayout .extra {
     justify-self: start;
     width: 100%;
   }
 
-  .action {
+  .defaultLayout .action {
     margin-top: 0.5rem;
     justify-self: stretch;
-  }
-  .title {
-    font-size: var(--title-font-size-h1);
-    margin-bottom: 0.7rem;
   }
 }
 
 @media (max-width: 576px) {
-  .filter {
+  .defaultLayout .filter {
     width: 100%;
   }
-  .filter > * {
+  .defaultLayout .filter > * {
     width: 100%;
   }
 }
 
-/* Chỉ áp dụng cho DateRangeNavigator khi nằm trong .headerCard */
+/* Responsive cho grid layout */
+@media (max-width: 992px) {
+  .gridLayout {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto auto auto !important;
+    gap: 1.5rem !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .gridLayout {
+    gap: 1.25rem !important;
+  }
+}
+
+/* Responsive cho grid items */
+@media (max-width: 992px) {
+  .gridItem1_1 {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .gridItem1_2 {
+    grid-row: 2;
+    grid-column: 1;
+    justify-self: stretch;
+    align-self: start;
+  }
+
+  .gridItem2_1 {
+    grid-row: 3;
+    grid-column: 1;
+    align-self: start;
+  }
+
+  .gridItem2_2 {
+    grid-row: 4;
+    grid-column: 1;
+    justify-self: stretch;
+    align-self: start;
+  }
+}
+
+/* ====== UI CHUNG CHO SMART CONTENT & MINI STATS (DÙNG CHUNG CHO TẤT CẢ PAGE) ====== */
+.contextText {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.moodEmoji {
+  font-size: 1.25rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  margin-left: 0.5rem;
+  color: #3f51b5; /* Đổi màu emoji thành xanh cùng họ với navbar */
+}
+
+.miniStats {
+  font-size: 0.875rem;
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.miniStats::before {
+  content: "\1F4C5 "; /* Unicode cho icon lịch 📅 */
+  font-size: 1rem;
+  margin-right: 0.25rem;
+  color: #3f51b5; /* Màu xanh đồng bộ với navbar */
+}
+
+/* Subtitle nhỏ dưới tiêu đề */
+.subtitle {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+/* Greeting icon (ví dụ icon tiền, user...) */
+.greetingIcon {
+  font-size: 2.5rem;
+  color: #3f51b5; /* Màu xanh dương như bạn muốn */
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  flex-shrink: 0; /* Không cho icon bị co lại */
+}
+
+/* Container cho title và subtitle - VỀ FLEXBOX COLUMN */
+.greetingText {
+  display: flex;
+  flex-direction: column; /* Title và subtitle xếp dọc */
+  gap: 0.25rem;
+}
+
+/* Style cho title text */
+.titleText {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #1f2937);
+}

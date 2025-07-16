@@ -1,93 +1,119 @@
-import React, { useState, useEffect } from "react";
+// src/pages/GoalsPage.jsx (Phiên bản đã sửa lỗi và cải tiến)
+
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getGoals, deleteGoal } from "../api/goalService";
+// ✅ SỬA LỖI: Import đúng các hàm từ service
+import {
+  getGoals,
+  deleteGoal,
+  toggleArchiveGoal,
+  togglePinGoal,
+} from "../api/goalService";
 import GoalsList from "../components/Goals/GoalsList";
 import AddEditGoalModal from "../components/Goals/AddEditGoalModal";
-import ExtendedHeaderCard from "../components/Common/ExtendedHeaderCard";
+import { getProfile } from "../api/profileService";
 import HeaderCard from "../components/Common/HeaderCard";
 import styles from "../styles/GoalsPage.module.css";
+import headerStyles from "../components/Common/HeaderCard.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faBullseye } from "@fortawesome/free-solid-svg-icons";
 import Header from "../components/Header/Header";
 import Navbar from "../components/Navbar/Navbar";
 import Footer from "../components/Footer/Footer";
 import AddFundsModal from "../components/Goals/AddFundsModal";
 import ConfirmDialog from "../components/Common/ConfirmDialog";
+import Button from "../components/Common/Button";
+import { getGreeting, getFullDate } from "../utils/timeHelpers";
+import PageContentContainer from "../components/Common/PageContentContainer";
+import GoalControls from "../components/Goals/GoalControls";
+import NextGoalWidget from "../components/Goals/NextGoalWidget";
 
 export default function GoalsPage() {
-  // ✅ 2. KHỞI TẠO QUERY CLIENT ĐỂ TƯƠNG TÁC VỚI REACT QUERY
   const queryClient = useQueryClient();
 
-  // === CÁC STATE CŨ VẪN CẦN CHO VIỆC ĐIỀU KHIỂN UI (MODAL, FORM) ===
+  // Các state không đổi
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddFundsModalOpen, setIsAddFundsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [currentGoal, setCurrentGoal] = useState(null);
   const [goalToDelete, setGoalToDelete] = useState(null);
   const [editMode, setEditMode] = useState("add");
-  const [userData, setUserData] = useState({ name: "", avatarUrl: null });
-  // =============================================================
+  const [goalFilter, setGoalFilter] = useState("ALL");
+  const [sortType, setSortType] = useState("PROGRESS");
+  const [sortDirection, setSortDirection] = useState("desc");
 
-  // ✅ 3. THAY THẾ TOÀN BỘ LOGIC FETCH CŨ BẰNG `useQuery`
-  // `useQuery` sẽ tự động quản lý `isLoading`, `error`, và `data` cho bạn.
   const {
-    data: goals = [], // Dùng `data` thay cho state `goals`, đặt giá trị mặc định là []
-    isLoading, // Thay cho state `isLoading`
-    error, // Thay cho state `error`
+    data: goalsData = { data: [], totalGoals: 0 },
+    isLoading,
+    error,
   } = useQuery({
-    queryKey: ["goals"], // Đây là "tên định danh" cho dữ liệu này. Rất quan trọng!
-    queryFn: getGoals, // Hàm để fetch dữ liệu. React Query sẽ tự gọi nó.
-    select: (response) => response.data, // Chỉ lấy phần data từ response của axios, giúp component gọn hơn.
+    queryKey: ["goals", goalFilter, sortType, sortDirection], // Thêm filter, sortType, sortDirection vào key
+    queryFn: () =>
+      getGoals({
+        filter: goalFilter,
+        sortType,
+        sortDirection,
+      }),
+    select: (response) => response.data,
   });
 
-  // ✅ 4. THAY THẾ LOGIC XÓA BẰNG `useMutation`
-  // `useMutation` dùng cho các hành động thay đổi dữ liệu (POST, PUT, DELETE).
+  const goals = goalsData?.data || [];
+
+  const { data: userProfile } = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: getProfile,
+    select: (data) => data.data,
+    staleTime: 1000 * 60 * 5,
+  });
+  const userName = userProfile?.fullname || "Bạn";
+  const userAvatar = userProfile?.avatar || null;
+
   const deleteMutation = useMutation({
-    mutationFn: deleteGoal, // Hàm thực hiện hành động xóa.
+    mutationFn: deleteGoal,
     onSuccess: () => {
-      // KHI XÓA THÀNH CÔNG:
-      // Báo cho React Query biết dữ liệu với key "goals" đã cũ và cần được tải lại.
-      // React Query sẽ tự động gọi lại `useQuery` ở trên. KHÔNG CẦN GỌI `fetchGoals()` THỦ CÔNG!
       queryClient.invalidateQueries({ queryKey: ["goals"] });
-      handleCloseConfirmDialog(); // Đóng dialog xác nhận
+      handleCloseConfirmDialog();
     },
   });
 
-  // ✅ 5. BỎ HOÀN TOÀN HÀM `fetchGoals` và `useEffect` GỌI NÓ. CHÚNG KHÔNG CÒN CẦN THIẾT.
+  // ✅ CẢI TIẾN: Tạo mutation riêng cho việc lưu trữ
+  const toggleArchiveMutation = useMutation({
+    mutationFn: toggleArchiveGoal, // Sử dụng hàm chuyên dụng từ service
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+    },
+  });
 
-  // useEffect để lấy thông tin user vẫn giữ nguyên vì nó là client state, không phải server state
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const account = JSON.parse(storedUser);
-        setUserData({
-          name: account.name || "Người dùng",
-          avatarUrl: account.avatarUrl || null,
-        });
-      } catch (error) {
-        console.error(
-          "Lỗi khi parse thông tin người dùng từ localStorage:",
-          error
-        );
-      }
-    }
-  }, []);
+  // ✅ CẢI TIẾN: Tạo mutation riêng cho việc ghim
+  const togglePinMutation = useMutation({
+    mutationFn: togglePinGoal, // Sử dụng hàm chuyên dụng từ service
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+    },
+  });
 
-  // ✅ 6. HÀM NÀY GIỜ CHỈ CẦN LÀM MỚI DỮ LIỆU VÀ ĐÓNG MODAL
+  // ✅ CẢI TIẾN: Hàm handler giờ đơn giản hơn
+  const handleToggleArchive = (goalId) => {
+    toggleArchiveMutation.mutate(goalId);
+  };
+
+  // ✅ CẢI TIẾN: Hàm handler giờ đơn giản hơn
+  const handleTogglePin = (goalId) => {
+    togglePinMutation.mutate(goalId);
+  };
+
+  // Các hàm còn lại giữ nguyên
   const handleActionSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ["goals"] });
     setIsModalOpen(false);
     setIsAddFundsModalOpen(false);
   };
 
-  // ✅ 7. HÀM XÁC NHẬN XÓA GIỜ SIÊU ĐƠN GIẢN
   const handleConfirmDelete = () => {
     if (!goalToDelete) return;
-    deleteMutation.mutate(goalToDelete); // Chỉ cần gọi hàm mutate!
+    deleteMutation.mutate(goalToDelete);
   };
 
-  // Các hàm mở/đóng modal khác không thay đổi
   const handleOpenAddModal = () => {
     setEditMode("add");
     setCurrentGoal(null);
@@ -111,21 +137,124 @@ export default function GoalsPage() {
     setGoalToDelete(null);
   };
 
+  // Logic lọc và hiển thị không đổi so với phiên bản trước
+  const filteredGoals = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const pinnedGoals = goals.filter((g) => g.isPinned && !g.archived);
+    const unpinnedGoals = goals.filter((g) => !g.isPinned);
+
+    let displayGoals = [];
+
+    switch (goalFilter) {
+      case "IN_PROGRESS":
+        displayGoals = unpinnedGoals.filter(
+          (g) =>
+            !g.archived &&
+            g.currentAmount < g.targetAmount &&
+            (!g.deadline || new Date(g.deadline) >= today)
+        );
+        break;
+      case "COMPLETED":
+        displayGoals = unpinnedGoals.filter(
+          (g) => !g.archived && g.currentAmount >= g.targetAmount
+        );
+        break;
+      case "OVERDUE":
+        displayGoals = unpinnedGoals.filter(
+          (g) =>
+            !g.archived &&
+            g.currentAmount < g.targetAmount &&
+            g.deadline &&
+            new Date(g.deadline) < today
+        );
+        break;
+      case "ARCHIVED":
+        // Chỉ trả về goals đã lưu trữ
+        return goals.filter((g) => g.archived);
+      case "ALL":
+      default:
+        displayGoals = unpinnedGoals.filter((g) => !g.archived);
+        break;
+    }
+
+    return [...pinnedGoals, ...displayGoals];
+  }, [goals, goalFilter]);
+
+  const getSmartContext = () => {
+    if (isLoading) return "Đang tải mục tiêu của bạn...";
+    if (error) return "Không thể tải mục tiêu.";
+    const activeGoals = goals.filter((g) => !g.archived);
+    if (activeGoals.length === 0) {
+      return "Bạn chưa có mục tiêu nào. Hãy tạo một mục tiêu ngay!";
+    }
+    const ongoingGoals = activeGoals.filter(
+      (g) => g.currentAmount < g.targetAmount
+    ).length;
+    const completedGoals = activeGoals.length - ongoingGoals;
+    return `Bạn có ${ongoingGoals} mục tiêu đang thực hiện và đã hoàn thành ${completedGoals} mục tiêu. Cố lên!`;
+  };
+
+  const nextGoal = useMemo(() => {
+    const now = new Date();
+    const upcomingGoals = goals
+      .filter(
+        (g) =>
+          !g.archived &&
+          g.currentAmount < g.targetAmount &&
+          g.deadline &&
+          new Date(g.deadline) >= now
+      )
+      .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    return upcomingGoals.length > 0 ? upcomingGoals[0] : null;
+  }, [goals]);
+
   return (
     <div>
-      <Header userName={userData.name} userAvatar={userData.avatarUrl} />
+      <Header userName={userName} userAvatar={userAvatar} />
       <Navbar />
       <main className={styles.pageWrapper}>
         <HeaderCard
-          title="Mục tiêu của tôi"
-          action={
-            <button onClick={handleOpenAddModal} className={styles.addButton}>
-              <FontAwesomeIcon icon={faPlus} className={styles.addIcon} />
+          className={styles.goalsPageHeader}
+          gridIcon={<FontAwesomeIcon icon={faBullseye} />}
+          gridTitle={`${getGreeting()}, ${userName}!`}
+          gridSubtitle="Hãy chinh phục các mục tiêu tài chính của bạn"
+          gridStats={<NextGoalWidget goal={nextGoal} isLoading={isLoading} />}
+          gridInfo={
+            <>
+              <div className="smartContext">
+                <span className="contextText">{getSmartContext()}</span>
+              </div>
+              <span className={headerStyles.miniStats}>{getFullDate()}</span>
+            </>
+          }
+          gridAction={
+            <Button
+              onClick={handleOpenAddModal}
+              icon={<FontAwesomeIcon icon={faPlus} />}
+              variant="primary"
+              className={styles.addButton}
+            >
               Tạo mục tiêu mới
-            </button>
+            </Button>
           }
         />
-        <div className={styles.content}>
+        <PageContentContainer
+          title="Mục tiêu tài chính"
+          titleIcon={faBullseye}
+          titleIconColor="#4f46e5"
+          headerExtra={
+            <GoalControls
+              filterValue={goalFilter}
+              onFilterChange={setGoalFilter}
+              sortType={sortType}
+              sortDirection={sortDirection}
+              onSortTypeChange={setSortType}
+              onSortDirectionChange={setSortDirection}
+            />
+          }
+        >
           {isLoading && (
             <div className={styles.loading}>Đang tải dữ liệu...</div>
           )}
@@ -134,19 +263,19 @@ export default function GoalsPage() {
               {"Đã có lỗi xảy ra: " + error.message}
             </div>
           )}
-
           {!isLoading && !error && (
             <GoalsList
-              goals={goals}
+              goals={filteredGoals}
               onEdit={handleOpenEditModal}
               onDelete={handleRequestDelete}
               onAddFunds={handleOpenAddFundsModal}
+              onToggleArchive={handleToggleArchive}
+              onTogglePin={handleTogglePin}
             />
           )}
-        </div>
+        </PageContentContainer>
       </main>
 
-      {/* Các Modal vẫn giữ nguyên, nhưng giờ chúng sẽ gọi `handleActionSuccess` để tự động cập nhật list */}
       {isModalOpen && (
         <AddEditGoalModal
           isOpen={isModalOpen}
@@ -166,7 +295,6 @@ export default function GoalsPage() {
           onConfirm={handleConfirmDelete}
           title="Xác nhận Xóa Mục tiêu"
           message="Bạn có chắc chắn muốn xóa mục tiêu này? Hành động này không thể hoàn tác."
-          // ✅ 9. SỬ DỤNG TRẠNG THÁI LOADING VÀ ERROR TỪ `useMutation`
           isProcessing={deleteMutation.isPending}
           errorMessage={deleteMutation.error?.response?.data?.message}
           confirmText="Xóa"

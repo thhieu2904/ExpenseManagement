@@ -41,10 +41,7 @@ const StatCard = ({ title, amount, type }) => {
   return (
     <div className={`${styles.statCard} ${styles[type]}`}>
       <div className={styles.cardIconWrapper}>
-        <FontAwesomeIcon
-          icon={iconMap[type]}
-          className={styles.cardIcon}
-        />
+        <FontAwesomeIcon icon={iconMap[type]} className={styles.cardIcon} />
       </div>
       <div className={styles.cardContent}>
         <div className={styles.cardHeader}>
@@ -282,9 +279,7 @@ const StatisticsPage = () => {
       <Header userName={userData?.name} userAvatar={userData?.avatarUrl} />
       <Navbar />
       <main className={styles.pageWrapper}>
-        <ExtendedHeaderCard
-          title="Báo cáo & Phân tích"
-        >
+        <ExtendedHeaderCard title="Báo cáo & Phân tích">
           {/* Hàng 2: StatsGrid (3 cards như StatsOverview) */}
           <div className={styles.statsGrid}>
             <StatCard
@@ -297,7 +292,11 @@ const StatisticsPage = () => {
               amount={stats.totalExpense}
               type="expense"
             />
-            <StatCard title="Dòng Tiền" amount={stats.cashFlow} type="cashFlow" />
+            <StatCard
+              title="Dòng Tiền"
+              amount={stats.cashFlow}
+              type="cashFlow"
+            />
           </div>
 
           {/* Hàng 3: DateRangeNavigator */}

@@ -56,15 +56,20 @@ const HomePage = () => {
       try {
         const response = await getTransactions(page, ITEMS_PER_PAGE, filters);
         const { data, totalPages, currentPage, totalCount } = response.data;
-        console.log("HomePage: Transactions fetched:", { data, totalPages, currentPage, totalCount });
+        console.log("HomePage: Transactions fetched:", {
+          data,
+          totalPages,
+          currentPage,
+          totalCount,
+        });
         if (data) {
           setTransactions((prev) =>
             shouldRefresh ? data : [...prev, ...data]
           );
-          setPagination({ 
-            currentPage, 
+          setPagination({
+            currentPage,
             hasMore: currentPage < totalPages,
-            totalCount: totalCount || 0
+            totalCount: totalCount || 0,
           });
         }
       } catch (err) {
@@ -117,12 +122,19 @@ const HomePage = () => {
     setTransactionFilters(newFilters);
   }, []);
 
-  const handleCategoryClickFromTransaction = useCallback((categoryId, categoryName) => {
-    console.log("HomePage: handleCategoryClickFromTransaction called with:", categoryId, categoryName);
-    // Navigate đến Categories page với query param để highlight slice
-    navigate(`/categories?highlight=${categoryId}`);
-    console.log("HomePage: Navigated to /categories?highlight=" + categoryId);
-  }, [navigate]);
+  const handleCategoryClickFromTransaction = useCallback(
+    (categoryId, categoryName) => {
+      console.log(
+        "HomePage: handleCategoryClickFromTransaction called with:",
+        categoryId,
+        categoryName
+      );
+      // Navigate đến Categories page với query param để highlight slice
+      navigate(`/categories?highlight=${categoryId}`);
+      console.log("HomePage: Navigated to /categories?highlight=" + categoryId);
+    },
+    [navigate]
+  );
 
   const handleEditRequest = (transaction) => {
     setEditingTransaction(transaction);

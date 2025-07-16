@@ -4,7 +4,15 @@ import React from "react";
 import styles from "./GoalsList.module.css";
 import GoalCard from "./GoalCard"; // <-- IMPORT COMPONENT MỚI
 
-export default function GoalsList({ goals, onEdit, onDelete, onAddFunds }) {
+export default function GoalsList({
+  goals,
+  onEdit,
+  onDelete,
+  onAddFunds,
+  onShowHistory,
+  onToggleArchive,
+  onTogglePin,
+}) {
   if (goals.length === 0) {
     return (
       <div className={styles.emptyState}>
@@ -24,6 +32,9 @@ export default function GoalsList({ goals, onEdit, onDelete, onAddFunds }) {
           onEdit={onEdit}
           onDelete={onDelete}
           onAddFunds={onAddFunds}
+          onShowHistory={onShowHistory}
+          onToggleArchive={onToggleArchive}
+          onTogglePin={onTogglePin}
         />
       ))}
     </div>
