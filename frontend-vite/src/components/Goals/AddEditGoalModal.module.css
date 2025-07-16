@@ -54,74 +54,132 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
-  background-color: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 0.75rem 0.75rem 0 0;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.modalHeader::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+  backdrop-filter: blur(10px);
+  z-index: -1;
+}
+
+.modalHeaderIcon {
+  font-size: 1.75rem;
+  animation: bounceIn 0.6s ease-out;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .modalTitle {
   font-size: 1.25rem;
-  font-weight: 600;
-  color: #4f46e5;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.025em;
+  flex: 1;
+  text-align: center;
+  margin: 0;
 }
 
 .closeButton {
-  background: transparent;
-  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  color: #6b7280;
+  color: #ffffff;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
 .closeButton:hover {
-  background-color: #f0f0f0;
-  color: #111827;
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg) scale(1.1);
 }
 
 .form {
-  padding: 1.5rem;
+  padding: 2rem;
   overflow-y: auto;
+  background: #ffffff;
 }
 
 .formGroup {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
   text-align: left;
 }
 
 .formLabel {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
   color: #374151;
   font-size: 0.875rem;
+  letter-spacing: 0.025em;
 }
 
 .requiredStar {
   color: #ef4444;
+  font-weight: 700;
   margin-left: 2px;
 }
 
 .formInput {
   display: block;
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
   font-size: 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+  background: #ffffff;
+  color: #111827;
+  font-weight: 500;
 }
 
 .formInput:focus {
-  border-color: #4f46e5;
+  border-color: #667eea;
   outline: 0;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  transform: translateY(-1px);
+}
+
+.formInput:disabled {
+  background-color: #f9fafb;
+  border-color: #e5e7eb;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .amountInputWrapper {
@@ -129,10 +187,32 @@
 }
 
 .amountInput {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.75rem;
+  font-weight: 700;
   color: #111827;
-  padding-right: 2.5rem; /* Có chỗ cho ký hiệu tiền tệ */
+  padding: 1rem 3rem 1rem 1rem;
+  text-align: right;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  width: 100%;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  letter-spacing: 0.025em;
+}
+
+.amountInput:focus {
+  border-color: #667eea;
+  outline: 0;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  transform: translateY(-1px);
+  background: #ffffff;
+}
+
+.amountInput:disabled {
+  background-color: #f9fafb;
+  border-color: #e5e7eb;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .currencySymbol {
@@ -141,9 +221,13 @@
   top: 50%;
   transform: translateY(-50%);
   font-size: 1.25rem;
-  font-weight: 500;
-  color: #6b7280;
+  font-weight: 600;
+  color: #667eea;
   pointer-events: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .grid {
@@ -155,77 +239,129 @@
 .formActions {
   display: flex;
   justify-content: flex-end;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
+  gap: 1rem;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   border-top: 1px solid #e5e7eb;
+  flex-shrink: 0;
+  border-radius: 0 0 0.75rem 0.75rem;
 }
 
 .formButton {
-  padding: 0.6rem 1.25rem;
-  border-radius: 0.375rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.2s ease-in-out;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: 0.025em;
+  position: relative;
+  overflow: hidden;
 }
+
+.formButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.formButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .cancelButton {
-  background-color: #ffffff;
-  color: #374151;
+  background: #ffffff;
+  color: #6b7280;
   border-color: #d1d5db;
 }
+
 .cancelButton:hover:not(:disabled) {
-  background-color: #f3f4f6;
+  background: #f9fafb;
+  border-color: #9ca3af;
+  color: #374151;
 }
+
 .submitButton {
-  background-color: #4f46e5;
-  color: white;
-  border-color: #4f46e5;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
+
 .submitButton:hover:not(:disabled) {
-  background-color: #4338ca;
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
 }
-.formButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+
+.keyboardHint {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 0.375rem;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.cancelButton .keyboardHint {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
 }
 
 .errorMessage {
-  color: #be123c;
-  background-color: #fee2e2;
-  border: 1px solid #fecaca;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1rem;
-  border-radius: 0.375rem;
+  color: #dc2626;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fca5a5;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 0.75rem;
   text-align: center;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1);
+  animation: slideInDown 0.3s ease-out;
 }
-/* THÊM VÀO CUỐI FILE: src/components/Goals/AddEditGoalModal.module.css */
 
+@keyframes slideInDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
 .iconPickerWrapper {
-  position: relative; /* Quan trọng để định vị picker */
-  width: fit-content; /* Chỉ chiếm độ rộng cần thiết */
+  position: relative;
+  width: fit-content;
 }
 
 .iconSelector {
-  background-color: #f3f4f6;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  width: 54px;
-  height: 54px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  width: 60px;
+  height: 60px;
   font-size: 2rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .iconSelector:hover {
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  transform: translateY(-2px);
+  background: #ffffff;
 }
 
 .emojiPicker {
@@ -233,13 +369,59 @@
   top: 100%;
   left: 0;
   margin-top: 8px;
-  z-index: 1100; /* Đảm bảo nó nổi lên trên mọi thứ */
-  border-radius: 8px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  z-index: 1100;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  animation: slideInUp 0.3s ease-out;
 }
 
-/* Ghi đè một chút style của thư viện để nó đẹp hơn */
+@keyframes slideInUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 .emojiPicker aside.emoji-picker-react {
-  border-radius: 8px !important;
+  border-radius: 0.75rem !important;
   border: 1px solid #e5e7eb !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+@media (max-width: 600px) {
+  .modalContent {
+    max-width: 98vw;
+    margin: 1rem;
+    border-radius: 0.75rem;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .formActions {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+  
+  .formButton {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .keyboardHint {
+    display: none;
+  }
+  
+  .emojiPicker {
+    left: -50px;
+    right: -50px;
+    width: auto;
+  }
 }
