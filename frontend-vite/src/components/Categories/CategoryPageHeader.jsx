@@ -5,7 +5,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTag } from "@fortawesome/free-solid-svg-icons";
 import HeaderCard from "../Common/HeaderCard";
 import Button from "../Common/Button";
-import CategoryStatsWidget from "./CategoryStatsWidget";
 
 // Import component điều hướng riêng
 import DateRangeNavigator from "../Common/DateRangeNavigator";
@@ -29,9 +28,6 @@ const CategoryPageHeader = ({
   currentDate,
   onPeriodChange,
   onDateChange,
-
-  // Props cho widget stats
-  categoryStats = null,
 }) => {
   return (
     <HeaderCard
@@ -42,26 +38,14 @@ const CategoryPageHeader = ({
           Quản lí danh mục
         </h1>
       }
-      extra={
-        categoryStats ? (
-          <CategoryStatsWidget 
-            categoryStats={categoryStats} 
-            activeFilter={activeCategoryType}
-            onFilterChange={onCategoryTypeChange}
-          />
-        ) : (
-          <CategoryStatsWidget 
-            categoryStats={{
-              totalCategories: 0,
-              incomeCategories: 0,
-              expenseCategories: 0,
-              usedCategories: 0,
-              mostUsedCategory: null
-            }}
-            activeFilter={activeCategoryType}
-            onFilterChange={onCategoryTypeChange}
-          />
-        )
+      action={
+        <Button
+          onClick={onAddCategoryClick}
+          icon={<FontAwesomeIcon icon={faPlus} />}
+          variant="primary"
+        >
+          Thêm danh mục
+        </Button>
       }
       filter={
         <div className={styles.filterGroup}>
@@ -101,15 +85,7 @@ const CategoryPageHeader = ({
           </div>
         </div>
       }
-      action={
-        <Button
-          onClick={onAddCategoryClick}
-          icon={<FontAwesomeIcon icon={faPlus} />}
-          variant="primary"
-        >
-          Thêm danh mục
-        </Button>
-      }
+      extra={null}
     />
   );
 };

@@ -139,44 +139,10 @@ const CategoriesPage = () => {
   };
 
   // Data processing
-  const { listData, chartData, chartTotal, categoryStats } = useMemo(() => {
+  const { listData, chartData, chartTotal } = useMemo(() => {
     const filteredList = activeType === CATEGORY_TYPE.ALL
       ? categoriesData
       : categoriesData.filter((cat) => cat.type === activeType);
-
-    // Tính toán stats cho widget
-    const totalCategories = categoriesData.length;
-    const incomeCategories = categoriesData.filter(cat => cat.type === "THUNHAP").length;
-    const expenseCategories = categoriesData.filter(cat => cat.type === "CHITIEU").length;
-    const usedCategories = categoriesData.filter(cat => cat.totalAmount > 0).length;
-    
-    // Tìm danh mục được sử dụng nhiều nhất theo loại filter hiện tại
-    let mostUsedCategory = null;
-    
-    if (activeType === CATEGORY_TYPE.ALL) {
-      // Hiển thị category có totalAmount cao nhất (cả thu nhập và chi tiêu)
-      mostUsedCategory = categoriesData
-        .filter(cat => cat.totalAmount > 0)
-        .sort((a, b) => (b.totalAmount || 0) - (a.totalAmount || 0))[0] || null;
-    } else {
-      // Hiển thị category có totalAmount cao nhất theo loại được filter
-      mostUsedCategory = categoriesData
-        .filter(cat => cat.type === activeType && cat.totalAmount > 0)
-        .sort((a, b) => (b.totalAmount || 0) - (a.totalAmount || 0))[0] || null;
-    }
-
-    const stats = {
-      totalCategories,
-      incomeCategories,
-      expenseCategories,
-      usedCategories,
-      mostUsedCategory: mostUsedCategory ? {
-        name: mostUsedCategory.name,
-        icon: mostUsedCategory.icon,
-        usageCount: mostUsedCategory.totalAmount || 0,
-        type: mostUsedCategory.type // Thêm type để hiển thị thông tin đầy đủ hơn
-      } : null
-    };
 
     const finalChartData = filteredList
       .filter((cat) => cat.totalAmount > 0)
@@ -194,7 +160,6 @@ const CategoriesPage = () => {
       listData: filteredList,
       chartData: finalChartData,
       chartTotal: total,
-      categoryStats: stats,
     };
   }, [activeType, categoriesData]);
 
@@ -211,7 +176,6 @@ const CategoriesPage = () => {
           currentDate={currentDate}
           onPeriodChange={handlePeriodChange}
           onDateChange={handleDateChange}
-          categoryStats={categoryStats}
         />
         
         <div className={styles.analyticsSection}>

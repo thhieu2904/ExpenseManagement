@@ -9,7 +9,7 @@ import HeaderCard from "./HeaderCard";
  * Props:
  * - Tất cả props của HeaderCard (title, action, filter, extra, className)
  * - customSections: Array các section tùy chỉnh sẽ được render sau header
- * - layout: 'default' | 'extended' | 'grid' - layout type
+ * - layout: 'default' | 'extended' - layout type
  */
 const ExtendedHeaderCard = ({
   // HeaderCard props
@@ -40,40 +40,7 @@ const ExtendedHeaderCard = ({
     );
   }
 
-  // Grid layout 3x2 - dành riêng cho CategoryPageHeader
-  if (layout === "grid") {
-    return (
-      <div className={`${styles.extendedHeaderCard} ${styles.gridLayout} ${className}`}>
-        {/* Row 1, Col 1: Title */}
-        <div className={styles.gridTitle}>
-          {title}
-        </div>
-        
-        {/* Row 1-2, Col 2: Extra widget (spans 2 rows) */}
-        {extra && (
-          <div className={styles.gridExtra}>
-            {extra}
-          </div>
-        )}
-        
-        {/* Row 2, Col 1: Filter */}
-        {filter && (
-          <div className={styles.gridFilter}>
-            {filter}
-          </div>
-        )}
-        
-        {/* Row 3, Col 1-2: Action (spans 2 columns) */}
-        {action && (
-          <div className={styles.gridAction}>
-            {action}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // Extended layout với customSections (layout cũ)
+  // Extended layout với customSections
   return (
     <div className={`${styles.extendedHeaderCard} ${className}`}>
       {/* Dòng 1: Title và extra (không có action) */}

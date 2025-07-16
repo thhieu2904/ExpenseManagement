@@ -117,11 +117,8 @@ export default function AddEditGoalModal({
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <div className={styles.modalHeaderIcon}>
-            🎯
-          </div>
           <h2 className={styles.modalTitle}>{modalTitle}</h2>
-          <button onClick={onClose} className={styles.closeButton} aria-label="Đóng modal">
+          <button onClick={onClose} className={styles.closeButton}>
             ×
           </button>
         </div>
@@ -215,7 +212,7 @@ export default function AddEditGoalModal({
               className={`${styles.formButton} ${styles.cancelButton}`}
               disabled={isLoading}
             >
-              Hủy <span className={styles.keyboardHint}>Esc</span>
+              Hủy
             </button>
             <button
               type="submit"
@@ -225,9 +222,7 @@ export default function AddEditGoalModal({
               {isLoading ? (
                 <FontAwesomeIcon icon={faSpinner} spin />
               ) : (
-                <>
-                  {submitButtonText} <span className={styles.keyboardHint}>Enter</span>
-                </>
+                submitButtonText
               )}
             </button>
           </div>

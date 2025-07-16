@@ -93,14 +93,11 @@ const AddEditAccountModal = ({
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <div className={styles.modalHeaderIcon}>
-            💳
-          </div>
           <h2 className={styles.modalTitle}>
             {mode === "add" ? "Thêm Nguồn Tiền" : "Sửa Nguồn Tiền"}
           </h2>
-          <button onClick={onClose} className={styles.closeButton} aria-label="Đóng modal">
-            ×
+          <button onClick={onClose} className={styles.closeButton}>
+            &times;
           </button>
         </div>
 
@@ -234,7 +231,7 @@ const AddEditAccountModal = ({
               disabled={isSubmitting}
               className={`${styles.formButton} ${styles.cancelButton}`}
             >
-              Hủy <span className={styles.keyboardHint}>Esc</span>
+              Hủy
             </button>
             <button
               type="submit"
@@ -244,9 +241,9 @@ const AddEditAccountModal = ({
               {isSubmitting ? (
                 <FontAwesomeIcon icon={faSpinner} spin />
               ) : mode === "add" ? (
-                <>Thêm Nguồn Tiền <span className={styles.keyboardHint}>Enter</span></>
+                "Thêm Nguồn Tiền"
               ) : (
-                <>Lưu Thay Đổi <span className={styles.keyboardHint}>Enter</span></>
+                "Lưu Thay Đổi"
               )}
             </button>
           </div>
