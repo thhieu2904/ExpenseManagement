@@ -62,6 +62,7 @@ const getCategories = async (req, res) => {
         $group: {
           _id: "$categoryId",
           totalAmount: { $sum: "$amount" },
+          transactionCount: { $sum: 1 }, // ✅ THÊM: Đếm số lượng giao dịch
         },
       },
     ]);
@@ -70,15 +71,22 @@ const getCategories = async (req, res) => {
     // Chuyển totals thành object dễ lookup (không thay đổi)
     const totalMap = {};
     totals.forEach((item) => {
-      totalMap[item._id.toString()] = item.totalAmount;
+      totalMap[item._id.toString()] = {
+        totalAmount: item.totalAmount,
+        transactionCount: item.transactionCount, // ✅ THÊM: Lưu số lượng giao dịch
+      };
     });
 
-    // Gắn thêm totalAmount vào từng danh mục (không thay đổi)
+    // Gắn thêm totalAmount và transactionCount vào từng danh mục
     const categoriesWithTotal = categories.map((cat) => {
-      const total = totalMap[cat._id.toString()] || 0;
+      const categoryData = totalMap[cat._id.toString()] || {
+        totalAmount: 0,
+        transactionCount: 0,
+      };
       return {
         ...cat.toObject(),
-        totalAmount: total,
+        totalAmount: categoryData.totalAmount,
+        transactionCount: categoryData.transactionCount, // ✅ THÊM: Thêm số lượng giao dịch
       };
     });
 

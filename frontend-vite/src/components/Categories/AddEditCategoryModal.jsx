@@ -10,7 +10,12 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { availableIconsForSelection, getIconObject } from "../../utils/iconMap";
-import { CATEGORY_TYPE } from "./CategoryPageHeader";
+
+const CATEGORY_TYPE = {
+  CHITIEU: "CHITIEU",
+  THUNHAP: "THUNHAP",
+  ALL: "ALL",
+};
 
 const AddEditCategoryModal = ({
   isOpen,
@@ -23,16 +28,16 @@ const AddEditCategoryModal = ({
   // Refs for focus management
   const firstInputRef = useRef(null);
   const modalContentRef = useRef(null);
-  
+
   // Enhanced state management
   const [name, setName] = useState("");
-  const [type, setType] = useState(initialType || CATEGORY_TYPE.EXPENSE);
+  const [type, setType] = useState(initialType || CATEGORY_TYPE.CHITIEU);
   const [selectedIcon, setSelectedIcon] = useState(
     availableIconsForSelection[0]?.identifier || "default"
   );
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Smart validation state
   const [fieldErrors, setFieldErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -41,14 +46,17 @@ const AddEditCategoryModal = ({
   // Smart validation functions
   const validateField = useCallback((fieldName, value) => {
     switch (fieldName) {
-      case 'name':
-        if (!value?.trim()) return 'Tên danh mục không được để trống';
-        if (value.trim().length < 2) return 'Tên danh mục phải có ít nhất 2 ký tự';
-        if (value.trim().length > 50) return 'Tên danh mục không được quá 50 ký tự';
-        if (!/^[a-zA-ZÀ-ỹ0-9\s\-_]+$/.test(value.trim())) return 'Tên danh mục chỉ được chứa chữ cái, số, dấu gạch ngang và gạch dưới';
+      case "name":
+        if (!value?.trim()) return "Tên danh mục không được để trống";
+        if (value.trim().length < 2)
+          return "Tên danh mục phải có ít nhất 2 ký tự";
+        if (value.trim().length > 50)
+          return "Tên danh mục không được quá 50 ký tự";
+        if (!/^[a-zA-ZÀ-ỹ0-9\s\-_]+$/.test(value.trim()))
+          return "Tên danh mục chỉ được chứa chữ cái, số, dấu gạch ngang và gạch dưới";
         return null;
-      case 'selectedIcon':
-        if (!value) return 'Vui lòng chọn một biểu tượng';
+      case "selectedIcon":
+        if (!value) return "Vui lòng chọn một biểu tượng";
         return null;
       default:
         return null;
@@ -58,58 +66,82 @@ const AddEditCategoryModal = ({
   // Real-time validation
   const validateForm = useCallback(() => {
     const errors = {};
-    errors.name = validateField('name', name);
-    errors.selectedIcon = validateField('selectedIcon', selectedIcon);
-    
+    errors.name = validateField("name", name);
+    errors.selectedIcon = validateField("selectedIcon", selectedIcon);
+
     setFieldErrors(errors);
-    const hasErrors = Object.values(errors).some(error => error !== null);
+    const hasErrors = Object.values(errors).some((error) => error !== null);
     setIsValid(!hasErrors);
     return !hasErrors;
   }, [name, selectedIcon, validateField]);
 
   // Handle field blur for smart validation
   const handleFieldBlur = (fieldName) => {
-    setTouched(prev => ({ ...prev, [fieldName]: true }));
+    setTouched((prev) => ({ ...prev, [fieldName]: true }));
   };
 
   // Smart category name suggestions based on type
   const getNameSuggestions = () => {
     const expenseSuggestions = [
-      'Ăn uống', 'Di chuyển', 'Mua sắm', 'Giải trí', 'Y tế', 'Giáo dục',
-      'Nhà ở', 'Tiện ích', 'Bảo hiểm', 'Quà tặng', 'Từ thiện', 'Khác'
+      "Ăn uống",
+      "Di chuyển",
+      "Mua sắm",
+      "Giải trí",
+      "Y tế",
+      "Giáo dục",
+      "Nhà ở",
+      "Tiện ích",
+      "Bảo hiểm",
+      "Quà tặng",
+      "Từ thiện",
+      "Khác",
     ];
-    
+
     const incomeSuggestions = [
-      'Lương', 'Thưởng', 'Làm thêm', 'Đầu tư', 'Kinh doanh', 'Cho thuê',
-      'Bán hàng', 'Freelance', 'Lãi suất', 'Quà tặng', 'Khác'
+      "Lương",
+      "Thưởng",
+      "Làm thêm",
+      "Đầu tư",
+      "Kinh doanh",
+      "Cho thuê",
+      "Bán hàng",
+      "Freelance",
+      "Lãi suất",
+      "Quà tặng",
+      "Khác",
     ];
-    
-    return type === CATEGORY_TYPE.EXPENSE ? expenseSuggestions : incomeSuggestions;
+
+    return type === CATEGORY_TYPE.CHITIEU
+      ? expenseSuggestions
+      : incomeSuggestions;
   };
 
   // Keyboard shortcuts
-  const handleKeyDown = useCallback((e) => {
-    if (e.key === 'Escape') {
-      handleClose();
-    } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      if (isValid && !isSubmitting) {
-        handleSubmit(e);
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === "Escape") {
+        handleClose();
+      } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        if (isValid && !isSubmitting) {
+          handleSubmit(e);
+        }
       }
-    }
-  }, [isValid, isSubmitting]);
+    },
+    [isValid, isSubmitting]
+  );
 
   // Focus management and keyboard listeners
   useEffect(() => {
     if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener("keydown", handleKeyDown);
       // Auto-focus first input after modal animation
       setTimeout(() => {
         firstInputRef.current?.focus();
       }, 100);
     }
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, handleKeyDown]);
 
@@ -122,7 +154,7 @@ const AddEditCategoryModal = ({
     if (isOpen) {
       if (mode === "edit" && initialData) {
         setName(initialData.name || "");
-        setType(initialData.type || CATEGORY_TYPE.EXPENSE);
+        setType(initialData.type || CATEGORY_TYPE.CHITIEU);
         setSelectedIcon(
           initialData.icon ||
             availableIconsForSelection[0]?.identifier ||
@@ -134,9 +166,9 @@ const AddEditCategoryModal = ({
       } else if (mode === "add") {
         setName("");
         setType(
-          initialType === "ALL"
-            ? CATEGORY_TYPE.EXPENSE
-            : initialType || CATEGORY_TYPE.EXPENSE
+          initialType === CATEGORY_TYPE.ALL
+            ? CATEGORY_TYPE.CHITIEU
+            : initialType || CATEGORY_TYPE.CHITIEU
         );
         setSelectedIcon(availableIconsForSelection[0]?.identifier || "default");
         setError("");
@@ -149,14 +181,14 @@ const AddEditCategoryModal = ({
   // Enhanced submit handler with comprehensive validation
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Comprehensive validation before submit
     if (!validateForm()) {
       setError("Vui lòng kiểm tra lại các trường đã nhập.");
       // Mark all fields as touched to show validation errors
       setTouched({
         name: true,
-        selectedIcon: true
+        selectedIcon: true,
       });
       return;
     }
@@ -188,19 +220,19 @@ const AddEditCategoryModal = ({
   // Smart name suggestions click handler
   const handleNameSuggestionClick = (suggestion) => {
     setName(suggestion);
-    setTouched(prev => ({ ...prev, name: true }));
+    setTouched((prev) => ({ ...prev, name: true }));
   };
 
   // Handle name change with smart validation
   const handleNameChange = (e) => {
     setName(e.target.value);
-    setTouched(prev => ({ ...prev, name: true }));
+    setTouched((prev) => ({ ...prev, name: true }));
   };
 
   // Handle icon selection with smart suggestions
   const handleIconSelect = (iconIdentifier) => {
     setSelectedIcon(iconIdentifier);
-    setTouched(prev => ({ ...prev, selectedIcon: true }));
+    setTouched((prev) => ({ ...prev, selectedIcon: true }));
   };
 
   if (!isOpen) {
@@ -213,15 +245,15 @@ const AddEditCategoryModal = ({
 
   return (
     <div className={styles.modalOverlay} onClick={handleClose}>
-      <div 
-        className={styles.modalContent} 
+      <div
+        className={styles.modalContent}
         onClick={(e) => e.stopPropagation()}
         ref={modalContentRef}
       >
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>
-            <FontAwesomeIcon 
-              icon={mode === "add" ? faArrowDown : faCheckCircle} 
+            <FontAwesomeIcon
+              icon={mode === "add" ? faArrowDown : faCheckCircle}
               className={styles.titleIcon}
             />
             {modalTitle}
@@ -255,10 +287,10 @@ const AddEditCategoryModal = ({
                 id="categoryName"
                 value={name}
                 onChange={handleNameChange}
-                onBlur={() => handleFieldBlur('name')}
+                onBlur={() => handleFieldBlur("name")}
                 className={`${styles.formInput} ${
-                  touched.name && fieldErrors.name ? styles.inputError : ''
-                } ${touched.name && !fieldErrors.name ? styles.inputSuccess : ''}`}
+                  touched.name && fieldErrors.name ? styles.inputError : ""
+                } ${touched.name && !fieldErrors.name ? styles.inputSuccess : ""}`}
                 placeholder="Ví dụ: Tiền ăn, Lương tháng..."
                 required
                 disabled={isSubmitting}
@@ -276,7 +308,7 @@ const AddEditCategoryModal = ({
                 </div>
               )}
             </div>
-            
+
             {/* Smart Name Suggestions */}
             {!name.trim() && (
               <div className={styles.suggestionsWrapper}>
@@ -308,15 +340,17 @@ const AddEditCategoryModal = ({
                 <input
                   type="radio"
                   name="categoryType"
-                  value={CATEGORY_TYPE.EXPENSE}
-                  checked={type === CATEGORY_TYPE.EXPENSE}
+                  value={CATEGORY_TYPE.CHITIEU}
+                  checked={type === CATEGORY_TYPE.CHITIEU}
                   onChange={(e) => setType(e.target.value)}
                   disabled={isSubmitting}
                   className={styles.radioInput}
                 />
-                <span className={`${styles.radioLabelText} ${styles.expense} ${
-                  type === CATEGORY_TYPE.EXPENSE ? styles.selected : ''
-                }`}>
+                <span
+                  className={`${styles.radioLabelText} ${styles.expense} ${
+                    type === CATEGORY_TYPE.CHITIEU ? styles.selected : ""
+                  }`}
+                >
                   <FontAwesomeIcon
                     icon={faArrowDown}
                     className={styles.radioIcon}
@@ -328,15 +362,17 @@ const AddEditCategoryModal = ({
                 <input
                   type="radio"
                   name="categoryType"
-                  value={CATEGORY_TYPE.INCOME}
-                  checked={type === CATEGORY_TYPE.INCOME}
+                  value={CATEGORY_TYPE.THUNHAP}
+                  checked={type === CATEGORY_TYPE.THUNHAP}
                   onChange={(e) => setType(e.target.value)}
                   disabled={isSubmitting}
                   className={styles.radioInput}
                 />
-                <span className={`${styles.radioLabelText} ${styles.income} ${
-                  type === CATEGORY_TYPE.INCOME ? styles.selected : ''
-                }`}>
+                <span
+                  className={`${styles.radioLabelText} ${styles.income} ${
+                    type === CATEGORY_TYPE.THUNHAP ? styles.selected : ""
+                  }`}
+                >
                   <FontAwesomeIcon
                     icon={faArrowUp}
                     className={styles.radioIcon}
@@ -352,7 +388,7 @@ const AddEditCategoryModal = ({
             <label className={styles.formLabel}>
               Chọn biểu tượng <span className={styles.requiredStar}>*</span>
             </label>
-            
+
             {/* Main Icon Grid */}
             <div className={styles.iconSelectionGrid}>
               {availableIconsForSelection.map((iconInfo) => (
@@ -395,7 +431,7 @@ const AddEditCategoryModal = ({
               type="submit"
               disabled={isSubmitting || !isValid}
               className={`${styles.formButton} ${styles.submitButton} ${
-                isValid ? styles.submitButtonActive : ''
+                isValid ? styles.submitButtonActive : ""
               }`}
             >
               {isSubmitting && (
@@ -411,7 +447,9 @@ const AddEditCategoryModal = ({
 
           {/* Keyboard Shortcuts Hint */}
           <div className={styles.keyboardHints}>
-            <span>💡 Mẹo: Nhấn <kbd>Ctrl</kbd> + <kbd>Enter</kbd> để lưu nhanh</span>
+            <span>
+              💡 Mẹo: Nhấn <kbd>Ctrl</kbd> + <kbd>Enter</kbd> để lưu nhanh
+            </span>
           </div>
         </form>
       </div>

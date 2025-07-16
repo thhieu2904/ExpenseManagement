@@ -1,14 +1,13 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { 
-  faSearch, 
-  faFilter, 
-  faEraser, 
+import {
+  faSearch,
+  faEraser,
   faCheck,
   faWallet,
   faTag,
   faExchangeAlt,
-  faCalendarAlt 
+  faCalendarAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "./TransactionFilterPanel.module.css";
 
@@ -28,12 +27,6 @@ const TransactionFilterPanel = ({
 
   return (
     <div className={styles.filterContainer}>
-      {/* Header */}
-      <div className={styles.filterHeader}>
-        <FontAwesomeIcon icon={faFilter} className={styles.filterHeaderIcon} />
-        <h3 className={styles.filterHeaderTitle}>Bộ lọc giao dịch</h3>
-      </div>
-
       {/* Filter Grid */}
       <div className={styles.filterGrid}>
         {/* Keyword Input - Full Width */}
@@ -56,7 +49,10 @@ const TransactionFilterPanel = ({
         {/* Type Select */}
         <div className={styles.formGroup}>
           <label htmlFor="type" className={styles.formLabel}>
-            <FontAwesomeIcon icon={faExchangeAlt} className={styles.labelIcon} />
+            <FontAwesomeIcon
+              icon={faExchangeAlt}
+              className={styles.labelIcon}
+            />
             Loại giao dịch
           </label>
           <select
@@ -119,7 +115,10 @@ const TransactionFilterPanel = ({
         {/* Date From */}
         <div className={styles.formGroup}>
           <label htmlFor="dateFrom" className={styles.formLabel}>
-            <FontAwesomeIcon icon={faCalendarAlt} className={styles.labelIcon} />
+            <FontAwesomeIcon
+              icon={faCalendarAlt}
+              className={styles.labelIcon}
+            />
             Từ ngày
           </label>
           <input
@@ -135,7 +134,10 @@ const TransactionFilterPanel = ({
         {/* Date To */}
         <div className={styles.formGroup}>
           <label htmlFor="dateTo" className={styles.formLabel}>
-            <FontAwesomeIcon icon={faCalendarAlt} className={styles.labelIcon} />
+            <FontAwesomeIcon
+              icon={faCalendarAlt}
+              className={styles.labelIcon}
+            />
             Đến ngày
           </label>
           <input
@@ -152,7 +154,7 @@ const TransactionFilterPanel = ({
       {/* Action Buttons */}
       <div className={styles.buttonGroup}>
         <button
-          className={`${styles.button} ${styles.resetButton} ${isLoading ? styles.loading : ''}`}
+          className={`${styles.button} ${styles.resetButton} ${isLoading ? styles.loading : ""}`}
           onClick={onResetFilters}
           type="button"
           disabled={isLoading}
@@ -162,7 +164,7 @@ const TransactionFilterPanel = ({
         </button>
         <button
           className={`${styles.button} ${styles.clearButton}`}
-          onClick={() => onFilterFieldChange('keyword', '')}
+          onClick={() => onFilterFieldChange("keyword", "")}
           type="button"
           disabled={isLoading || !filters.keyword}
         >
@@ -170,13 +172,13 @@ const TransactionFilterPanel = ({
           Xóa tìm kiếm
         </button>
         <button
-          className={`${styles.button} ${styles.applyButton} ${isLoading ? styles.loading : ''}`}
+          className={`${styles.button} ${styles.applyButton} ${isLoading ? styles.loading : ""}`}
           onClick={onApplyFilters}
           type="button"
           disabled={isLoading}
         >
           <FontAwesomeIcon icon={faCheck} className={styles.buttonIcon} />
-          {isLoading ? 'Đang lọc...' : 'Áp dụng'}
+          {isLoading ? "Đang lọc..." : "Áp dụng"}
         </button>
       </div>
     </div>

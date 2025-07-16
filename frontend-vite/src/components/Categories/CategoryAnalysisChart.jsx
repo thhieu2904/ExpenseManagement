@@ -1,9 +1,10 @@
 // frontend-vite/src/components/Categories/CategoryAnalysisChart.jsx
 import React, { useState } from "react";
 import { Sector } from "recharts";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import BasePieChart from "../Common/BasePieChart";
 import DateRangeNavigator from "../Common/DateRangeNavigator";
-import styles from "../DetailedAnalyticsSection/IncomeExpenseTrendChart.module.css";
+import { getIconObject } from "../../utils/iconMap";
 import customChartStyles from "./CategoryAnalysisChart.module.css";
 
 const COLORS = [
@@ -37,34 +38,27 @@ const CategoryAnalysisChart = ({
     categoryType === "THUNHAP"
       ? "Cơ cấu Thu nhập"
       : categoryType === "CHITIEU"
-      ? "Cơ cấu Chi tiêu"
-      : "Cơ cấu Thu chi";
+        ? "Cơ cấu Chi tiêu"
+        : "Cơ cấu Thu chi";
 
   // Custom active shape renderer - subtle highlight
   const renderCustomActiveShape = (props) => {
-    const {
-      cx,
-      cy,
-      innerRadius,
-      outerRadius,
-      startAngle,
-      endAngle,
-      fill,
-    } = props;
+    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } =
+      props;
 
     return (
       <g>
         {/* Subtle glow effect */}
         <defs>
-          <filter id={`glow-${fill.replace('#', '')}`}>
-            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-            <feMerge> 
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
+          <filter id={`glow-${fill.replace("#", "")}`}>
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
         </defs>
-        
+
         {/* Main slice with subtle expansion */}
         <Sector
           cx={cx}
@@ -75,11 +69,11 @@ const CategoryAnalysisChart = ({
           endAngle={endAngle}
           fill={fill}
           style={{
-            filter: `url(#glow-${fill.replace('#', '')})`,
+            filter: `url(#glow-${fill.replace("#", "")})`,
             opacity: 0.95,
           }}
         />
-        
+
         {/* Subtle border */}
         <Sector
           cx={cx}
@@ -101,11 +95,14 @@ const CategoryAnalysisChart = ({
     setActiveIndex(newIndex);
     if (onActiveCategoryChange) {
       // Truyền đúng format {id, color, name} cho parent
-      const categoryData = newIndex !== null ? {
-        id: sliceData._id || sliceData.id,
-        color: sliceData.color,
-        name: sliceData.name
-      } : null;
+      const categoryData =
+        newIndex !== null
+          ? {
+              id: sliceData._id || sliceData.id,
+              color: sliceData.color,
+              name: sliceData.name,
+            }
+          : null;
       onActiveCategoryChange(categoryData);
     }
   };
@@ -122,8 +119,16 @@ const CategoryAnalysisChart = ({
         loading={loading}
         error={error}
         onSliceClick={handlePieClick}
-        activeCategoryId={activeIndex !== null && data[activeIndex] ? (data[activeIndex]._id || data[activeIndex].id) : null}
-        activeCategoryName={activeIndex !== null && data[activeIndex] ? data[activeIndex].name : null}
+        activeCategoryId={
+          activeIndex !== null && data[activeIndex]
+            ? data[activeIndex]._id || data[activeIndex].id
+            : null
+        }
+        activeCategoryName={
+          activeIndex !== null && data[activeIndex]
+            ? data[activeIndex].name
+            : null
+        }
         colors={COLORS}
         showCenterLabel={true}
         showLabels={true}
@@ -133,7 +138,7 @@ const CategoryAnalysisChart = ({
         detailsLink={{
           url: "/transactions",
           text: "Xem giao dịch",
-          title: "Xem trang quản lý giao dịch"
+          title: "Xem trang quản lý giao dịch",
         }}
         chartConfig={{
           innerRadius: 66,
@@ -159,7 +164,7 @@ const CategoryAnalysisChart = ({
 export default CategoryAnalysisChart;
 
 // --- renderCustomizedLabel Component (Không thay đổi) ---
-const renderCustomizedLabel = ({
+const _renderCustomizedLabel = ({
   cx,
   cy,
   midAngle,
@@ -215,5 +220,3 @@ const renderCustomizedLabel = ({
     </g>
   );
 };
-
-

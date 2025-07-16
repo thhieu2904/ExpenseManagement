@@ -118,8 +118,16 @@ export default function AddFundsModal({
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h2 className={styles.modalTitle}>Nạp tiền cho mục tiêu</h2>
-          <p className={styles.modalSubtitle}>"{goalData.name}"</p>
+          <div className={styles.modalHeaderIcon}>
+            🏦
+          </div>
+          <div className={styles.modalHeaderContent}>
+            <h2 className={styles.modalTitle}>Nạp tiền cho mục tiêu</h2>
+            <p className={styles.modalSubtitle}>"{goalData.name}"</p>
+          </div>
+          <button onClick={onClose} className={styles.closeButton} aria-label="Đóng modal">
+            ×
+          </button>
         </div>
         <form onSubmit={handleSubmit} className={styles.form}>
           {displayError && (
@@ -154,20 +162,36 @@ export default function AddFundsModal({
               value={accountOptions.find((opt) => opt.value === accountId)}
               onChange={(selectedOption) => setAccountId(selectedOption.value)}
               components={{ Option: CustomOption }}
-              // ✅ BƯỚC SỬA LỖI: PHỤC HỒI LẠI ĐẦY ĐỦ NỘI DUNG CHO `styles`
               styles={{
-                control: (base) => ({
+                control: (base, state) => ({
                   ...base,
-                  border: "1px solid #d1d5db",
-                  borderRadius: "0.5rem",
-                  padding: "0.2rem",
-                  boxShadow: "none",
-                  "&:hover": { borderColor: "#a5b4fc" },
+                  border: `2px solid ${state.isFocused ? '#667eea' : '#e5e7eb'}`,
+                  borderRadius: '0.75rem',
+                  padding: '0.375rem 0.5rem',
+                  boxShadow: state.isFocused ? '0 0 0 4px rgba(102, 126, 234, 0.1)' : 'none',
+                  '&:hover': { 
+                    borderColor: state.isFocused ? '#667eea' : '#d1d5db',
+                    transform: state.isFocused ? 'none' : 'translateY(-1px)',
+                  },
+                  transition: 'all 0.3s ease',
+                  background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
                 }),
-                singleValue: (base, state) => ({
+                singleValue: (base) => ({
                   ...base,
-                  display: "flex",
-                  alignItems: "center",
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontWeight: '500',
+                }),
+                menu: (base) => ({
+                  ...base,
+                  borderRadius: '0.75rem',
+                  border: '1px solid #e5e7eb',
+                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
+                  overflow: 'hidden',
+                }),
+                menuList: (base) => ({
+                  ...base,
+                  padding: '0.5rem',
                 }),
               }}
               // ✅ BƯỚC SỬA LỖI: PHỤC HỒI LẠI ĐẦY ĐỦ NỘI DUNG CHO `getOptionLabel`
@@ -196,7 +220,7 @@ export default function AddFundsModal({
               className={`${styles.formButton} ${styles.cancelButton}`}
               disabled={addFundsMutation.isPending}
             >
-              Hủy
+              Hủy <span className={styles.keyboardHint}>Esc</span>
             </button>
             <button
               type="submit"
@@ -210,7 +234,7 @@ export default function AddFundsModal({
               {addFundsMutation.isPending ? (
                 <FontAwesomeIcon icon={faSpinner} spin />
               ) : (
-                "Xác nhận"
+                <>Xác nhận <span className={styles.keyboardHint}>Enter</span></>
               )}
             </button>
           </div>

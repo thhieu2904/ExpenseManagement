@@ -178,7 +178,7 @@
   border-left: 4px solid var(--color-accent-primary);
   margin-bottom: var(--spacing-base);
   gap: var(--spacing-base);
-  box-shadow: 
+  box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.05),
     0 1px 2px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.1);
@@ -314,42 +314,42 @@
     gap: 16px;
     text-align: center;
   }
-  
+
   .summarySection {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--spacing-sm);
   }
-  
+
   .summaryActions {
     width: 100%;
   }
-  
+
   .viewAllButton {
     width: 100%;
     justify-content: center;
   }
-  
+
   .transactionsTable {
     font-size: 12px;
   }
-  
+
   .transactionsTable th,
   .transactionsTable td {
     padding: 8px 4px;
   }
-  
+
   .transactionsTable th:nth-child(4),
   .transactionsTable td:nth-child(4) {
     display: none;
   }
-  
+
   .loadMoreButtonOuterContainer {
     flex-direction: column;
     align-items: center;
     gap: 12px;
   }
-  
+
   .loadMoreButton {
     width: 100%;
     max-width: 300px;
@@ -361,22 +361,22 @@
   .title {
     font-size: var(--title-font-size-h3);
   }
-  
+
   .summarySection {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--spacing-sm);
   }
-  
+
   .summaryActions {
     width: 100%;
   }
-  
+
   .viewAllButton {
     width: 100%;
     justify-content: center;
   }
-  
+
   .transactionsTable th:nth-child(3),
   .transactionsTable td:nth-child(3) {
     display: none;

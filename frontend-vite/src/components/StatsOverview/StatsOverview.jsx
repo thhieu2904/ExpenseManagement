@@ -1,18 +1,52 @@
-import React, { useState } from "react";
+import React from "react";
 import styles from "./StatsOverview.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faPlus,
   faArrowDown,
   faArrowUp,
-  faChartLine,
   faExchangeAlt,
+  faArrowTrendUp, // <--- Sửa thành tên này
+  faArrowTrendDown,
+  faMinus,
 } from "@fortawesome/free-solid-svg-icons";
-import Button from "../Common/Button";
-import ExtendedHeaderCard from "../Common/ExtendedHeaderCard";
-import AddEditTransactionModal from "../Transactions/AddEditTransactionModal";
 
-// Hàm tiện ích định dạng tiền tệ
+// Hàm tiện ích để phân tích xu hướng từ comparison text
+const getTrendInfo = (comparison, type) => {
+  if (!comparison) return { icon: faMinus, className: "neutral" };
+
+  const lowerComparison = comparison.toLowerCase();
+
+  // Phân tích xu hướng dựa trên nội dung
+  if (
+    lowerComparison.includes("tăng") ||
+    lowerComparison.includes("nhiều hơn")
+  ) {
+    return {
+      icon: faArrowTrendUp,
+      className: type === "expense" ? "negative" : "positive",
+    };
+  } else if (
+    lowerComparison.includes("giảm") ||
+    lowerComparison.includes("ít hơn")
+  ) {
+    return {
+      icon: faArrowTrendDown,
+      className: type === "expense" ? "positive" : "negative",
+    };
+  } else if (
+    lowerComparison.includes("tích lũy") ||
+    lowerComparison.includes("dương")
+  ) {
+    return { icon: faArrowTrendUp, className: "positive" };
+  } else if (
+    lowerComparison.includes("thiếu hụt") ||
+    lowerComparison.includes("âm")
+  ) {
+    return { icon: faArrowTrendDown, className: "negative" };
+  }
+
+  return { icon: faMinus, className: "neutral" };
+};
 const formatCurrency = (amount) => {
   if (typeof amount !== "number") {
     return "0 ₫";
@@ -20,35 +54,76 @@ const formatCurrency = (amount) => {
   return amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 };
 
-// Component nhận props từ cha, không tự fetch dữ liệu
-const StatsOverview = ({ stats, loading, onTransactionAdded }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Hàm xử lý khi thêm giao dịch thành công
-  const handleTransactionAdded = () => {
-    setIsModalOpen(false);
-    // Nếu có callback từ component cha, gọi nó để refresh dữ liệu
-    if (onTransactionAdded) {
-      onTransactionAdded();
-    } else {
-      // Fallback: reload trang nếu không có callback
-      window.location.reload();
+// Component con cho từng card
+const StatCard = ({ type, amount, comparison, isSmall = false }) => {
+  const getConfig = () => {
+    switch (type) {
+      case "income":
+        return {
+          icon: faArrowDown,
+          label: "Thu nhập",
+          iconClass: styles.iconIncome,
+          amountClass: styles.amountIncome,
+        };
+      case "expense":
+        return {
+          icon: faArrowUp,
+          label: "Chi tiêu",
+          iconClass: styles.iconExpense,
+          amountClass: styles.amountExpense,
+        };
+      case "cashflow":
+        return {
+          icon: faExchangeAlt,
+          label: "Dòng tiền",
+          iconClass: styles.iconCashflow,
+          amountClass: styles.amountCashflow,
+        };
+      default:
+        return {};
     }
   };
 
+  const config = getConfig();
+  const trendInfo = getTrendInfo(comparison, type);
+
+  return (
+    <div className={`${styles.statCard} ${isSmall ? styles.smallCard : ""}`}>
+      <div className={config.iconClass}>
+        <FontAwesomeIcon icon={config.icon} />
+      </div>
+      <div className={styles.details}>
+        <span className={styles.label}>{config.label}</span>
+        <span className={config.amountClass}>{formatCurrency(amount)}</span>
+        {comparison && (
+          <div
+            className={`${styles.comparison} ${styles[trendInfo.className]}`}
+          >
+            <FontAwesomeIcon
+              icon={trendInfo.icon}
+              className={styles.trendIcon}
+            />
+            <span>{comparison}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Component chính - widget compact hiển thị 3 thẻ theo chiều ngang
+const StatsOverview = ({ stats, loading }) => {
   if (loading) {
-    return <div className={styles.loading}>Đang tải dữ liệu tổng quan...</div>;
+    return <div className={styles.widgetContainer}>Đang tải...</div>;
   }
 
-  // Nếu không loading và không có stats, hiển thị thông báo
   if (!stats) {
-    return <div className={styles.noData}>Không có dữ liệu để hiển thị.</div>;
+    return (
+      <div className={styles.widgetContainer}>
+        Không có dữ liệu để hiển thị.
+      </div>
+    );
   }
-
-  // Dữ liệu tháng/năm giờ sẽ được API trả về trong object stats
-  const currentMonthYearLabel =
-    stats.currentMonthYear ||
-    `Tháng ${new Date().getMonth() + 1}/${new Date().getFullYear()}`;
 
   // Tính toán dòng tiền ròng
   const calculateNetCashFlow = () => {
@@ -58,169 +133,32 @@ const StatsOverview = ({ stats, loading, onTransactionAdded }) => {
   };
 
   const netCashFlow = calculateNetCashFlow();
-  const isPositiveFlow = netCashFlow >= 0;
 
   return (
-    <ExtendedHeaderCard
-      title={
-        <>
-          <FontAwesomeIcon icon={faChartLine} className={styles.titleIcon} />
-          Tổng quan chi tiêu
-        </>
-      }
-      action={
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          icon={<FontAwesomeIcon icon={faPlus} />}
-          variant="primary"
-        >
-          Thêm giao dịch
-        </Button>
-      }
-    >
-      {/* Stats Cards - áp dụng hệ thống title hierarchy */}
-      <div className={styles.statsCards}>
-        {/* Card Thu nhập */}
-        <div className={`${styles.statCard} ${styles.incomeCard}`}>
-          <div className={styles.cardIconWrapper}>
-            <FontAwesomeIcon
-              icon={faArrowDown}
-              className={styles.cardIcon}
-            />
-          </div>
-          <div className={styles.cardContent}>
-            <div className={styles.cardHeader}>
-              <h3 className={styles.cardTitle}>Thu nhập</h3>
-              <span className={styles.cardPeriod}>
-                {stats.income?.monthYear || currentMonthYearLabel}
-              </span>
-            </div>
-            <p className={styles.cardAmount}>
-              {formatCurrency(stats.income?.amount)}
-            </p>
-            {stats.income?.changeDescription && (
-              <p
-                className={`${styles.cardChange} ${
-                  stats.income?.percentageChange === null
-                    ? styles.neutralChange
-                    : (stats.income?.percentageChange || 0) >= 0
-                    ? styles.positiveChange
-                    : styles.negativeChange
-                }`}
-              >
-                {stats.income?.percentageChange !== null && (
-                  <FontAwesomeIcon
-                    icon={
-                      (stats.income?.percentageChange || 0) >= 0
-                        ? faArrowUp
-                        : faArrowDown
-                    }
-                  />
-                )}
-                {stats.income?.percentageChange !== null ? (
-                  <strong>
-                    ({stats.income.percentageChange > 0 ? "+" : ""}
-                    {stats.income.percentageChange}%)
-                  </strong>
-                ) : (
-                  <strong>🆕 Mới</strong>
-                )}{" "}
-                {stats.income.changeDescription}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Card Chi tiêu */}
-        <div className={`${styles.statCard} ${styles.expenseCard}`}>
-          <div className={styles.cardIconWrapper}>
-            <FontAwesomeIcon
-              icon={faArrowUp}
-              className={styles.cardIcon}
-            />
-          </div>
-          <div className={styles.cardContent}>
-            <div className={styles.cardHeader}>
-              <h3 className={styles.cardTitle}>Chi tiêu</h3>
-              <span className={styles.cardPeriod}>
-                {stats.expense?.monthYear || currentMonthYearLabel}
-              </span>
-            </div>
-            <p className={styles.cardAmount}>
-              {formatCurrency(stats.expense?.amount)}
-            </p>
-            {stats.expense?.changeDescription && (
-              <p
-                className={`${styles.cardChange} ${
-                  stats.expense?.percentageChange === null
-                    ? styles.neutralChange
-                    : (stats.expense?.percentageChange || 0) >= 0
-                    ? styles.negativeChange
-                    : styles.positiveChange
-                }`}
-              >
-                {stats.expense?.percentageChange !== null && (
-                  <FontAwesomeIcon
-                    icon={
-                      (stats.expense?.percentageChange || 0) >= 0
-                        ? faArrowUp
-                        : faArrowDown
-                    }
-                  />
-                )}
-                {stats.expense?.percentageChange !== null ? (
-                  <strong>
-                    ({stats.expense.percentageChange > 0 ? "+" : ""}
-                    {stats.expense.percentageChange}%)
-                  </strong>
-                ) : (
-                  <strong>🆕 Mới</strong>
-                )}{" "}
-                {stats.expense.changeDescription}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Card Dòng tiền */}
-        <div className={`${styles.statCard} ${styles.cashFlowCard} ${isPositiveFlow ? styles.positiveCashFlow : styles.negativeCashFlow}`}>
-          <div className={styles.cardIconWrapper}>
-            <FontAwesomeIcon
-              icon={faExchangeAlt}
-              className={styles.cardIcon}
-            />
-          </div>
-          <div className={styles.cardContent}>
-            <div className={styles.cardHeader}>
-              <h3 className={styles.cardTitle}>Dòng tiền</h3>
-              <span className={styles.cardPeriod}>
-                {currentMonthYearLabel}
-              </span>
-            </div>
-            <p className={styles.cardAmount}>
-              {formatCurrency(netCashFlow)}
-            </p>
-            <p className={`${styles.cardChange} ${styles.cashFlowNeutral}`}>
-              <FontAwesomeIcon
-                icon={isPositiveFlow ? faArrowUp : faArrowDown}
-              />
-              <strong>
-                {isPositiveFlow ? "Dương" : "Âm"}
-              </strong>{" "}
-              {isPositiveFlow ? "Tích lũy được tiền" : "Thiếu hụt ngân sách"}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Modal thêm giao dịch */}
-      <AddEditTransactionModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmitSuccess={handleTransactionAdded}
-        mode="add"
+    <div className={styles.widgetContainer}>
+      {/* Thu nhập */}
+      <StatCard
+        type="income"
+        amount={stats.income?.amount || 0}
+        comparison={stats.income?.changeDescription}
       />
-    </ExtendedHeaderCard>
+
+      {/* Chi tiêu */}
+      <StatCard
+        type="expense"
+        amount={stats.expense?.amount || 0}
+        comparison={stats.expense?.changeDescription}
+      />
+
+      {/* Dòng tiền */}
+      <StatCard
+        type="cashflow"
+        amount={netCashFlow}
+        comparison={
+          netCashFlow >= 0 ? "Tích lũy được tiền" : "Thiếu hụt ngân sách"
+        }
+      />
+    </div>
   );
 };
 

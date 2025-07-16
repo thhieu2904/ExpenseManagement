@@ -36,3 +36,15 @@ yarn-error.log*
 # System files
 .DS_Store
 Thumbs.db
+
+# Ignore build output
+frontend-vite/dist/
+
+# Ignore all node_modules in both FE and BE
+node_modules/
+
+# Ignore environment file
+.env
+
+# Ignore uploaded images
+backend/uploads/

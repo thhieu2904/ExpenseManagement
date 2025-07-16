@@ -2,53 +2,59 @@
 
 :root {
   /* Typography Scale */
-  --font-size-xs: 0.75rem;      /* 12px */
-  --font-size-sm: 0.875rem;     /* 14px */
-  --font-size-base: 1rem;       /* 16px */
-  --font-size-lg: 1.125rem;     /* 18px */
-  --font-size-xl: 1.25rem;      /* 20px */
-  --font-size-2xl: 1.5rem;      /* 24px */
-  --font-size-3xl: 1.875rem;    /* 30px */
-  --font-size-4xl: 2.25rem;     /* 36px */
-  
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-base: 1rem; /* 16px */
+  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-xl: 1.25rem; /* 20px */
+  --font-size-2xl: 1.5rem; /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
+  --font-size-4xl: 2.25rem; /* 36px */
+
   /* Component Titles - Hierarchical System */
-  --title-font-size-h1: 2.2rem;       /* Cấp cao nhất: HeaderCard, Page titles */
-  --title-font-size-h2: 1.7rem;       /* Cấp trung: Section titles, Component lớn */
-  --title-font-size-h3: 1.4rem;       /* Cấp thấp nhất: Component nhỏ, Card titles */
-  --title-font-size-h4: 1.2rem;       /* Dự phòng: Sub-component titles */
-  
+  --title-font-size-h1: 2.2rem; /* Cấp cao nhất: HeaderCard, Page titles */
+  --title-font-size-h2: 1.7rem; /* Cấp trung: Section titles, Component lớn */
+  --title-font-size-h3: 1.4rem; /* Cấp thấp nhất: Component nhỏ, Card titles */
+  --title-font-size-h4: 1.2rem; /* Dự phòng: Sub-component titles */
+
   /* Spacing Scale */
-  --spacing-xs: 0.5rem;          /* 8px */
-  --spacing-sm: 0.75rem;         /* 12px */
-  --spacing-base: 1rem;          /* 16px */
-  --spacing-lg: 1.5rem;          /* 24px */
-  --spacing-xl: 2rem;            /* 32px */
-  --spacing-2xl: 2.5rem;         /* 40px */
-  --spacing-3xl: 3rem;           /* 48px */
-  
+  --spacing-xs: 0.5rem; /* 8px */
+  --spacing-sm: 0.75rem; /* 12px */
+  --spacing-base: 1rem; /* 16px */
+  --spacing-lg: 1.5rem; /* 24px */
+  --spacing-xl: 2rem; /* 32px */
+  --spacing-2xl: 2.5rem; /* 40px */
+  --spacing-3xl: 3rem; /* 48px */
+
   /* Component Spacing */
-  --component-gap: 1.5rem;            /* Standard gap between components */
-  --component-gap-lg: 2rem;           /* Large gap */
-  --component-margin-bottom: 2rem;    /* Standard margin bottom */
-  --component-padding: 1.5rem 2rem;   /* Standard padding */
-  
+  --component-gap: 1.5rem; /* Standard gap between components */
+  --component-gap-lg: 2rem; /* Large gap */
+  --component-margin-bottom: 2rem; /* Standard margin bottom */
+  --component-padding: 1.5rem 2rem; /* Standard padding */
+
+  /* Page Layout Standards */
+  --page-background: #f8fafc; /* Unified page background */
+  --page-padding: 80px; /* Standard page padding - tăng từ 24px lên 80px */
+  --page-content-max-width: none; /* Không giới hạn max-width - để content phủ rộng */
+  --page-gap: 24px; /* Standard gap between page sections */
+
   /* Component Heights */
   --header-card-min-height: 100px;
   --stats-card-min-height: 130px;
   --button-height: 40px;
-  
+
   /* Border Radius */
   --border-radius-sm: 8px;
   --border-radius-base: 12px;
   --border-radius-lg: 16px;
   --border-radius-xl: 18px;
-  
+
   /* Font Weights */
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  
+
   /* Colors */
   --color-primary: #3f51b5;
   --color-primary-hover: #3949ab;
@@ -62,19 +68,19 @@
   --color-gray-50: #f9fafb;
   --color-gray-300: #d1d5db;
   --color-gray-400: #9ca3af;
-  
+
   /* Accent Colors - For secondary actions */
   --color-accent-primary: #3b82f6;
   --color-accent-secondary: #1d4ed8;
   --color-accent-hover-primary: #2563eb;
   --color-accent-hover-secondary: #1e40af;
-  
+
   /* Success Colors - For positive actions */
   --color-success-primary: #22c55e;
   --color-success-secondary: #16a34a;
   --color-success-hover-primary: #16a34a;
   --color-success-hover-secondary: #15803d;
-  
+
   /* Shadows */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
   --shadow-base: 0 2px 12px rgba(80, 80, 120, 0.07);
@@ -174,7 +180,7 @@
 }
 
 .title-with-divider::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -231,6 +237,7 @@
     --component-gap: 1.2rem;
     --component-margin-bottom: 1.5rem;
     --component-padding: 1rem 1.5rem;
+    --page-padding: 40px; /* Giảm padding trên tablet */
   }
 }
 
@@ -243,5 +250,6 @@
     --component-gap: 1rem;
     --component-margin-bottom: 1rem;
     --component-padding: 1rem;
+    --page-padding: 16px; /* Giảm padding trên mobile */
   }
 }

@@ -3,31 +3,23 @@
 /* src/styles/GoalsPage.module.css - Updated for ExtendedHeaderCard */
 
 .pageWrapper {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 24px;
+  width: 100%;
+  padding: var(--page-gap) 0; /* Chỉ có padding top/bottom */
+  background-color: var(--page-background);
+  min-height: calc(100vh - 140px);
+}
+
+.contentContainer {
+  width: 100%;
+  padding: 0 var(--page-padding);
+  display: flex;
+  flex-direction: column;
+  gap: var(--page-gap);
 }
 
 /* Remove old header styles since we use ExtendedHeaderCard now */
 
-.addButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background-color: #4f46e5;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.addButton:hover {
-  background-color: #4338ca;
-}
+/* XÓA .addButton vì đã dùng Button chuẩn */
 
 .addIcon {
   font-size: 0.8rem;
@@ -50,3 +42,5 @@
 .error {
   color: #dc3545;
 }
+
+/* Responsive design - global variables handle padding */

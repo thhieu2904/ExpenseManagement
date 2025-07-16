@@ -16,7 +16,7 @@ import { getIconObject } from "../../utils/iconMap";
 // Default colors that can be overridden
 const DEFAULT_COLORS = [
   "#0088FE",
-  "#00C49F", 
+  "#00C49F",
   "#FFBB28",
   "#FF8042",
   "#AF19FF",
@@ -34,38 +34,38 @@ const formatCurrency = (value) =>
 
 // Smart text truncation function
 const truncateText = (text, maxLength = 30) => {
-  if (!text) return '';
-  
+  if (!text) return "";
+
   // If text is already short enough, return as is
   if (text.length <= maxLength) return text;
-  
+
   // Try to break at word boundaries
-  const words = text.split(' ');
-  let result = '';
-  
+  const words = text.split(" ");
+  let result = "";
+
   for (let i = 0; i < words.length; i++) {
-    const wordToAdd = i === 0 ? words[i] : ' ' + words[i];
-    
+    const wordToAdd = i === 0 ? words[i] : " " + words[i];
+
     if ((result + wordToAdd).length <= maxLength) {
       result += wordToAdd;
     } else {
       // If we can't fit this word, add ellipsis if we have something
       if (result.length > 0) {
-        return result + '...';
+        return result + "...";
       } else {
         // If even the first word is too long, truncate it
-        return words[0].substring(0, maxLength - 3) + '...';
+        return words[0].substring(0, maxLength - 3) + "...";
       }
     }
   }
-  
+
   // If we've processed all words and they fit, return the result
   return result;
 };
 
 /**
  * Base Pie Chart Component - Highly Customizable and Reusable
- * 
+ *
  * @param {Object} props
  * @param {string} props.title - Chart title (optional)
  * @param {Array} props.data - Array of data objects with {id, name, value, icon?, color?}
@@ -141,8 +141,10 @@ const BasePieChart = ({
   // Process data to ensure colors are assigned
   const processedData = useMemo(() => {
     if (!data || data.length === 0) return [];
+
     return data.map((item, index) => ({
       ...item,
+      id: item.id || item._id || `category-${index}`, // Ensure every item has an ID
       color: item.color || colors[index % colors.length],
     }));
   }, [data, colors]);
@@ -150,8 +152,8 @@ const BasePieChart = ({
   // Calculate active index from prop
   const activeIndex = useMemo(
     () =>
-      activeCategoryId 
-        ? processedData.findIndex((d) => (d.id || d._id) === activeCategoryId) 
+      activeCategoryId
+        ? processedData.findIndex((d) => (d.id || d._id) === activeCategoryId)
         : -1,
     [processedData, activeCategoryId]
   );
@@ -167,12 +169,14 @@ const BasePieChart = ({
     index,
   }) => {
     const isActive = index === activeIndex;
-    
+
     // Don't show label for very small slices unless it's active
     if (!isActive && percent < 0.02) return null;
 
     // Style based on active state
-    const currentLabelRadius = isActive ? outerRadius + activeLabelRadius : outerRadius + labelRadius;
+    const currentLabelRadius = isActive
+      ? outerRadius + activeLabelRadius
+      : outerRadius + labelRadius;
     const currentStrokeWidth = isActive ? activeStrokeWidth : strokeWidth;
     const currentFontSize = isActive ? activeFontSize : fontSize;
     const currentFontWeight = isActive ? activeFontWeight : fontWeight;
@@ -180,7 +184,7 @@ const BasePieChart = ({
     const RADIAN = Math.PI / 180;
     const x = cx + currentLabelRadius * Math.cos(-midAngle * RADIAN);
     const y = cy + currentLabelRadius * Math.sin(-midAngle * RADIAN);
-    
+
     const iconSize = 20;
     const textOffset = 5;
     const isLeft = x < cx;
@@ -196,7 +200,7 @@ const BasePieChart = ({
           fill="none"
           strokeWidth={currentStrokeWidth}
         />
-        
+
         {/* Icon */}
         {payload.icon && (
           <foreignObject
@@ -211,7 +215,7 @@ const BasePieChart = ({
             />
           </foreignObject>
         )}
-        
+
         {/* Percentage text */}
         <text
           x={isLeft ? x - iconSize - textOffset : x + iconSize + textOffset}
@@ -228,15 +232,8 @@ const BasePieChart = ({
 
   // Default active shape renderer
   const defaultRenderActiveShape = (props) => {
-    const {
-      cx,
-      cy,
-      innerRadius,
-      outerRadius,
-      startAngle,
-      endAngle,
-      fill,
-    } = props;
+    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } =
+      props;
 
     return (
       <g>
@@ -295,7 +292,10 @@ const BasePieChart = ({
   // Handle center click to deselect
   const handleCenterClick = (e) => {
     // Only handle click if it's on the center label itself, not on the chart
-    if (e.target.closest(`.${styles.centerLabel}`) || e.target.closest(`.${styles.centerLabelActive}`)) {
+    if (
+      e.target.closest(`.${styles.centerLabel}`) ||
+      e.target.closest(`.${styles.centerLabelActive}`)
+    ) {
       if (activeIndex !== -1) {
         // Deselect current slice
         if (onSliceClick) {
@@ -326,7 +326,7 @@ const BasePieChart = ({
 
   // Choose label renderer
   const labelRenderer = renderCustomLabel || defaultRenderLabel;
-  
+
   // Choose tooltip renderer
   const tooltipRenderer = renderCustomTooltip || defaultRenderTooltip;
 
@@ -338,7 +338,7 @@ const BasePieChart = ({
           <h3>{title}</h3>
         </div>
       )}
-      
+
       <div className={styles.chartContainer}>
         <div style={{ position: "relative", width: "100%", height }}>
           {/* Center label when no slice is selected */}
@@ -348,23 +348,25 @@ const BasePieChart = ({
               <strong>{formatCurrency(total)}</strong>
             </div>
           )}
-          
+
           {/* Center label when a slice is selected */}
-          {showCenterLabel && activeIndex !== -1 && processedData[activeIndex] && (
-            <div 
-              className={styles.centerLabelActive} 
-              onClick={handleCenterLabelClick}
-              title="Click để xem tổng quan"
-            >
-              <span className={styles.categoryName}>
-                {truncateText(processedData[activeIndex].name, 35)}
-              </span>
-              <span className={styles.categoryAmount}>
-                {formatCurrency(processedData[activeIndex].value)}
-              </span>
-            </div>
-          )}
-          
+          {showCenterLabel &&
+            activeIndex !== -1 &&
+            processedData[activeIndex] && (
+              <div
+                className={styles.centerLabelActive}
+                onClick={handleCenterLabelClick}
+                title="Click để xem tổng quan"
+              >
+                <span className={styles.categoryName}>
+                  {truncateText(processedData[activeIndex].name, 35)}
+                </span>
+                <span className={styles.categoryAmount}>
+                  {formatCurrency(processedData[activeIndex].value)}
+                </span>
+              </div>
+            )}
+
           <ResponsiveContainer>
             <PieChart>
               <Pie
@@ -379,17 +381,25 @@ const BasePieChart = ({
                 onClick={handlePieClick}
                 isAnimationActive={true}
                 activeIndex={activeIndex}
-                activeShape={showActiveShape ? (renderCustomActiveShape || defaultRenderActiveShape) : null}
-                label={showLabels ? (props) => {
-                  const isActive = props.index === activeIndex;
-                  
-                  // If there's an active slice and this isn't it, don't show label
-                  if (activeIndex !== -1 && !isActive) {
-                    return null;
-                  }
-                  
-                  return labelRenderer({ ...props, isActive });
-                } : false}
+                activeShape={
+                  showActiveShape
+                    ? renderCustomActiveShape || defaultRenderActiveShape
+                    : null
+                }
+                label={
+                  showLabels
+                    ? (props) => {
+                        const isActive = props.index === activeIndex;
+
+                        // If there's an active slice and this isn't it, don't show label
+                        if (activeIndex !== -1 && !isActive) {
+                          return null;
+                        }
+
+                        return labelRenderer({ ...props, isActive });
+                      }
+                    : false
+                }
                 labelLine={false}
               >
                 {processedData.map((entry, index) => (
@@ -400,17 +410,17 @@ const BasePieChart = ({
                   />
                 ))}
               </Pie>
-              
+
               {showTooltip && <Tooltip content={tooltipRenderer} />}
             </PieChart>
           </ResponsiveContainer>
         </div>
-        
+
         {/* Details Link - positioned at bottom right corner */}
         {detailsLink && (
           <div className={styles.detailsLink}>
-            <Link 
-              to={detailsLink.url} 
+            <Link
+              to={detailsLink.url}
               title={detailsLink.title}
               className={styles.detailsLinkButton}
             >

@@ -1,80 +1,169 @@
 .container {
-    display: flex;
-    gap: 40px;
-    align-items: center;
-  }
-  .avatarSection {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    flex-shrink: 0;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Giảm gap từ 24px xuống 20px */
+  height: 100%;
+  min-height: 350px;
+}
+
+.avatarSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px; /* Giảm gap từ 16px xuống 12px */
+  padding-bottom: 16px; /* Giảm padding từ 20px xuống 16px */
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #e5e7eb;
+  transition: border-color 0.2s;
+}
+
+.avatar:hover {
+  border-color: #3f51b5;
+}
+
+.changeAvatarBtn {
+  background-color: #f8fafc;
+  border: 1.5px solid #e5e7eb;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #374151;
+  transition: all 0.2s;
+}
+
+.changeAvatarBtn:hover {
+  background-color: #3f51b5;
+  border-color: #3f51b5;
+  color: white;
+}
+.formSection {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Giảm gap từ 16px xuống 12px */
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* Giảm gap từ 8px xuống 6px */
+}
+
+.formGroup label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.formGroup input {
+  padding: 12px 16px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.formGroup input:focus {
+  outline: none;
+  border-color: #3f51b5;
+  box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.1);
+}
+
+.formGroup input:disabled {
+  background-color: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.saveButton {
+  background-color: #3f51b5;
+  color: white;
+  border: none;
+  padding: 10px 20px; /* Giảm padding từ 12px 24px */
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem; /* Giảm font-size từ 1rem */
+  font-weight: 500;
+  margin-top: 16px; /* Thay đổi từ auto thành giá trị cố định */
+  align-self: flex-start;
+  width: auto;
+  min-width: 120px; /* Giảm min-width từ 140px */
+  transition: background-color 0.2s;
+}
+
+.saveButton:hover:not(:disabled) {
+  background-color: #3949ab;
+}
+
+.saveButton:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.success {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.error {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.inputWithIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputWithIcon input {
+  flex-grow: 1;
+  padding-right: 40px;
+}
+
+.editIcon {
+  position: absolute;
+  right: 12px;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: color 0.2s;
+}
+
+.editIcon:hover {
+  color: #3f51b5;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
   .avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid #eef2f7;
+    width: 60px;
+    height: 60px;
   }
+
   .changeAvatarBtn {
-    background-color: #f0f0f0;
-    border: 1px solid #ddd;
-    padding: 8px 15px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
+    font-size: 0.75rem;
+    padding: 6px 12px;
   }
-  .formSection {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  .formGroup {
-    margin-bottom: 20px;
-  }
-  .formGroup label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #333;
-  }
-  .formGroup input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-  }
-  .formGroup input:disabled {
-    background-color: #f5f5f5;
-    cursor: not-allowed;
-  }
-  .saveButton {
-    background-color: #4f46e5;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    align-self: flex-end;
-  }
-  .message { padding: 10px; border-radius: 5px; margin-bottom: 15px; }
-  .success { background-color: #d4edda; color: #155724; }
-  .error { background-color: #f8d7da; color: #721c24; }
-  .inputWithIcon {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .editIcon {
-    color: #888;
-    cursor: pointer;
-    font-size: 1.1rem;
-    margin-left: 4px;
-    transition: color 0.2s;
-  }
-  .editIcon:hover {
-    color: #1a4fa3;
-  }
+}

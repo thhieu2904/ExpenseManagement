@@ -1,3 +1,14 @@
+/* --- 0. Card Wrapper cho lịch --- */
+.calendarCard {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.08),
+    0 1.5px 4px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
+  padding: 32px 24px;
+  margin-bottom: 24px;
+}
 /* Mở và THAY THẾ TOÀN BỘ file: TransactionCalendar.module.css */
 
 /* --- 1. Layout chính sử dụng CSS Grid --- */
@@ -12,6 +23,13 @@
 .gridSection {
   display: flex;
   flex-direction: column;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
+  padding: 16px;
 }
 
 /* --- 2. Lưới Lịch (Cột Trái) --- */
@@ -32,8 +50,9 @@
 
 .dayCell {
   position: relative; /* Cần thiết cho tooltip */
-  border: 1px solid #f3f4f6; /* Viền rất nhạt */
-  min-height: 110px;
+  border: 1px solid #d1d5db; /* Viền đậm hơn */
+  min-height: 80px; /* Chiều cao cố định 80px */
+  height: 80px; /* Đảm bảo chiều cao bằng nhau */
   padding: 8px;
   transition: background-color 0.2s ease;
   display: flex;
@@ -43,6 +62,17 @@
 .dayCell:hover {
   background-color: #f9fafb;
   z-index: 10; /* Đưa ô đang hover lên trên để tooltip không bị che */
+}
+
+/* Highlight styles chỉ cho week */
+.highlightWeek {
+  border: 2px solid #3f51b5 !important;
+  background-color: rgba(63, 81, 181, 0.08);
+  box-shadow: 0 0 0 1px rgba(63, 81, 181, 0.2);
+}
+
+.highlightWeek:hover {
+  background-color: rgba(63, 81, 181, 0.12);
 }
 
 .dayNumber {
@@ -79,7 +109,10 @@
   z-index: 20;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s, visibility 0.2s, transform 0.2s;
+  transition:
+    opacity 0.2s,
+    visibility 0.2s,
+    transform 0.2s;
   pointer-events: none; /* Không cho tooltip cản trở việc click */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -95,6 +128,13 @@
   display: flex;
   flex-direction: column; /* Xếp các item theo chiều dọc */
   gap: 16px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
+  padding: 16px;
 }
 
 .summaryItem {
@@ -162,6 +202,7 @@
 
 @media (max-width: 600px) {
   .dayCell {
-    min-height: 90px; /* Giảm chiều cao ô trên mobile */
+    min-height: 80px; /* Giữ chiều cao 80px trên mobile */
+    height: 80px; /* Đảm bảo chiều cao bằng nhau trên mobile */
   }
 }
