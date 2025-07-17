@@ -1,15 +1,25 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faUser,
+  faShieldAlt,
+  faUserCog,
+  faLock,
+  faHistory,
+} from "@fortawesome/free-solid-svg-icons";
 
 // Components
 import Header from "../components/Header/Header";
 import Navbar from "../components/Navbar/Navbar";
 import Footer from "../components/Footer/Footer";
 import HeaderCard from "../components/Common/HeaderCard";
+import PageContentContainer from "../components/Common/PageContentContainer";
+import ProfileStatsWidget from "../components/Common/ProfileStatsWidget";
+import TabFilter from "../components/Common/TabFilter";
 import ProfileInfo from "../components/Profile/ProfileInfo";
 import SecuritySettings from "../components/Profile/SecuritySettings";
 import ConfirmDialog from "../components/Common/ConfirmDialog";
-import PageContentContainer from "../components/Common/PageContentContainer";
 
 // API Services
 import {
@@ -21,27 +31,16 @@ import {
   deleteAccount as deleteAccountApi,
 } from "../api/profileService";
 import { getAccounts, addAccount } from "../api/accountsService";
-import { getTransactions } from "../api/transactionsService";
+import { getTransactions } from "../api/transactionsService"; // Chỉ cần getTransactions
 import { getCategories, addCategory } from "../api/categoriesService";
 import { getGoals, createGoal } from "../api/goalService";
-import axiosInstance from "../api/axiosConfig";
+import axiosInstance from "../api/axiosConfig"; // Import axiosInstance để tạo transaction
 
-// Utils & Icons
+// Utils
 import { getGreeting, getFullDate } from "../utils/timeHelpers";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faUser,
-  faShield,
-  faUserCircle,
-  faCog,
-  faDatabase,
-  faSignOutAlt,
-} from "@fortawesome/free-solid-svg-icons";
-import Button from "../components/Common/Button";
 
 // Styles
 import styles from "../styles/ProfilePage.module.css";
-import headerStyles from "../components/Common/HeaderCard.module.css";
 
 const clearUserData = async () => {
   await axiosInstance.delete("/accounts/all");
@@ -90,13 +89,6 @@ const ProfilePage = () => {
   const [isImporting, setIsImporting] = useState(false);
   const fileImportRef = useRef(null);
 
-  // Profile stats for header
-  const profileStats = {
-    accountsCount: 0,
-    transactionsCount: 0,
-    lastLogin: null,
-  };
-
   // --- DATA FETCHING ---
   const fetchProfileData = async () => {
     try {
@@ -120,29 +112,6 @@ const ProfilePage = () => {
   useEffect(() => {
     fetchProfileData();
   }, []);
-
-  // Fetch additional stats for header
-  useEffect(() => {
-    const fetchHeaderStats = async () => {
-      try {
-        const [accountsRes, transactionsRes] = await Promise.all([
-          getAccounts({}),
-          getTransactions(1, 100, {}),
-        ]);
-        profileStats.accountsCount = accountsRes?.length || 0;
-        profileStats.transactionsCount = transactionsRes?.data?.total || 0;
-        if (loginHistory.length > 0) {
-          profileStats.lastLogin = loginHistory[0]?.loginTime;
-        }
-      } catch (error) {
-        console.error("Lỗi tải thống kê header:", error);
-      }
-    };
-
-    if (user.username) {
-      fetchHeaderStats();
-    }
-  }, [user.username, loginHistory]);
 
   // --- PROFILE INFO HANDLERS ---
   const handleUpdateProfile = async (e) => {
@@ -232,7 +201,7 @@ const ProfilePage = () => {
       await deleteAccountApi();
       alert("Tài khoản của bạn đã được xóa.");
       handleLogout();
-    } catch (error) {
+    } catch {
       alert("Không thể xóa tài khoản. Vui lòng thử lại.");
     }
   };
@@ -299,7 +268,7 @@ const ProfilePage = () => {
         const json = JSON.parse(event.target.result);
         setImportedData(json);
         alert("Đã đọc dữ liệu từ file. Nhấn nút 'Thực hiện nhập' để tiếp tục.");
-      } catch (err) {
+      } catch {
         alert("File không hợp lệ hoặc không phải định dạng JSON!");
       }
     };
@@ -337,7 +306,7 @@ const ProfilePage = () => {
       if (Array.isArray(importedData.categories)) {
         for (const cat of importedData.categories) {
           const oldCatId = cat._id || cat.id;
-          const { _id, id, userId, ...catData } = cat;
+          const { _id, id: _id2, userId: _userId, ...catData } = cat;
           try {
             const response = await addCategory(catData);
             const newCat = response.data || response; // Xử lý cả hai trường hợp
@@ -355,7 +324,7 @@ const ProfilePage = () => {
       if (Array.isArray(importedData.accounts)) {
         for (const acc of importedData.accounts) {
           const oldAccId = acc._id || acc.id;
-          const { _id, id, userId, ...accData } = acc;
+          const { _id, id: _id2, userId: _userId, ...accData } = acc;
           try {
             const response = await addAccount(accData);
             console.log("Account API response:", response); // Debug log
@@ -373,7 +342,7 @@ const ProfilePage = () => {
       if (Array.isArray(importedData.goals)) {
         for (const goal of importedData.goals) {
           const oldGoalId = goal._id || goal.id;
-          const { _id, id, user, ...goalData } = goal;
+          const { _id, id: _id2, user: _user, ...goalData } = goal;
           try {
             const response = await createGoal(goalData);
             console.log("Goal API response:", response); // Debug log
@@ -488,233 +457,318 @@ const ProfilePage = () => {
     }
   };
 
-  // Smart context for header
-  const getProfileSmartContext = () => {
-    if (!user.username) return "Đang tải thông tin người dùng...";
-
-    if (activeTab === "security") {
-      const recentLogins = loginHistory.slice(0, 3).length;
-      return `Bảo mật tài khoản với ${recentLogins} lần đăng nhập gần đây.`;
+  // Helper functions cho header
+  const getSmartContext = () => {
+    if (activeTab === "info") {
+      return "Quản lý thông tin cá nhân và cài đặt tài khoản";
+    } else {
+      return "Cấu hình bảo mật và theo dõi hoạt động đăng nhập";
     }
-
-    return `Quản lý hồ sơ cá nhân và ${profileStats.accountsCount} tài khoản tài chính.`;
   };
 
-  const getProfileMoodEmoji = () => {
-    if (!user.username) return "👤";
-    if (activeTab === "security") return "🔒";
-    return "👨‍💼";
+  const getMoodEmoji = () => {
+    const emojis =
+      activeTab === "info" ? ["👤", "✏️", "⚙️"] : ["🔒", "🛡️", "🔐"];
+    return emojis[Math.floor(Math.random() * emojis.length)];
   };
 
-  // Profile stats widget component
-  const ProfileStatsWidget = () => (
-    <div className={styles.profileStats}>
-      <div className={styles.statItem}>
-        <span className={styles.statNumber}>{profileStats.accountsCount}</span>
-        <span className={styles.statLabel}>Tài khoản</span>
-      </div>
-      <div className={styles.statDivider}></div>
-      <div className={styles.statItem}>
-        <span className={styles.statNumber}>
-          {profileStats.transactionsCount}
-        </span>
-        <span className={styles.statLabel}>Giao dịch</span>
-      </div>
-    </div>
-  );
-
-  // Tab control component
-  const TabControls = () => (
-    <div className={styles.tabControls}>
-      <Button
-        variant={activeTab === "info" ? "primary" : "secondary"}
-        onClick={() => setActiveTab("info")}
-        icon={<FontAwesomeIcon icon={faUser} />}
-        className={styles.tabButton}
-      >
-        Thông tin
-      </Button>
-      <Button
-        variant={activeTab === "security" ? "primary" : "secondary"}
-        onClick={() => setActiveTab("security")}
-        icon={<FontAwesomeIcon icon={faShield} />}
-        className={styles.tabButton}
-      >
-        Bảo mật
-      </Button>
-    </div>
-  );
+  // Tabs configuration
+  const tabs = [
+    {
+      key: "info",
+      label: "Thông tin tài khoản",
+      icon: <FontAwesomeIcon icon={faUser} />,
+    },
+    {
+      key: "security",
+      label: "Bảo mật",
+      icon: <FontAwesomeIcon icon={faShieldAlt} />,
+    },
+  ];
 
   return (
-    <div className={styles.pageContainer}>
-      <Header />
+    <div
+      style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+    >
+      <Header userName={user?.fullname} userAvatar={user?.avatar} />
       <Navbar />
 
-      {/* New HeaderCard replacing ProfilePageHeader */}
-      <HeaderCard
-        className={styles.profilePageHeader}
-        gridIcon={<FontAwesomeIcon icon={faUserCircle} />}
-        gridTitle={`${getGreeting()}, ${user.fullname || "Bạn"}!`}
-        gridSubtitle="Quản lý hồ sơ và bảo mật tài khoản"
-        gridStats={<ProfileStatsWidget />}
-        gridInfo={
-          <>
-            <div className="smartContext">
-              <span className="contextText">{getProfileSmartContext()}</span>
-              <span className={headerStyles.moodEmoji}>
-                {getProfileMoodEmoji()}
-              </span>
-            </div>
-            <span className={headerStyles.miniStats}>{getFullDate()}</span>
-          </>
-        }
-        gridAction={<TabControls />}
-      />
+      <main className={styles.pageWrapper}>
+        {/* Header Card */}
+        <HeaderCard
+          className={styles.profilePageHeader}
+          gridIcon={<FontAwesomeIcon icon={faUserCog} />}
+          gridTitle={`${getGreeting()}, ${user?.fullname || "Bạn"}!`}
+          gridSubtitle="Quản lý thông tin cá nhân"
+          gridStats={
+            <ProfileStatsWidget
+              user={user}
+              activeTab={activeTab}
+              isLoading={!user.username}
+            />
+          }
+          gridInfo={
+            <>
+              <div className="smartContext">
+                <span className="contextText">{getSmartContext()}</span>
+                <span className="moodEmoji">{getMoodEmoji()}</span>
+              </div>
+              <span className="miniStats">{getFullDate()}</span>
+            </>
+          }
+        />
 
-      <PageContentContainer
-        title={activeTab === "info" ? "Thông tin cá nhân" : "Cài đặt bảo mật"}
-        titleIcon={activeTab === "info" ? faUser : faShield}
-        titleIconColor="#3f51b5"
-        className={styles.mainContent}
-        showDateFilter={false}
-        headerExtra={
-          activeTab === "info" && (
-            <div className={styles.profileActions}>
-              <Button
-                variant="outline"
-                icon={<FontAwesomeIcon icon={faDatabase} />}
-                onClick={handleExportData}
-                className={styles.actionButton}
-              >
-                Xuất dữ liệu
-              </Button>
-              <Button
-                variant="outline"
-                icon={<FontAwesomeIcon icon={faSignOutAlt} />}
-                onClick={handleLogout}
-                className={styles.logoutButton}
-              >
-                Đăng xuất
-              </Button>
-            </div>
-          )
-        }
-      >
-        {activeTab === "info" && (
-          <div className={styles.infoSettingsGrid}>
-            <div className={styles.infoCardWrapper}>
-              <ProfileInfo
-                user={user}
-                fullname={fullname}
-                setFullname={setFullname}
-                message={profileMessage}
-                isSubmitting={isProfileSubmitting}
-                handleUpdateProfile={handleUpdateProfile}
-                handleAvatarChange={handleAvatarChange}
-                fileInputRef={fileInputRef}
-                email={email}
-                setEmail={setEmail}
-              />
-            </div>
-            <div className={styles.settingsCard}>
-              <div className={styles.settingsCardTitle}>
-                <FontAwesomeIcon icon={faCog} className={styles.settingsIcon} />
-                Cài đặt ứng dụng
-              </div>
-              <div className={styles.settingsItem}>
-                Chế độ tối (Dark Mode)
-                <label className={styles.toggleSwitch}>
-                  <input
-                    type="checkbox"
-                    className={styles.toggleInput}
-                    checked={darkMode}
-                    onChange={() => setDarkMode((v) => !v)}
-                  />
-                  <span className={styles.toggleSlider}></span>
-                </label>
-              </div>
-              <div className={styles.settingsItem}>
-                Nhắc nhở chi tiêu
-                <label className={styles.toggleSwitch}>
-                  <input
-                    type="checkbox"
-                    className={styles.toggleInput}
-                    checked={reminder}
-                    onChange={() => setReminder((v) => !v)}
-                  />
-                  <span className={styles.toggleSlider}></span>
-                </label>
+        {/* Main Content */}
+        <PageContentContainer
+          title="Quản Lý Tài Khoản"
+          titleIcon={activeTab === "info" ? faUser : faLock}
+          titleIconColor="#3f51b5"
+          showDateFilter={false}
+          headerExtra={
+            <TabFilter
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              tabs={tabs}
+            />
+          }
+        >
+          {activeTab === "info" ? (
+            <div className={styles.contentGrid}>
+              <div className={styles.profileCard}>
+                <h3 className={styles.cardTitle}>
+                  <FontAwesomeIcon icon={faUser} /> Thông tin cá nhân
+                </h3>
+                <ProfileInfo
+                  user={user}
+                  fullname={fullname}
+                  setFullname={setFullname}
+                  message={profileMessage}
+                  isSubmitting={isProfileSubmitting}
+                  handleUpdateProfile={handleUpdateProfile}
+                  handleAvatarChange={handleAvatarChange}
+                  fileInputRef={fileInputRef}
+                  email={email}
+                  setEmail={setEmail}
+                />
               </div>
 
-              {/* Enhanced Import/Export Section */}
-              <div className={styles.dataManagementSection}>
-                <h4 className={styles.sectionTitle}>
-                  <FontAwesomeIcon icon={faDatabase} />
-                  Quản lý dữ liệu
-                </h4>
-                <div className={styles.dataActions}>
-                  <Button
-                    variant="outline"
-                    onClick={handleExportData}
-                    className={styles.dataButton}
-                    icon={<FontAwesomeIcon icon={faDatabase} />}
-                  >
-                    Xuất dữ liệu
-                  </Button>
-                  <input
-                    type="file"
-                    accept="application/json"
-                    style={{ display: "none" }}
-                    ref={fileImportRef}
-                    onChange={handleImportFileChange}
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={() => fileImportRef.current?.click()}
-                    className={styles.dataButton}
-                    disabled={isImporting}
-                  >
-                    Chọn file nhập
-                  </Button>
-                </div>
-                {importedData && (
-                  <div className={styles.importPreview}>
-                    <p className={styles.previewText}>
-                      Đã chọn file:{" "}
-                      <strong>{fileImportRef.current?.files[0]?.name}</strong>
-                    </p>
-                    <Button
-                      variant="primary"
-                      onClick={handleImportData}
-                      disabled={isImporting}
-                      className={styles.importButton}
-                      loading={isImporting}
-                    >
-                      {isImporting ? "Đang xử lý..." : "Bắt đầu nhập dữ liệu"}
-                    </Button>
+              <div className={styles.settingsCard}>
+                <h3 className={styles.cardTitle}>
+                  <FontAwesomeIcon icon={faUserCog} /> Cài đặt
+                </h3>
+                <div className={styles.settingsContent}>
+                  <div className={styles.settingsItem}>
+                    Chế độ tối (Dark Mode)
+                    <label className={styles.toggleSwitch}>
+                      <input
+                        type="checkbox"
+                        className={styles.toggleInput}
+                        checked={darkMode}
+                        onChange={() => setDarkMode((v) => !v)}
+                      />
+                      <span className={styles.toggleSlider}></span>
+                    </label>
                   </div>
-                )}
+                  <div className={styles.settingsItem}>
+                    Nhắc nhở chi tiêu
+                    <label className={styles.toggleSwitch}>
+                      <input
+                        type="checkbox"
+                        className={styles.toggleInput}
+                        checked={reminder}
+                        onChange={() => setReminder((v) => !v)}
+                      />
+                      <span className={styles.toggleSlider}></span>
+                    </label>
+                  </div>
+                  <div
+                    className={styles.settingsItem}
+                    style={{
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    <span>Xuất/nhập dữ liệu</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 12,
+                        marginTop: "10px",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <button
+                        className={styles.exportBtn}
+                        onClick={handleExportData}
+                      >
+                        Xuất Dữ Liệu (.json)
+                      </button>
+                      <input
+                        type="file"
+                        accept="application/json"
+                        style={{ display: "none" }}
+                        ref={fileImportRef}
+                        onChange={handleImportFileChange}
+                      />
+                      <button
+                        className={styles.exportBtn}
+                        style={{ background: "#1a4fa3" }}
+                        onClick={() => fileImportRef.current?.click()}
+                      >
+                        Chọn File Để Nhập
+                      </button>
+                    </div>
+                    {importedData && (
+                      <div style={{ marginTop: "15px", width: "100%" }}>
+                        <p style={{ fontSize: "0.9rem", color: "#333" }}>
+                          Đã chọn file:{" "}
+                          <strong>
+                            {fileImportRef.current?.files[0]?.name}
+                          </strong>
+                          . Sẵn sàng để nhập.
+                        </p>
+                        <button
+                          className={styles.exportBtn}
+                          style={{ background: "#22c55e", width: "100%" }}
+                          onClick={handleImportData}
+                          disabled={isImporting}
+                        >
+                          {isImporting
+                            ? "Đang xử lý..."
+                            : "Bắt đầu Nhập Dữ Liệu"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <div
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      marginTop: "auto",
+                    }}
+                  >
+                    <button className={styles.logoutBtn} onClick={handleLogout}>
+                      Đăng xuất
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className={styles.contentGrid}>
+              <div className={styles.profileCard}>
+                <h3 className={styles.cardTitle}>
+                  <FontAwesomeIcon icon={faLock} /> Đổi mật khẩu
+                </h3>
+                <form
+                  onSubmit={handlePasswordSubmit}
+                  className={styles.passwordForm}
+                >
+                  {securityMessage.text && (
+                    <div
+                      className={`${styles.message} ${styles[securityMessage.type]}`}
+                    >
+                      {securityMessage.text}
+                    </div>
+                  )}
+                  <div className={styles.formGroup}>
+                    <label>Mật khẩu cũ</label>
+                    <input
+                      type="password"
+                      name="oldPassword"
+                      value={passwords.oldPassword}
+                      onChange={handlePasswordChange}
+                      required
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Mật khẩu mới</label>
+                    <input
+                      type="password"
+                      name="newPassword"
+                      value={passwords.newPassword}
+                      onChange={handlePasswordChange}
+                      required
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Xác nhận mật khẩu mới</label>
+                    <input
+                      type="password"
+                      name="confirmPassword"
+                      value={passwords.confirmPassword}
+                      onChange={handlePasswordChange}
+                      required
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSecuritySubmitting}
+                    className={styles.saveButton}
+                  >
+                    {isSecuritySubmitting ? "Đang lưu..." : "Lưu mật khẩu"}
+                  </button>
+                </form>
+              </div>
 
-        {activeTab === "security" && (
-          <SecuritySettings
-            passwords={passwords}
-            setPasswords={setPasswords}
-            message={securityMessage}
-            isSubmitting={isSecuritySubmitting}
-            loginHistory={loginHistory}
-            isConfirmOpen={isConfirmOpen}
-            setIsConfirmOpen={setIsConfirmOpen}
-            handlePasswordSubmit={handlePasswordSubmit}
-            handleChange={handlePasswordChange}
-            handleDeleteAccount={handleDeleteAccount}
-          />
-        )}
-      </PageContentContainer>
+              <div className={styles.profileCard}>
+                <h3 className={styles.cardTitle}>
+                  <FontAwesomeIcon icon={faHistory} /> Lịch sử đăng nhập
+                </h3>
+                <div className={styles.historyContainer}>
+                  {loginHistory.length === 0 ? (
+                    <p className={styles.noData}>Chưa có dữ liệu đăng nhập.</p>
+                  ) : (
+                    <ul className={styles.historyList}>
+                      {loginHistory.map((entry) => (
+                        <li key={entry._id} className={styles.historyItem}>
+                          <div className={styles.historyInfo}>
+                            <strong>
+                              {entry.userAgent.substring(0, 40)}...
+                            </strong>
+                            <span>IP: {entry.ipAddress}</span>
+                          </div>
+                          <span className={styles.historyTime}>
+                            {new Date(entry.timestamp).toLocaleString("vi-VN")}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                {/* Danger Zone */}
+                <div className={styles.dangerZone}>
+                  <h4 className={styles.dangerTitle}>Vùng nguy hiểm</h4>
+                  <div className={styles.dangerContent}>
+                    <div>
+                      <strong>Xóa tài khoản này</strong>
+                      <p>Xóa vĩnh viễn tài khoản và toàn bộ dữ liệu.</p>
+                    </div>
+                    <button
+                      onClick={() => setIsConfirmOpen(true)}
+                      className={styles.dangerButton}
+                    >
+                      Xóa tài khoản
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </PageContentContainer>
+      </main>
+
       <Footer />
+
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleDeleteAccount}
+        title="Xác nhận xóa tài khoản"
+        message="Bạn có chắc chắn muốn xóa tài khoản của mình không? Toàn bộ dữ liệu của bạn sẽ bị xóa vĩnh viễn và không thể khôi phục."
+      />
     </div>
   );
 };
