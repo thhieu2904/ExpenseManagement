@@ -1,3 +1,4 @@
+// src/pages/AccountPage.jsx
 import React, { useState, useEffect, useCallback } from "react";
 import {
   startOfWeek,
@@ -16,15 +17,12 @@ import TotalBalanceDisplay from "../components/Accounts/TotalBalanceDisplay";
 import AccountList from "../components/Accounts/AccountList";
 import AddEditAccountModal from "../components/Accounts/AddEditAccountModal";
 import HeaderCard from "../components/Common/HeaderCard";
-import HeaderTitle from "../components/Common/HeaderTitle";
 import SummaryWidget from "../components/Common/SummaryWidget";
-import PageContentContainer from "../components/Common/PageContentContainer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWallet, faPlus, faChartPie, faHandHoldingDollar } from "@fortawesome/free-solid-svg-icons";
+import { faWallet, faPlus } from "@fortawesome/free-solid-svg-icons";
 import Button from "../components/Common/Button";
 
 import styles from "../styles/AccountPage.module.css";
-import headerStyles from "../components/Common/HeaderCard.module.css";
 import {
   getAccounts,
   addAccount,
@@ -33,7 +31,6 @@ import {
   getTransactionCountByAccount,
 } from "../api/accountsService";
 import statisticsService from "../api/statisticsService";
-import { getProfile } from "../api/profileService";
 
 const AccountPage = () => {
   // --- State quản lý chung ---
@@ -49,7 +46,6 @@ const AccountPage = () => {
     income: { amount: 0, comparison: "..." },
     expense: { amount: 0, comparison: "..." },
   });
-  const [userProfile, setUserProfile] = useState(null);
 
   // THAY ĐỔI: Chuyển sang quản lý state bằng period và currentDate
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -82,7 +78,7 @@ const AccountPage = () => {
       };
 
       // Gọi đồng thời nhiều API
-      const [accountsData, summary, counts, profile] = await Promise.all([
+      const [accountsData, summary, counts] = await Promise.all([
         getAccounts(queryParams),
         statisticsService.getOverviewStats(queryParams),
         Promise.all(
@@ -95,11 +91,9 @@ const AccountPage = () => {
         ).then((results) =>
           results.reduce((acc, val) => ({ ...acc, ...val }), {})
         ),
-        getProfile().catch(() => null), // Không throw lỗi nếu không lấy được profile
       ]);
 
       setAccounts(accountsData || []);
-      setUserProfile(profile?.data || null);
       if (summary && summary.income && summary.expense) {
         setSummaryData({
           income: {
@@ -197,44 +191,6 @@ const AccountPage = () => {
     }
   };
 
-  // === Helper functions cho header ===
-  // Tạo lời chào dựa trên thời gian
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Chào buổi sáng";
-    if (hour < 18) return "Chào buổi chiều";
-    return "Chào buổi tối";
-  };
-
-  // Tạo ngữ cảnh thông minh
-  const getSmartContext = () => {
-    if (isLoading) return "Đang tải dữ liệu tài chính...";
-    
-    if (!summaryData || !summaryData.income || !summaryData.expense) {
-      return "Hãy bắt đầu quản lý tài chính của bạn.";
-    }
-    
-    const balance = summaryData.income.amount - summaryData.expense.amount;
-    const accountCount = accounts.length;
-    
-    if (balance > 0) {
-      return `Tình hình tài chính tích cực! Bạn có ${accountCount} nguồn tiền đang hoạt động.`;
-    } else if (balance < 0) {
-      return `Cần chú ý chi tiêu. Quản lý ${accountCount} tài khoản một cách thông minh hơn nhé!`;
-    } else {
-      return `Tài chính cân bằng với ${accountCount} nguồn tiền. Rất tốt!`;
-    }
-  };
-
-  const getMoodEmoji = () => {
-    if (isLoading || !summaryData) return "📊";
-    
-    const balance = summaryData.income.amount - summaryData.expense.amount;
-    if (balance > 0) return "💚";
-    if (balance < 0) return "💛";
-    return "💙";
-  };
-
   return (
     <div
       style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
@@ -242,95 +198,61 @@ const AccountPage = () => {
       <Header />
       <Navbar />
       <main className={styles.pageWrapper}>
-        {/* Header với layout 2x2 grid */}
-        <HeaderCard variant="grid" className={styles.accountPageHeader}>
-          {/* Ô 1,1: Greeting Section */}
-          <div className={`${headerStyles.gridItem1_1} ${styles.greetingSection}`}>
-            <div className={styles.greetingIcon}>
-              <FontAwesomeIcon icon={faHandHoldingDollar} />
-            </div>
-            <div className={styles.greetingText}>
-              <HeaderTitle className={styles.mainGreeting}>
-                {getGreeting()}, {userProfile?.fullname || "Bạn"}!
-              </HeaderTitle>
-              <span className={styles.subtitle}>
-                Quản lý nguồn tiền thông minh
-              </span>
-            </div>
-          </div>
-
-          {/* Ô 1,2: SummaryWidget (compact) */}
-          <div className={`${headerStyles.gridItem1_2} ${styles.summarySection}`}>
-            <SummaryWidget
-              incomeData={summaryData?.income}
-              expenseData={summaryData?.expense}
-              isLoading={isLoading}
-              variant="compact"
-            />
-          </div>
-
-          {/* Ô 2,1: Context Section */}
-          <div className={`${headerStyles.gridItem2_1} ${styles.contextSection}`}>
-            <div className={styles.smartContext}>
-              <span className={styles.contextText}>
-                {getSmartContext()}
-              </span>
-              <span className={styles.moodEmoji}>
-                {getMoodEmoji()}
-              </span>
-            </div>
-            <div className={styles.miniStats}>
-              <span>{new Date().toLocaleDateString('vi-VN', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })}</span>
-            </div>
-          </div>
-
-          {/* Ô 2,2: Action Button (căn dưới) */}
-          <div className={`${headerStyles.gridItem2_2} ${styles.actionSection}`}>
+        <HeaderCard
+          title={
+            <>
+              <FontAwesomeIcon icon={faWallet} /> Quản Lý Nguồn Tiền
+            </>
+          }
+          action={
             <Button
               onClick={handleOpenAddModal}
               icon={<FontAwesomeIcon icon={faPlus} />}
-              variant="primary"
-              className={styles.addButton}
+              variant="secondary"
             >
               Thêm Nguồn Tiền
             </Button>
-          </div>
-        </HeaderCard>
+          }
+          extra={
+            <SummaryWidget
+              incomeData={summaryData.income}
+              expenseData={summaryData.expense}
+              isLoading={isLoading}
+            />
+          }
+          filter={
+            <DateRangeNavigator
+              period={period}
+              currentDate={currentDate}
+              onDateChange={handleDateChange}
+              onPeriodChange={handlePeriodChange}
+            />
+          }
+        />
 
-        <PageContentContainer
-          title="Bảng Điều Khiển Tài Chính"
-          titleIcon={faChartPie}
-          titleIconColor="#3f51b5"
-          dateProps={{
-            period,
-            currentDate,
-            onDateChange: handleDateChange,
-            onPeriodChange: handlePeriodChange
-          }}
-        >
-          <TotalBalanceDisplay
-            accounts={accounts}
-            isLoading={isLoading}
-            highlightedAccountId={highlightedAccountId}
-            onHoverAccount={setHighlightedAccountId}
-          />
-          <AccountList
-            accounts={accounts}
-            totalBalance={totalBalance}
-            isLoading={isLoading}
-            error={error}
-            onEditRequest={handleOpenEditModal}
-            onDeleteAccount={handleDeleteAccount}
-            highlightedAccountId={highlightedAccountId}
-            onHoverAccount={setHighlightedAccountId}
-            transactionCounts={transactionCounts}
-          />
-        </PageContentContainer>
+        <div className={styles.mainContent}>
+          <div className={styles.leftColumn}>
+            <TotalBalanceDisplay
+              accounts={accounts}
+              isLoading={isLoading}
+              highlightedAccountId={highlightedAccountId}
+              onHoverAccount={setHighlightedAccountId}
+            />
+          </div>
+          <div className={styles.rightColumn}>
+            <AccountList
+              accounts={accounts}
+              totalBalance={totalBalance}
+              isLoading={isLoading}
+              error={error}
+              onEditRequest={handleOpenEditModal}
+              onDeleteAccount={handleDeleteAccount}
+              highlightedAccountId={highlightedAccountId}
+              onHoverAccount={setHighlightedAccountId}
+              transactionCounts={transactionCounts}
+            />
+          </div>
+        </div>
       </main>
       {isModalOpen && (
         <AddEditAccountModal

@@ -4,12 +4,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUp, faArrowDown } from "@fortawesome/free-solid-svg-icons";
 
 // Component con cho từng card nhỏ (Thu nhập hoặc Chi tiêu)
-const StatCard = ({ type, amount, comparison, variant = "default" }) => {
+const StatCard = ({ type, amount, comparison }) => {
   const isIncome = type === "income";
-  const isCompact = variant === "compact";
-  
   return (
-    <div className={`${styles.statCard} ${isCompact ? styles.compact : ''}`}>
+    <div className={styles.statCard}>
       <div className={isIncome ? styles.iconIncome : styles.iconExpense}>
         <FontAwesomeIcon icon={isIncome ? faArrowDown : faArrowUp} />
       </div>
@@ -20,42 +18,36 @@ const StatCard = ({ type, amount, comparison, variant = "default" }) => {
         <span className={isIncome ? styles.amountIncome : styles.amountExpense}>
           {amount.toLocaleString("vi-VN")} đ
         </span>
-        {!isCompact && (
-          <span className={styles.comparison}>{comparison}</span>
-        )}
+        <span className={styles.comparison}>{comparison}</span>
       </div>
     </div>
   );
 };
 
 // Component chính của Widget
-const SummaryWidget = ({ incomeData, expenseData, isLoading, variant = "default" }) => {
-  const isCompact = variant === "compact";
-  
+const SummaryWidget = ({ incomeData, expenseData, isLoading }) => {
   if (isLoading) {
-    return <div className={`${styles.widgetContainer} ${isCompact ? styles.compact : ''}`}>Đang tải...</div>;
+    return <div className={styles.widgetContainer}>Đang tải...</div>;
   }
   if (!incomeData || !expenseData) {
     return (
-      <div className={`${styles.widgetContainer} ${isCompact ? styles.compact : ''}`}>
+      <div className={styles.widgetContainer}>
         Không có dữ liệu để hiển thị.
       </div>
     );
   }
   return (
-    <div className={`${styles.widgetContainer} ${isCompact ? styles.compact : ''}`}>
+    <div className={styles.widgetContainer}>
       <StatCard
         type="income"
         amount={incomeData.amount}
         comparison={incomeData.comparison}
-        variant={variant}
       />
-      {!isCompact && <div className={styles.divider}></div>}
+      <div className={styles.divider}></div> {/* Đường kẻ phân cách dọc */}
       <StatCard
         type="expense"
         amount={expenseData.amount}
         comparison={expenseData.comparison}
-        variant={variant}
       />
     </div>
   );

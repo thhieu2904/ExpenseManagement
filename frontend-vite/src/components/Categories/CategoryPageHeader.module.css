@@ -16,32 +16,13 @@
 .filterGroup {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem; /* Giảm gap để thu gọn */
-  align-items: flex-start; /* Căn trái */
-  justify-content: flex-start; /* Căn trên của nội dung, nhưng sẽ được đẩy xuống dưới bởi gridFilter */
-  height: fit-content; /* Chiều cao vừa đủ */
-  width: fit-content; /* Thu gọn theo nội dung */
-  max-width: 100%; /* Không vượt quá width của container */
-  /* Thành màu trắng đơn giản */
-  background: #ffffff;
-  border-radius: 0.75rem;
-  border: 1px solid #e2e8f0;
-  padding: 0.75rem; /* Giảm padding để thu gọn */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
+  gap: 1rem;
+  align-items: flex-start;
 }
 
 .controlGroup {
   display: flex;
   align-items: center;
-  justify-content: flex-start; /* Căn trái */
-  width: fit-content; /* Thu gọn theo nội dung */
-  max-width: 100%; /* Không vượt quá width của container */
-  padding: 0.375rem 0.5rem; /* Giảm padding để thu gọn */
-  background: #ffffff;
-  border-radius: 0.5rem;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 /* Container cho cả tab buttons và add button */
@@ -60,39 +41,36 @@
 /* Tab buttons */
 .tabButtons {
   display: flex;
-  gap: 6px; /* Giảm gap để thu gọn */
-  background: #ffffff;
-  padding: 4px;
-  border-radius: 0.625rem;
+  gap: 10px;
+  background-color: #ffffff;
+  padding: 6px;
+  border-radius: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
-  width: fit-content; /* Thu gọn theo nội dung */
-  align-self: center; /* Căn giữa trong filterGroup */
 }
 
 .tabButton {
-  background: transparent;
+  background-color: transparent;
   border: none;
-  padding: 0.375rem 0.75rem; /* Giảm padding để thu gọn */
-  border-radius: 0.5rem;
-  font-size: 0.8rem; /* Giảm font-size để thu gọn */
+  padding: 8px 18px;
+  border-radius: 16px;
+  font-size: 0.9rem;
   font-weight: 500;
-  color: #6b7280;
+  color: #555;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background-color 0.25s ease, color 0.25s ease,
+    box-shadow 0.2s ease;
   white-space: nowrap;
-  min-width: fit-content; /* Thu gọn theo nội dung text */
-}
-
-.tabButton:hover {
-  background: #f3f4f6; /* Màu xám nhẹ khi hover */
-  color: #374151;
 }
 
 .tabButton.active {
-  background: #667eea;
-  color: #ffffff;
+  background-color: #e7f3ff;
+  color: #4f46e5;
   font-weight: 600;
+  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
+}
+
+.tabButton:not(.active):hover {
+  background-color: #e9ecef;
 }
 
 .addCategoryButton {
@@ -120,37 +98,33 @@
 /* Responsive */
 @media (max-width: 992px) {
   .filterGroup {
-    gap: 0.5rem; /* Giảm thêm gap ở tablet */
-    width: fit-content; /* Vẫn thu gọn ở tablet */
-    max-width: 100%;
-    padding: 0.5rem; /* Giảm padding ở tablet */
+    gap: 0.75rem;
+    width: 100%;
   }
 
   .controlGroup {
-    width: fit-content; /* Thu gọn ở tablet */
-    max-width: 100%;
-    padding: 0.25rem 0.375rem; /* Giảm padding ở tablet */
+    width: 100%;
   }
 
   .buttonGroups {
-    gap: 0.5rem; /* Giảm gap */
-    width: fit-content; /* Thu gọn */
-    max-width: 100%;
+    gap: 0.75rem;
+    width: 100%;
   }
 
   .tabButtons {
-    gap: 4px;
-    padding: 3px;
-    width: fit-content; /* Thu gọn thay vì 100% */
+    gap: 5px;
+    padding: 4px;
+    width: 100%;
   }
 
   .tabButton {
-    padding: 0.25rem 0.5rem; /* Giảm padding cho tablet */
-    font-size: 0.75rem; /* Giảm font-size */
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    flex: 1;
     text-align: center;
   }
 
   .addButtonGroup {
-    width: fit-content; /* Thu gọn */
+    width: 100%;
   }
 }

@@ -1,16 +1,16 @@
-/* src/components/Accounts/AccountPageHeader.module.css */
+/* src/components/Accounts/AccountPageHeader.module.css - Updated for ExtendedHeaderCard */
 
-/* Button styles */
+/* All header styles are now handled by ExtendedHeaderCard */
+/* Only keep component-specific styles if any */
+
 .addButton:hover:not(:disabled) {
   box-shadow: 0 8px 32px #6a5af950;
   transform: scale(1.04) translateY(-2px);
   filter: brightness(1.08);
 }
-
 .addButton:active {
   transform: scale(0.98);
 }
-
 .addButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -30,4 +30,31 @@
   display: flex;
   align-items: center;
   gap: 10px;
+}
+.primaryButton:hover:not(:disabled) {
+  box-shadow: 0 8px 32px #6a5af950;
+  transform: scale(1.04) translateY(-2px);
+  filter: brightness(1.08);
+}
+.primaryButton:active {
+  transform: scale(0.98);
+}
+.primaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .headerContainer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+  .titleSection {
+    justify-content: center;
+  }
+  .addButton {
+    justify-content: center;
+  }
 }

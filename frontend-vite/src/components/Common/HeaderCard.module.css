@@ -1,63 +1,52 @@
-/* === LAYOUT THUẦN TÚY - CHỈ CHỨA STRUCTURE, KHÔNG CHỨA STYLE UI === */
-
-/* Base header card container */
 .headerCard {
-  background: var(--color-background);
-  border-radius: var(--border-radius-xl);
-  box-shadow: var(--shadow-base);
-  border: 1.5px solid var(--color-border);
-  padding: var(--component-padding);
-  min-height: 140px;
-  margin-bottom: var(--component-margin-bottom);
-  position: relative;
-}
-
-/* Layout mặc định (backward compatible) */
-.defaultLayout {
   display: grid;
   grid-template-rows: auto auto;
   grid-template-columns: 1fr auto;
   row-gap: var(--component-gap);
   column-gap: var(--component-gap);
+  background: var(--color-background);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-base);
+  border: 1.5px solid var(--color-border);
+  padding: var(--component-padding);
+  min-height: var(--header-card-min-height);
+  margin-bottom: var(--component-margin-bottom);
   align-items: center;
 }
 
-/* Layout linh hoạt cho custom content */
-.flexibleLayout {
-  display: block;
-}
-
-/* Layout 2x2 Grid chuẩn cho tất cả pages - CHỈ LAYOUT, KHÔNG STYLE UI */
-.gridLayout {
-  display: grid !important;
-  grid-template-columns: 1fr auto !important;
-  grid-template-rows: auto auto !important;
-  gap: 2rem !important;
-  align-items: start !important;
-}
-
-/* Position slots cho default layout - CHỈ VỊ TRÍ */
-.defaultLayout .title {
+.title {
   grid-row: 1;
   grid-column: 1;
+  font-size: var(--title-font-size-h1);
+  font-weight: 600;
+  letter-spacing: -0.5px;
+
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  line-height: 1.2;
   align-self: start;
+  text-shadow: none;
+  transition: none;
+
+  color: var(--color-text-primary);
 }
 
-.defaultLayout .extra {
+.extra {
   grid-row: 1;
   grid-column: 2;
   justify-self: end;
   align-self: start;
 }
 
-.defaultLayout .filter {
+.filter {
   grid-row: 2;
   grid-column: 1;
   align-self: end;
   justify-self: start;
 }
 
-.defaultLayout .action {
+.action {
   grid-row: 2;
   grid-column: 2;
   justify-self: end;
@@ -65,115 +54,44 @@
 }
 
 /* Responsive: xếp dọc khi mobile */
-
-/* Standard Grid Item Classes - CHỈ VỊ TRÍ, KHÔNG STYLE UI */
-.gridItem1_1 {
-  grid-row: 1;
-  grid-column: 1;
-  z-index: 1;
-}
-
-.gridItem1_2 {
-  grid-row: 1;
-  grid-column: 2;
-  justify-self: end;
-  align-self: start;
-  z-index: 1;
-}
-
-.gridItem2_1 {
-  grid-row: 2;
-  grid-column: 1;
-  align-self: end;
-  z-index: 1;
-}
-
-.gridItem2_2 {
-  grid-row: 2;
-  grid-column: 2;
-  justify-self: end;
-  align-self: end;
-  z-index: 1;
-}
-
-/* === RESPONSIVE LAYOUT - CHỈ LAYOUT, KHÔNG STYLE UI === */
-
-/* Responsive cho default layout */
 @media (max-width: 992px) {
-  .defaultLayout {
+  .headerCard {
+    padding: var(--component-padding);
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto auto;
     row-gap: var(--component-gap);
   }
-  
-  .defaultLayout .title,
-  .defaultLayout .extra,
-  .defaultLayout .filter,
-  .defaultLayout .action {
+  .title,
+  .extra,
+  .filter,
+  .action {
     grid-column: 1 !important;
     justify-self: stretch;
     align-self: start;
   }
 
-  .defaultLayout .extra {
+  .extra {
     justify-self: start;
     width: 100%;
   }
 
-  .defaultLayout .action {
+  .action {
     margin-top: 0.5rem;
     justify-self: stretch;
   }
-}
-
-@media (max-width: 576px) {
-  .defaultLayout .filter {
-    width: 100%;
-  }
-  .defaultLayout .filter > * {
-    width: 100%;
-  }
-}
-
-/* Responsive cho grid layout */
-@media (max-width: 992px) {
-  .gridLayout {
-    grid-template-columns: 1fr !important;
-    grid-template-rows: auto auto auto auto !important;
-    gap: 1.5rem !important;
+  .title {
+    font-size: var(--title-font-size-h1);
+    margin-bottom: 0.7rem;
   }
 }
 
 @media (max-width: 576px) {
-  .gridLayout {
-    gap: 1.25rem !important;
+  .filter {
+    width: 100%;
+  }
+  .filter > * {
+    width: 100%;
   }
 }
 
-/* Responsive cho grid items */
-@media (max-width: 992px) {
-  .gridItem1_1 {
-    grid-row: 1;
-    grid-column: 1;
-  }
-
-  .gridItem1_2 {
-    grid-row: 2;
-    grid-column: 1;
-    justify-self: stretch;
-    align-self: start;
-  }
-
-  .gridItem2_1 {
-    grid-row: 3;
-    grid-column: 1;
-    align-self: start;
-  }
-
-  .gridItem2_2 {
-    grid-row: 4;
-    grid-column: 1;
-    justify-self: stretch;
-    align-self: start;
-  }
-}
+/* Chỉ áp dụng cho DateRangeNavigator khi nằm trong .headerCard */
