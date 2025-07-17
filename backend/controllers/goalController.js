@@ -7,11 +7,57 @@ const Account = require("../models/Account");
 // @desc    Lấy tất cả mục tiêu của người dùng
 // @route   GET /api/goals
 // @access  Private
-const getGoals = asyncHandler(async (req, res) => {
-  const goals = await Goal.find({ user: req.user.id }).sort({ createdAt: -1 });
-  res.status(200).json(goals);
-});
+// trong file backend/controllers/goalController.js
 
+const getGoals = asyncHandler(async (req, res) => {
+  const {
+    page = 1,
+    limit = 10,
+    filter,
+    sortType = "CREATED",
+    sortDirection = "desc",
+  } = req.query;
+
+  const query = {
+    user: req.user.id,
+    archived: false,
+  };
+
+  // Sửa đoạn này: so sánh filter chữ hoa
+  if (filter && filter.toUpperCase() === "ARCHIVED") {
+    query.archived = true;
+  } else if (filter && filter.toUpperCase() === "ALL") {
+    delete query.archived;
+  }
+
+  // ✅ Xây dựng đối tượng sắp xếp động
+  const sort = { isPinned: -1 }; // Luôn ưu tiên mục được ghim
+  if (sortType === "PROGRESS") {
+    // Sắp xếp theo tiến độ cần logic phức tạp hơn, có thể cần aggregation
+    // Tạm thời sắp xếp theo ngày tạo
+    sort.createdAt = sortDirection === "desc" ? -1 : 1;
+  } else if (sortType === "DEADLINE") {
+    sort.deadline = sortDirection === "desc" ? -1 : 1;
+  } else {
+    // Mặc định là 'CREATED'
+    sort.createdAt = sortDirection === "desc" ? -1 : 1;
+  }
+
+  const startIndex = (parseInt(page) - 1) * parseInt(limit);
+  const total = await Goal.countDocuments(query);
+
+  const goals = await Goal.find(query)
+    .sort(sort) // ✅ Sử dụng đối tượng sort động
+    .limit(parseInt(limit))
+    .skip(startIndex);
+
+  res.status(200).json({
+    data: goals,
+    currentPage: parseInt(page),
+    totalPages: Math.ceil(total / parseInt(limit)),
+    totalGoals: total,
+  });
+});
 // @desc    Tạo mục tiêu mới
 // @route   POST /api/goals
 // @access  Private
@@ -156,10 +202,48 @@ const addFundsToGoal = asyncHandler(async (req, res) => {
   res.status(200).json({ updatedGoal, transaction });
 });
 
+// @desc    Đổi trạng thái archived của mục tiêu
+// @route   PATCH /api/goals/:id/archive
+// @access  Private
+const toggleArchiveGoal = asyncHandler(async (req, res) => {
+  const goal = await Goal.findById(req.params.id);
+  if (!goal) {
+    res.status(404);
+    throw new Error("Không tìm thấy mục tiêu");
+  }
+  if (goal.user.toString() !== req.user.id) {
+    res.status(401);
+    throw new Error("Không được phép");
+  }
+  goal.archived = !goal.archived;
+  await goal.save();
+  res.status(200).json(goal);
+});
+
+// @desc    Đổi trạng thái isPinned của mục tiêu
+// @route   PATCH /api/goals/:id/pin
+// @access  Private
+const togglePinGoal = asyncHandler(async (req, res) => {
+  const goal = await Goal.findById(req.params.id);
+  if (!goal) {
+    res.status(404);
+    throw new Error("Không tìm thấy mục tiêu");
+  }
+  if (goal.user.toString() !== req.user.id) {
+    res.status(401);
+    throw new Error("Không được phép");
+  }
+  goal.isPinned = !goal.isPinned;
+  await goal.save();
+  res.status(200).json(goal);
+});
+
 module.exports = {
   getGoals,
   createGoal,
   updateGoal,
   deleteGoal,
   addFundsToGoal,
+  toggleArchiveGoal,
+  togglePinGoal,
 };
