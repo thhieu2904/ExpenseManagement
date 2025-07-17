@@ -3,9 +3,9 @@
 /* src/styles/GoalsPage.module.css - Updated for ExtendedHeaderCard */
 
 .pageWrapper {
+  max-width: 1400px;
   margin: 0 auto;
   padding: 24px;
-  background-color: #f9fafb; /* Thêm dòng này để đồng bộ nền với AccountPage */
 }
 
 /* Remove old header styles since we use ExtendedHeaderCard now */

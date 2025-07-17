@@ -5,10 +5,11 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/Header/Header";
 import Navbar from "../components/Navbar/Navbar";
 import Footer from "../components/Footer/Footer";
+import HeaderCard from "../components/Common/HeaderCard";
 import ProfileInfo from "../components/Profile/ProfileInfo";
 import SecuritySettings from "../components/Profile/SecuritySettings";
-import ProfilePageHeader from "../components/Profile/ProfilePageHeader";
-import ConfirmDialog from "../components/Common/ConfirmDialog"; // Giả sử bạn có component này
+import ConfirmDialog from "../components/Common/ConfirmDialog";
+import PageContentContainer from "../components/Common/PageContentContainer";
 
 // API Services
 import {
@@ -20,19 +21,33 @@ import {
   deleteAccount as deleteAccountApi,
 } from "../api/profileService";
 import { getAccounts, addAccount } from "../api/accountsService";
-import { getTransactions } from "../api/transactionsService"; // Chỉ cần getTransactions
+import { getTransactions } from "../api/transactionsService";
 import { getCategories, addCategory } from "../api/categoriesService";
 import { getGoals, createGoal } from "../api/goalService";
-import axiosInstance from "../api/axiosConfig"; // Import axiosInstance để tạo transaction
+import axiosInstance from "../api/axiosConfig";
+
+// Utils & Icons
+import { getGreeting, getFullDate } from "../utils/timeHelpers";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faUser,
+  faShield,
+  faUserCircle,
+  faCog,
+  faDatabase,
+  faSignOutAlt,
+} from "@fortawesome/free-solid-svg-icons";
+import Button from "../components/Common/Button";
 
 // Styles
 import styles from "../styles/ProfilePage.module.css";
+import headerStyles from "../components/Common/HeaderCard.module.css";
 
 const clearUserData = async () => {
-  await axiosInstance.delete('/accounts/all');
-  await axiosInstance.delete('/categories/all');
-  await axiosInstance.delete('/transactions/all');
-  await axiosInstance.delete('/goals/all');
+  await axiosInstance.delete("/accounts/all");
+  await axiosInstance.delete("/categories/all");
+  await axiosInstance.delete("/transactions/all");
+  await axiosInstance.delete("/goals/all");
 };
 
 const ProfilePage = () => {
@@ -40,7 +55,12 @@ const ProfilePage = () => {
   const navigate = useNavigate();
 
   // Profile Info State
-  const [user, setUser] = useState({ fullname: "", username: "", avatar: "", email: "" });
+  const [user, setUser] = useState({
+    fullname: "",
+    username: "",
+    avatar: "",
+    email: "",
+  });
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [profileMessage, setProfileMessage] = useState({ text: "", type: "" });
@@ -48,8 +68,15 @@ const ProfilePage = () => {
   const fileInputRef = useRef(null);
 
   // Security State
-  const [passwords, setPasswords] = useState({ oldPassword: "", newPassword: "", confirmPassword: "" });
-  const [securityMessage, setSecurityMessage] = useState({ text: "", type: "" });
+  const [passwords, setPasswords] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [securityMessage, setSecurityMessage] = useState({
+    text: "",
+    type: "",
+  });
   const [isSecuritySubmitting, setIsSecuritySubmitting] = useState(false);
   const [loginHistory, setLoginHistory] = useState([]);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -63,6 +90,13 @@ const ProfilePage = () => {
   const [isImporting, setIsImporting] = useState(false);
   const fileImportRef = useRef(null);
 
+  // Profile stats for header
+  const profileStats = {
+    accountsCount: 0,
+    transactionsCount: 0,
+    lastLogin: null,
+  };
+
   // --- DATA FETCHING ---
   const fetchProfileData = async () => {
     try {
@@ -75,7 +109,10 @@ const ProfilePage = () => {
       setEmail(profileRes.data.email || "");
       setLoginHistory(historyRes.data);
     } catch (error) {
-      setProfileMessage({ text: "Không thể tải thông tin người dùng.", type: "error" });
+      setProfileMessage({
+        text: "Không thể tải thông tin người dùng.",
+        type: "error",
+      });
       console.error("Lỗi tải dữ liệu profile:", error);
     }
   };
@@ -84,6 +121,28 @@ const ProfilePage = () => {
     fetchProfileData();
   }, []);
 
+  // Fetch additional stats for header
+  useEffect(() => {
+    const fetchHeaderStats = async () => {
+      try {
+        const [accountsRes, transactionsRes] = await Promise.all([
+          getAccounts({}),
+          getTransactions(1, 100, {}),
+        ]);
+        profileStats.accountsCount = accountsRes?.length || 0;
+        profileStats.transactionsCount = transactionsRes?.data?.total || 0;
+        if (loginHistory.length > 0) {
+          profileStats.lastLogin = loginHistory[0]?.loginTime;
+        }
+      } catch (error) {
+        console.error("Lỗi tải thống kê header:", error);
+      }
+    };
+
+    if (user.username) {
+      fetchHeaderStats();
+    }
+  }, [user.username, loginHistory]);
 
   // --- PROFILE INFO HANDLERS ---
   const handleUpdateProfile = async (e) => {
@@ -93,12 +152,19 @@ const ProfilePage = () => {
       const { data } = await updateProfile(fullname, email);
       setProfileMessage({ text: "Cập nhật thành công!", type: "success" });
       const storedUser = JSON.parse(localStorage.getItem("user"));
-      const updatedUser = { ...storedUser, fullname: data.fullname, email: data.email };
+      const updatedUser = {
+        ...storedUser,
+        fullname: data.fullname,
+        email: data.email,
+      };
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);
       // Cân nhắc không reload lại trang để trải nghiệm người dùng tốt hơn
     } catch (error) {
-      setProfileMessage({ text: error.response?.data?.message || "Cập nhật thất bại.", type: "error" });
+      setProfileMessage({
+        text: error.response?.data?.message || "Cập nhật thất bại.",
+        type: "error",
+      });
     } finally {
       setIsProfileSubmitting(false);
     }
@@ -116,9 +182,12 @@ const ProfilePage = () => {
       const updatedUser = { ...storedUser, avatar: data.avatar };
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);
-      window.dispatchEvent(new Event('storage')); // Bắn sự kiện để Header cập nhật
+      window.dispatchEvent(new Event("storage")); // Bắn sự kiện để Header cập nhật
     } catch (error) {
-      setProfileMessage({ text: error.response?.data?.message || "Upload ảnh thất bại.", type: "error" });
+      setProfileMessage({
+        text: error.response?.data?.message || "Upload ảnh thất bại.",
+        type: "error",
+      });
     }
   };
 
@@ -135,7 +204,10 @@ const ProfilePage = () => {
       return;
     }
     if (newPassword.length < 6) {
-      setSecurityMessage({ text: "Mật khẩu mới phải có ít nhất 6 ký tự.", type: "error" });
+      setSecurityMessage({
+        text: "Mật khẩu mới phải có ít nhất 6 ký tự.",
+        type: "error",
+      });
       return;
     }
     setIsSecuritySubmitting(true);
@@ -145,7 +217,10 @@ const ProfilePage = () => {
       setSecurityMessage({ text: "Đổi mật khẩu thành công!", type: "success" });
       setPasswords({ oldPassword: "", newPassword: "", confirmPassword: "" });
     } catch (error) {
-      setSecurityMessage({ text: error.response?.data?.message || "Có lỗi xảy ra.", type: "error" });
+      setSecurityMessage({
+        text: error.response?.data?.message || "Có lỗi xảy ra.",
+        type: "error",
+      });
     } finally {
       setIsSecuritySubmitting(false);
     }
@@ -171,7 +246,14 @@ const ProfilePage = () => {
   // --- IMPORT/EXPORT HANDLERS ---
   const handleExportData = async () => {
     try {
-      const [accountsRes, transactionsRes, profileRes, loginHistoryRes, categories, goalsRes] = await Promise.all([
+      const [
+        accountsRes,
+        transactionsRes,
+        profileRes,
+        loginHistoryRes,
+        categories,
+        goalsRes,
+      ] = await Promise.all([
         getAccounts({}),
         getTransactions(1, 9999, {}), // Lấy tất cả giao dịch
         getProfile(),
@@ -183,7 +265,10 @@ const ProfilePage = () => {
       const exportData = {
         profile: profileRes.data || {},
         accounts: accountsRes || [],
-        transactions: (transactionsRes.data && transactionsRes.data.data) ? transactionsRes.data.data : [],
+        transactions:
+          transactionsRes.data && transactionsRes.data.data
+            ? transactionsRes.data.data
+            : [],
         categories: categories || [],
         goals: goalsRes.data || [],
         loginHistory: loginHistoryRes.data || [],
@@ -193,13 +278,15 @@ const ProfilePage = () => {
       const blob = new Blob([json], { type: "application/json" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `backup_${user.username}_${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `backup_${user.username}_${new Date().toISOString().split("T")[0]}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
     } catch (error) {
-      alert("Không thể xuất dữ liệu. " + (error.response?.data?.message || error.message));
+      alert(
+        "Không thể xuất dữ liệu. " +
+          (error.response?.data?.message || error.message)
+      );
     }
   };
 
@@ -225,17 +312,27 @@ const ProfilePage = () => {
       return;
     }
 
-    if (!window.confirm("CẢNH BÁO: Hành động này sẽ XÓA TOÀN BỘ dữ liệu hiện tại của bạn và thay thế bằng dữ liệu từ file backup. Bạn có chắc chắn muốn tiếp tục không?")) {
+    if (
+      !window.confirm(
+        "CẢNH BÁO: Hành động này sẽ XÓA TOÀN BỘ dữ liệu hiện tại của bạn và thay thế bằng dữ liệu từ file backup. Bạn có chắc chắn muốn tiếp tục không?"
+      )
+    ) {
       return;
     }
 
     setIsImporting(true);
-    setProfileMessage({ text: "Bắt đầu quá trình nhập dữ liệu...", type: "info" });
+    setProfileMessage({
+      text: "Bắt đầu quá trình nhập dữ liệu...",
+      type: "info",
+    });
 
     try {
       await clearUserData();
-      setProfileMessage({ text: "Đã xóa dữ liệu cũ, đang nhập dữ liệu mới...", type: "info" });
-      
+      setProfileMessage({
+        text: "Đã xóa dữ liệu cũ, đang nhập dữ liệu mới...",
+        type: "info",
+      });
+
       const categoryIdMap = {};
       if (Array.isArray(importedData.categories)) {
         for (const cat of importedData.categories) {
@@ -245,13 +342,15 @@ const ProfilePage = () => {
             const response = await addCategory(catData);
             const newCat = response.data || response; // Xử lý cả hai trường hợp
             categoryIdMap[oldCatId] = newCat._id || newCat.id;
-            console.log(`Mapped category: ${oldCatId} -> ${newCat._id || newCat.id}`);
+            console.log(
+              `Mapped category: ${oldCatId} -> ${newCat._id || newCat.id}`
+            );
           } catch (error) {
             console.error(`Failed to create category:`, cat, error);
           }
         }
       }
-      
+
       const accountIdMap = {};
       if (Array.isArray(importedData.accounts)) {
         for (const acc of importedData.accounts) {
@@ -259,7 +358,7 @@ const ProfilePage = () => {
           const { _id, id, userId, ...accData } = acc;
           try {
             const response = await addAccount(accData);
-            console.log('Account API response:', response); // Debug log
+            console.log("Account API response:", response); // Debug log
             const newAcc = response.data || response; // Xử lý cả hai trường hợp
             const newAccId = newAcc._id || newAcc.id;
             accountIdMap[oldAccId] = newAccId;
@@ -277,7 +376,7 @@ const ProfilePage = () => {
           const { _id, id, user, ...goalData } = goal;
           try {
             const response = await createGoal(goalData);
-            console.log('Goal API response:', response); // Debug log
+            console.log("Goal API response:", response); // Debug log
             const newGoal = response.data || response; // Xử lý cả hai trường hợp
             const newGoalId = newGoal._id || newGoal.id;
             goalIdMap[oldGoalId] = newGoalId;
@@ -287,7 +386,7 @@ const ProfilePage = () => {
           }
         }
       }
-      
+
       if (Array.isArray(importedData.transactions)) {
         for (const tran of importedData.transactions) {
           const newTranData = {
@@ -297,89 +396,210 @@ const ProfilePage = () => {
             date: tran.date,
             note: tran.note || "",
           };
-    
+
           // Lấy ID cũ từ nhiều trường có thể - cải thiện logic mapping
-          const oldCatId = tran.category?._id || tran.categoryId || tran.category?.id;
-          const oldAccId = tran.paymentMethod?._id || tran.accountId || tran.paymentMethod?.id;
+          const oldCatId =
+            tran.category?._id || tran.categoryId || tran.category?.id;
+          const oldAccId =
+            tran.paymentMethod?._id || tran.accountId || tran.paymentMethod?.id;
           const oldGoalId = tran.goal?._id || tran.goalId || tran.goal?.id;
-    
+
           // Map category ID
           if (oldCatId && categoryIdMap[oldCatId]) {
             newTranData.categoryId = categoryIdMap[oldCatId];
           }
-          
+
           // Map account ID
           if (oldAccId && accountIdMap[oldAccId]) {
             newTranData.accountId = accountIdMap[oldAccId];
           }
-          
+
           // Map goal ID (optional)
           if (oldGoalId && goalIdMap[oldGoalId]) {
             newTranData.goalId = goalIdMap[oldGoalId];
           }
-          
+
           // Debug log để kiểm tra mapping
-          console.log('Mapping transaction:', {
-            original: { 
-              categoryId: oldCatId, 
-              accountId: oldAccId, 
-              goalId: oldGoalId 
+          console.log("Mapping transaction:", {
+            original: {
+              categoryId: oldCatId,
+              accountId: oldAccId,
+              goalId: oldGoalId,
             },
-            mapped: { 
-              categoryId: newTranData.categoryId, 
-              accountId: newTranData.accountId, 
-              goalId: newTranData.goalId 
+            mapped: {
+              categoryId: newTranData.categoryId,
+              accountId: newTranData.accountId,
+              goalId: newTranData.goalId,
             },
             maps: {
               categoryExists: !!categoryIdMap[oldCatId],
               accountExists: !!accountIdMap[oldAccId],
-              goalExists: !!goalIdMap[oldGoalId]
-            }
+              goalExists: !!goalIdMap[oldGoalId],
+            },
           });
-          
+
           // Kiểm tra các trường bắt buộc
-          if (newTranData.name && newTranData.amount && newTranData.type && newTranData.categoryId && newTranData.accountId) {
-             console.log('Creating transaction:', newTranData);
-             await axiosInstance.post('/transactions', newTranData);
+          if (
+            newTranData.name &&
+            newTranData.amount &&
+            newTranData.type &&
+            newTranData.categoryId &&
+            newTranData.accountId
+          ) {
+            console.log("Creating transaction:", newTranData);
+            await axiosInstance.post("/transactions", newTranData);
           } else {
-             console.warn('Bỏ qua giao dịch do thiếu thông tin:', {
-               original: tran,
-               mapped: newTranData,
-               missing: {
-                 name: !newTranData.name,
-                 amount: !newTranData.amount,
-                 type: !newTranData.type,
-                 categoryId: !newTranData.categoryId,
-                 accountId: !newTranData.accountId
-               },
-               mappingInfo: {
-                 oldCatId,
-                 oldAccId,
-                 categoryMapped: categoryIdMap[oldCatId],
-                 accountMapped: accountIdMap[oldAccId]
-               }
-             });
+            console.warn("Bỏ qua giao dịch do thiếu thông tin:", {
+              original: tran,
+              mapped: newTranData,
+              missing: {
+                name: !newTranData.name,
+                amount: !newTranData.amount,
+                type: !newTranData.type,
+                categoryId: !newTranData.categoryId,
+                accountId: !newTranData.accountId,
+              },
+              mappingInfo: {
+                oldCatId,
+                oldAccId,
+                categoryMapped: categoryIdMap[oldCatId],
+                accountMapped: accountIdMap[oldAccId],
+              },
+            });
           }
         }
-    }
+      }
 
-      setProfileMessage({ text: "Nhập dữ liệu thành công! Vui lòng tải lại trang để xem dữ liệu mới.", type: "success" });
+      setProfileMessage({
+        text: "Nhập dữ liệu thành công! Vui lòng tải lại trang để xem dữ liệu mới.",
+        type: "success",
+      });
       // Không cần logout nữa!
-
     } catch (err) {
-      setProfileMessage({ text: "Có lỗi khi nhập dữ liệu: " + (err?.response?.data?.message || err.message), type: "error" });
+      setProfileMessage({
+        text:
+          "Có lỗi khi nhập dữ liệu: " +
+          (err?.response?.data?.message || err.message),
+        type: "error",
+      });
       console.error("Lỗi nhập dữ liệu:", err);
     } finally {
       setIsImporting(false);
     }
   };
 
+  // Smart context for header
+  const getProfileSmartContext = () => {
+    if (!user.username) return "Đang tải thông tin người dùng...";
+
+    if (activeTab === "security") {
+      const recentLogins = loginHistory.slice(0, 3).length;
+      return `Bảo mật tài khoản với ${recentLogins} lần đăng nhập gần đây.`;
+    }
+
+    return `Quản lý hồ sơ cá nhân và ${profileStats.accountsCount} tài khoản tài chính.`;
+  };
+
+  const getProfileMoodEmoji = () => {
+    if (!user.username) return "👤";
+    if (activeTab === "security") return "🔒";
+    return "👨‍💼";
+  };
+
+  // Profile stats widget component
+  const ProfileStatsWidget = () => (
+    <div className={styles.profileStats}>
+      <div className={styles.statItem}>
+        <span className={styles.statNumber}>{profileStats.accountsCount}</span>
+        <span className={styles.statLabel}>Tài khoản</span>
+      </div>
+      <div className={styles.statDivider}></div>
+      <div className={styles.statItem}>
+        <span className={styles.statNumber}>
+          {profileStats.transactionsCount}
+        </span>
+        <span className={styles.statLabel}>Giao dịch</span>
+      </div>
+    </div>
+  );
+
+  // Tab control component
+  const TabControls = () => (
+    <div className={styles.tabControls}>
+      <Button
+        variant={activeTab === "info" ? "primary" : "secondary"}
+        onClick={() => setActiveTab("info")}
+        icon={<FontAwesomeIcon icon={faUser} />}
+        className={styles.tabButton}
+      >
+        Thông tin
+      </Button>
+      <Button
+        variant={activeTab === "security" ? "primary" : "secondary"}
+        onClick={() => setActiveTab("security")}
+        icon={<FontAwesomeIcon icon={faShield} />}
+        className={styles.tabButton}
+      >
+        Bảo mật
+      </Button>
+    </div>
+  );
+
   return (
     <div className={styles.pageContainer}>
       <Header />
       <Navbar />
-      <ProfilePageHeader activeTab={activeTab} setActiveTab={setActiveTab} />
-      <main className={styles.mainContent}>
+
+      {/* New HeaderCard replacing ProfilePageHeader */}
+      <HeaderCard
+        className={styles.profilePageHeader}
+        gridIcon={<FontAwesomeIcon icon={faUserCircle} />}
+        gridTitle={`${getGreeting()}, ${user.fullname || "Bạn"}!`}
+        gridSubtitle="Quản lý hồ sơ và bảo mật tài khoản"
+        gridStats={<ProfileStatsWidget />}
+        gridInfo={
+          <>
+            <div className="smartContext">
+              <span className="contextText">{getProfileSmartContext()}</span>
+              <span className={headerStyles.moodEmoji}>
+                {getProfileMoodEmoji()}
+              </span>
+            </div>
+            <span className={headerStyles.miniStats}>{getFullDate()}</span>
+          </>
+        }
+        gridAction={<TabControls />}
+      />
+
+      <PageContentContainer
+        title={activeTab === "info" ? "Thông tin cá nhân" : "Cài đặt bảo mật"}
+        titleIcon={activeTab === "info" ? faUser : faShield}
+        titleIconColor="#3f51b5"
+        className={styles.mainContent}
+        showDateFilter={false}
+        headerExtra={
+          activeTab === "info" && (
+            <div className={styles.profileActions}>
+              <Button
+                variant="outline"
+                icon={<FontAwesomeIcon icon={faDatabase} />}
+                onClick={handleExportData}
+                className={styles.actionButton}
+              >
+                Xuất dữ liệu
+              </Button>
+              <Button
+                variant="outline"
+                icon={<FontAwesomeIcon icon={faSignOutAlt} />}
+                onClick={handleLogout}
+                className={styles.logoutButton}
+              >
+                Đăng xuất
+              </Button>
+            </div>
+          )
+        }
+      >
         {activeTab === "info" && (
           <div className={styles.infoSettingsGrid}>
             <div className={styles.infoCardWrapper}>
@@ -397,48 +617,88 @@ const ProfilePage = () => {
               />
             </div>
             <div className={styles.settingsCard}>
-              <div className={styles.settingsCardTitle}>Cài đặt</div>
+              <div className={styles.settingsCardTitle}>
+                <FontAwesomeIcon icon={faCog} className={styles.settingsIcon} />
+                Cài đặt ứng dụng
+              </div>
               <div className={styles.settingsItem}>
                 Chế độ tối (Dark Mode)
                 <label className={styles.toggleSwitch}>
-                  <input type="checkbox" className={styles.toggleInput} checked={darkMode} onChange={() => setDarkMode(v => !v)} />
+                  <input
+                    type="checkbox"
+                    className={styles.toggleInput}
+                    checked={darkMode}
+                    onChange={() => setDarkMode((v) => !v)}
+                  />
                   <span className={styles.toggleSlider}></span>
                 </label>
               </div>
               <div className={styles.settingsItem}>
                 Nhắc nhở chi tiêu
                 <label className={styles.toggleSwitch}>
-                  <input type="checkbox" className={styles.toggleInput} checked={reminder} onChange={() => setReminder(v => !v)} />
+                  <input
+                    type="checkbox"
+                    className={styles.toggleInput}
+                    checked={reminder}
+                    onChange={() => setReminder((v) => !v)}
+                  />
                   <span className={styles.toggleSlider}></span>
                 </label>
               </div>
-              <div className={styles.settingsItem} style={{flexDirection: 'column', alignItems: 'flex-start'}}>
-                <span>Xuất/nhập dữ liệu</span>
-                <div style={{ display: 'flex', gap: 12, marginTop: '10px' }}>
-                  <button className={styles.exportBtn} onClick={handleExportData}>Xuất Dữ Liệu (.json)</button>
-                  <input type="file" accept="application/json" style={{ display: 'none' }} ref={fileImportRef} onChange={handleImportFileChange} />
-                  <button className={styles.exportBtn} style={{ background: '#1a4fa3' }} onClick={() => fileImportRef.current?.click()}>Chọn File Để Nhập</button>
+
+              {/* Enhanced Import/Export Section */}
+              <div className={styles.dataManagementSection}>
+                <h4 className={styles.sectionTitle}>
+                  <FontAwesomeIcon icon={faDatabase} />
+                  Quản lý dữ liệu
+                </h4>
+                <div className={styles.dataActions}>
+                  <Button
+                    variant="outline"
+                    onClick={handleExportData}
+                    className={styles.dataButton}
+                    icon={<FontAwesomeIcon icon={faDatabase} />}
+                  >
+                    Xuất dữ liệu
+                  </Button>
+                  <input
+                    type="file"
+                    accept="application/json"
+                    style={{ display: "none" }}
+                    ref={fileImportRef}
+                    onChange={handleImportFileChange}
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => fileImportRef.current?.click()}
+                    className={styles.dataButton}
+                    disabled={isImporting}
+                  >
+                    Chọn file nhập
+                  </Button>
                 </div>
-                 {importedData && (
-                    <div style={{marginTop: '15px', width: '100%'}}>
-                       <p style={{fontSize: '0.9rem', color: '#333'}}>Đã chọn file: <strong>{fileImportRef.current?.files[0]?.name}</strong>. Sẵn sàng để nhập.</p>
-                       <button
-                         className={styles.exportBtn}
-                         style={{ background: '#22c55e', width: '100%' }}
-                         onClick={handleImportData}
-                         disabled={isImporting}
-                       >
-                         {isImporting ? "Đang xử lý..." : "Bắt đầu Nhập Dữ Liệu"}
-                       </button>
-                    </div>
-                  )}
-              </div>
-              <div style={{width: '100%', display: 'flex', justifyContent: 'flex-end', marginTop: 'auto'}}>
-                <button className={styles.logoutBtn} onClick={handleLogout}>Đăng xuất</button>
+                {importedData && (
+                  <div className={styles.importPreview}>
+                    <p className={styles.previewText}>
+                      Đã chọn file:{" "}
+                      <strong>{fileImportRef.current?.files[0]?.name}</strong>
+                    </p>
+                    <Button
+                      variant="primary"
+                      onClick={handleImportData}
+                      disabled={isImporting}
+                      className={styles.importButton}
+                      loading={isImporting}
+                    >
+                      {isImporting ? "Đang xử lý..." : "Bắt đầu nhập dữ liệu"}
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         )}
+
         {activeTab === "security" && (
           <SecuritySettings
             passwords={passwords}
@@ -453,7 +713,7 @@ const ProfilePage = () => {
             handleDeleteAccount={handleDeleteAccount}
           />
         )}
-      </main>
+      </PageContentContainer>
       <Footer />
     </div>
   );

@@ -1,203 +1,463 @@
 .pageContainer {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    background-color: #f4f6f8;
-  }
-  
-  .mainContent {
-    flex-grow: 1;
-    padding: 30px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-  }
-  
-  .profileCard {
-    width: 100%;
-    max-width: 800px;
-    background-color: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-  }
-  
-  .tabs {
-    display: flex;
-    background-color: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
-  }
-  
-  .tabs button {
-    padding: 15px 25px;
-    border: none;
-    background: none;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #6b7280;
-    cursor: pointer;
-    transition: color 0.2s, border-bottom-color 0.2s;
-    border-bottom: 3px solid transparent;
-  }
-  
-  .tabs button.activeTab {
-    color: #4f46e5;
-    border-bottom-color: #4f46e5;
-  }
-  
-  .tabContent {
-    padding: 25px 30px;
-  }
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f4f6f8;
+}
 
-  .settingsTabContent {
-    padding: 32px 24px;
-  }
+.mainContent {
+  flex-grow: 1;
+  padding: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
 
-  .settingsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 24px;
-  }
+.profileCard {
+  width: 100%;
+  max-width: 800px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
 
+.tabs {
+  display: flex;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tabs button {
+  padding: 15px 25px;
+  border: none;
+  background: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-bottom-color 0.2s;
+  border-bottom: 3px solid transparent;
+}
+
+.tabs button.activeTab {
+  color: #4f46e5;
+  border-bottom-color: #4f46e5;
+}
+
+.tabContent {
+  padding: 25px 30px;
+}
+
+.settingsTabContent {
+  padding: 32px 24px;
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.infoSettingsGrid {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 2rem;
+  align-items: start;
+}
+
+.infoCardWrapper {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(80, 80, 120, 0.07);
+  border: 1.5px solid #ececf3;
+  padding: 2rem 2rem 1.5rem 2rem;
+  min-width: 320px;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.settingsCard {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  min-width: 320px;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.settingsCardTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #3f51b5;
+}
+
+.settingsIcon {
+  color: #3f51b5;
+}
+
+.settingsItem {
+  font-size: 1rem;
+  margin-bottom: 8px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settingsItem[style*="column"] .exportBtn {
+  margin-top: 10px;
+}
+
+.toggleSwitch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  vertical-align: middle;
+}
+.toggleSwitch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggleSlider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  border-radius: 24px;
+  transition: 0.3s;
+}
+.toggleSlider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.toggleInput:checked + .toggleSlider {
+  background-color: #3f51b5;
+}
+.toggleInput:checked + .toggleSlider:before {
+  transform: translateX(20px);
+}
+
+.exportBtn {
+  background: #2d3e50;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.exportBtn:hover {
+  background: #1a4fa3;
+}
+
+.logoutBtn {
+  background: #fff;
+  color: #ef4444;
+  border: 1.5px solid #ef4444;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.logoutBtn:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
+.profilePageHeader {
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%);
+  color: white;
+}
+
+.profileStats {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+}
+
+.statNumber {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statDivider {
+  width: 1px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.tabControls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tabButton {
+  min-width: 120px;
+  font-size: 0.9rem;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.profileActions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.actionButton {
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #3f51b5;
+  color: #3f51b5;
+}
+
+.actionButton:hover {
+  background: #3f51b5;
+  color: white;
+}
+
+.logoutButton {
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #f44336;
+  color: #f44336;
+}
+
+.logoutButton:hover {
+  background: #f44336;
+  color: white;
+}
+
+.dataManagementSection {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.sectionTitle {
+  color: #3f51b5;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dataActions {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.dataButton {
+  flex: 1;
+  min-width: 140px;
+  font-size: 0.85rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid #3f51b5;
+  color: #3f51b5;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.dataButton:hover {
+  background: #3f51b5;
+  color: white;
+}
+
+.dataButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.importPreview {
+  background: #f8f9ff;
+  border: 1px solid #e3f2fd;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.previewText {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.importButton {
+  width: 100%;
+  background: #4caf50;
+  border: none;
+  color: white;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.importButton:hover:not(:disabled) {
+  background: #45a049;
+}
+
+.importButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
   .infoSettingsGrid {
-    display: flex;
-    gap: 32px;
-    margin: 0 auto;
-    max-width: 900px;
-    justify-content: center;
-  }
-
-  .infoCardWrapper {
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 2px 12px rgba(80, 80, 120, 0.07);
-    border: 1.5px solid #ececf3;
-    padding: 2rem 2rem 1.5rem 2rem;
-    min-width: 320px;
-    min-height: 320px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-  }
-
-  .settingsCard {
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 2px 12px rgba(80, 80, 120, 0.07);
-    border: 1.5px solid #ececf3;
-    padding: 2rem 2rem 1.5rem 2rem;
-    min-width: 320px;
-    min-height: 320px;
-    display: flex;
     flex-direction: column;
     gap: 18px;
-    align-items: flex-start;
-    justify-content: flex-start;
-  }
-
-  .settingsCardTitle {
-    font-size: 1.2rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-  }
-
-  .settingsItem {
-    font-size: 1rem;
-    margin-bottom: 8px;
-    width: 100%;
-    display: flex;
+    max-width: 100%;
     align-items: center;
-    justify-content: space-between;
+  }
+  .settingsCard {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .infoSettingsGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
 
-  .settingsItem[style*='column'] .exportBtn {
-    margin-top: 10px;
+  .profileActions {
+    flex-direction: column;
+    width: 100%;
   }
 
-  .toggleSwitch {
-    position: relative;
-    display: inline-block;
-    width: 44px;
-    height: 24px;
-    vertical-align: middle;
-  }
-  .toggleSwitch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-  .toggleSlider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: .3s;
-    border-radius: 24px;
-  }
-  .toggleSlider:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: .3s;
-    border-radius: 50%;
-  }
-  .toggleInput:checked + .toggleSlider {
-    background-color: #1a4fa3;
-  }
-  .toggleInput:checked + .toggleSlider:before {
-    transform: translateX(20px);
+  .actionButton,
+  .logoutButton {
+    width: 100%;
   }
 
-  .exportBtn {
-    
-    background: #2d3e50;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 22px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .exportBtn:hover {
-    background: #1a4fa3;
+  .tabControls {
+    width: 100%;
   }
 
-  .logoutBtn {
-    background: #fff;
-    color: #ef4444;
-    border: 1.5px solid #ef4444;
-    border-radius: 8px;
-    padding: 10px 22px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 8px;
-    transition: background 0.2s, color 0.2s;
-  }
-  .logoutBtn:hover {
-    background: #ef4444;
-    color: #fff;
+  .tabButton {
+    flex: 1;
   }
 
-  @media (max-width: 900px) {
-    .infoSettingsGrid {
-      flex-direction: column;
-      gap: 18px;
-      max-width: 100%;
-      align-items: center;
-    }
-    .settingsCard {
-      min-width: 0;
-      width: 100%;
-    }
+  .dataActions {
+    flex-direction: column;
   }
+
+  .dataButton {
+    width: 100%;
+  }
+}
+
+/* Loading states */
+.loadingState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.loadingSpinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3f51b5;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Message states */
+.messageSuccess {
+  color: #4caf50;
+  background: #f1f8e9;
+  border: 1px solid #c8e6c9;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin: 1rem 0;
+}
+
+.messageError {
+  color: #f44336;
+  background: #ffebee;
+  border: 1px solid #ffcdd2;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin: 1rem 0;
+}
+
+.messageInfo {
+  color: #2196f3;
+  background: #e3f2fd;
+  border: 1px solid #bbdefb;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin: 1rem 0;
+}
