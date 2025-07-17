@@ -26,12 +26,24 @@ const AIMessageRenderer = ({ content }) => {
         '<span class="ai-balance">$1</span>'
       )
       .replace(
+        /<span class="balance positive">(.*?)<\/span>/g,
+        '<span class="ai-positive">$1</span>'
+      )
+      .replace(
+        /<span class="balance negative">(.*?)<\/span>/g,
+        '<span class="ai-negative">$1</span>'
+      )
+      .replace(
         /<span class="remaining positive">(.*?)<\/span>/g,
         '<span class="ai-positive">$1</span>'
       )
       .replace(
         /<span class="remaining negative">(.*?)<\/span>/g,
         '<span class="ai-negative">$1</span>'
+      )
+      .replace(
+        /<span class="progress">(.*?)<\/span>/g,
+        '<span class="ai-progress">$1</span>'
       );
 
     // Split theo newlines và tạo paragraphs

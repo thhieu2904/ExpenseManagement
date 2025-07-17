@@ -379,10 +379,10 @@ ${data.formatted.isPositive ? "✅ Tháng này bạn đã tiết kiệm được
   };
 
   const quickActions = [
-    { label: "Xem thống kê", command: "Xem thống kê tháng này" },
-    { label: "Thêm chi tiêu", command: "Thêm chi tiêu 50k" },
-    { label: "Tạo mục tiêu", command: "Tạo mục tiêu tiết kiệm 5 triệu" },
-    { label: "Xem số dư", command: "Xem tổng số dư" },
+    { label: "📊 Thống kê", command: "Xem thống kê tháng này", icon: "📊" },
+    { label: "💸 Chi tiêu", command: "Thêm chi tiêu", icon: "💸" },
+    { label: "🎯 Mục tiêu", command: "Tạo mục tiêu", icon: "🎯" },
+    { label: "💰 Số dư", command: "Xem số dư tài khoản", icon: "💰" },
   ];
 
   const handleQuickAction = (command) => {
@@ -390,12 +390,11 @@ ${data.formatted.isPositive ? "✅ Tháng này bạn đã tiết kiệm được
   };
 
   const getSampleCommands = () => [
-    "Thêm giao dịch chi tiêu 50k cho ăn uống",
-    "Xem tổng chi tiêu tháng này",
-    "Tạo mục tiêu tiết kiệm 5 triệu",
-    "Xem thống kê thu chi",
-    "Thêm tài khoản mới",
-    "Tạo danh mục mới",
+    "Chi 50k ăn sáng",
+    "Thu nhập lương 10 triệu",
+    "Tiết kiệm mua nhà 2 tỷ",
+    "Xem chi tiêu tháng này",
+    "Thêm tài khoản ngân hàng",
   ];
 
   // Phát âm thanh thông báo

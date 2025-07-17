@@ -118,12 +118,27 @@
   transform: scale(1.02);
 }
 
+/* Progress - Purple styling */
+.ai_progress {
+  color: #7c3aed;
+  font-weight: 700;
+  background: linear-gradient(135deg, #f3e8ff 0%, #ddd6fe 100%);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  border: 2px solid #8b5cf6;
+  font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", monospace;
+  box-shadow: 0 1px 3px rgba(139, 92, 246, 0.2);
+  display: inline-block;
+  min-width: fit-content;
+}
+
 /* Hover effects for interactive elements */
 .ai_income:hover,
 .ai_expense:hover,
 .ai_balance:hover,
 .ai_positive:hover,
-.ai_negative:hover {
+.ai_negative:hover,
+.ai_progress:hover {
   transform: translateY(-2px) scale(1.05);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -171,7 +186,8 @@
   .ai_expense,
   .ai_balance,
   .ai_positive,
-  .ai_negative {
+  .ai_negative,
+  .ai_progress {
     font-size: 0.875rem;
     padding: 0.2rem 0.4rem;
     width: auto;

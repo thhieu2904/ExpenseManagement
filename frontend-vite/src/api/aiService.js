@@ -340,17 +340,35 @@ class AIService {
   // Tạo mục tiêu tự động thông qua AI - sử dụng goalService
   async createGoalFromAI(goalData) {
     try {
+      // Convert deadline format properly
+      let deadlineDate = null;
+      if (goalData.deadline) {
+        if (goalData.deadline.includes("/")) {
+          // DD/MM/YYYY format from backend
+          const parts = goalData.deadline.split("/");
+          if (parts.length === 3) {
+            deadlineDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+          }
+        } else if (goalData.deadline.includes("-")) {
+          // YYYY-MM-DD format
+          deadlineDate = new Date(goalData.deadline);
+        } else {
+          deadlineDate = new Date(goalData.deadline);
+        }
+      }
+
       // Convert AI data format to goal service format
       const goalPayload = {
         name: goalData.name,
         targetAmount: goalData.targetAmount,
-        deadline: goalData.deadline
-          ? new Date(goalData.deadline)
-          : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Default 1 year
+        deadline:
+          deadlineDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Default 1 year
         description: goalData.description || "",
       };
 
       console.log("Creating goal with data:", goalPayload);
+      console.log("Original deadline:", goalData.deadline);
+      console.log("Converted deadline:", deadlineDate);
 
       // Sử dụng goalService để tạo mục tiêu
       const response = await createGoal(goalPayload);

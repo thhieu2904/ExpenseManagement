@@ -133,16 +133,15 @@ class AIController {
       );
       console.log("=== END USER CONTEXT SUMMARY ===");
 
-      // Xây dựng prompt với đầy đủ context
-      console.log("Building prompt...");
-      const prompt = this.buildPrompt(message.trim(), userContext);
+      // Sử dụng optimized Gemini call với system instructions
+      console.log("=== CALLING OPTIMIZED GEMINI API ===");
 
-      console.log("=== CALLING GEMINI API ===");
-      console.log("Prompt length:", prompt.length);
-      console.log("=== END CALLING GEMINI API ===");
-
-      // Gọi Gemini API với timeout và retry mechanism
-      const result = await this.callGeminiWithRetry(prompt, 3);
+      // Gọi Gemini API tối ưu
+      const result = await this.callGeminiOptimized(
+        message.trim(),
+        userContext,
+        3
+      );
 
       const responseText = await result.response.text();
 
@@ -202,14 +201,20 @@ class AIController {
         statusCode = 503;
       } else if (
         error.status === 503 ||
-        error.statusText === "Service Unavailable"
+        error.statusText === "Service Unavailable" ||
+        error.status === 429 || // Add quota error
+        error.message?.includes("quota") ||
+        error.message?.includes("Too Many Requests")
       ) {
-        errorMessage = "Dịch vụ AI hiện đang quá tải, vui lòng thử lại sau";
+        errorMessage =
+          error.status === 429
+            ? "Đã vượt quá giới hạn API, sử dụng chế độ offline"
+            : "Dịch vụ AI hiện đang quá tải, vui lòng thử lại sau";
         statusCode = 503;
 
         // Thử xử lý local fallback cho một số patterns phổ biến
         try {
-          const fallbackResponse = await this.handleFallbackResponse(
+          const fallbackResponse = await this.tryLocalProcessing(
             req.body.message,
             req.user.id
           );
@@ -232,7 +237,7 @@ class AIController {
 
         // Thử xử lý local fallback cho lỗi quota
         try {
-          const fallbackResponse = await this.handleFallbackResponse(
+          const fallbackResponse = await this.tryLocalProcessing(
             req.body.message,
             req.user.id
           );
@@ -443,6 +448,10 @@ Response:
         // For QUICK_STATS from Gemini, use current month
         return await this.getQuickStats(userId, null, null);
 
+      case "VIEW_ACCOUNTS":
+        // Xem danh sách tài khoản và số dư
+        return await this.getAccountList(userId);
+
       case "QUERY_TRANSACTIONS":
         return await this.handleQueryTransactions(userId, responseForUser);
 
@@ -556,6 +565,12 @@ Response:
   // Xử lý thêm mục tiêu
   async handleAddGoal(goal, userId, responseForUser) {
     try {
+      console.log("=== HANDLING ADD GOAL ===");
+      console.log("Goal input:", JSON.stringify(goal, null, 2));
+      console.log("User ID:", userId);
+      console.log("Response for user:", responseForUser);
+      console.log("=== END HANDLING ADD GOAL DEBUG ===");
+
       if (!goal || !goal.name) {
         return {
           response: "Tên mục tiêu không được để trống. Vui lòng thử lại.",
@@ -584,6 +599,10 @@ Response:
 
       // Kiểm tra nếu goal thiếu deadline
       if (!goal.deadline || goal.deadline === null) {
+        console.log("=== GOAL MISSING DEADLINE ===");
+        console.log("Goal deadline:", goal.deadline);
+        console.log("Setting up conversation state for deadline input...");
+
         this.updateConversationState(userId, {
           waitingFor: "goal_deadline",
           pendingData: {
@@ -593,17 +612,29 @@ Response:
           lastIntent: "ADD_GOAL",
         });
 
+        console.log("=== END DEADLINE SETUP ===");
+
+        // Override responseForUser để hỏi deadline
+        const deadlineQuestion = `Mục tiêu ${Number(
+          goal.targetAmount
+        ).toLocaleString()}đ cho "${
+          goal.name
+        }". Bạn muốn hoàn thành vào lúc nào? (Ví dụ: "tháng 12 2025", "cuối năm", "31/12/2025")`;
+
         return {
-          response:
-            responseForUser ||
-            `Mục tiêu ${Number(goal.targetAmount).toLocaleString()}đ cho "${
-              goal.name
-            }". Bạn muốn hoàn thành vào lúc nào?`,
+          response: deadlineQuestion,
           action: "CHAT_RESPONSE",
         };
       }
 
       // Nếu có đầy đủ thông tin thì confirm
+      console.log("=== GOAL HAS ALL INFO, CONFIRMING ===");
+      console.log("Final goal data:", {
+        name: goal.name,
+        targetAmount: goal.targetAmount,
+        deadline: goal.deadline,
+      });
+
       return {
         response:
           responseForUser ||
@@ -1232,31 +1263,74 @@ Response:
         };
       }
 
-      const accountList = accounts
+      console.log("=== GETTING ACCOUNT LIST WITH REAL BALANCE ===");
+      console.log("Found accounts:", accounts.length);
+
+      let totalBalance = 0;
+      const accountsWithBalance = [];
+
+      // Tính balance thực cho mỗi account
+      for (const account of accounts) {
+        // Lấy initialBalance
+        const initialBalance = account.initialBalance || 0;
+
+        // Tính tổng giao dịch của account này
+        const transactions = await Transaction.find({
+          userId: userObjectId,
+          accountId: account._id,
+        });
+
+        const accountTransactionSum = transactions.reduce(
+          (sum, transaction) => {
+            if (transaction.type === "THUNHAP") {
+              return sum + (transaction.amount || 0);
+            } else if (transaction.type === "CHITIEU") {
+              return sum - (transaction.amount || 0);
+            }
+            return sum;
+          },
+          0
+        );
+
+        const realBalance = initialBalance + accountTransactionSum;
+        totalBalance += realBalance;
+
+        accountsWithBalance.push({
+          ...account.toObject(),
+          realBalance,
+        });
+
+        console.log(
+          `Account: ${account.name}, Initial: ${initialBalance}, Transactions: ${accountTransactionSum}, Real Balance: ${realBalance}`
+        );
+      }
+
+      console.log("Total balance calculated:", totalBalance);
+      console.log("=== END GETTING ACCOUNT LIST ===");
+
+      const accountList = accountsWithBalance
         .map((acc, index) => {
           const typeText =
             acc.type === "TIENMAT" ? "💵 Tiền mặt" : "🏦 Ngân hàng";
           const bankInfo = acc.bankName ? ` (${acc.bankName})` : "";
+          const balance = acc.realBalance;
+          const balanceColor = balance >= 0 ? "positive" : "negative";
           return `${index + 1}. <strong>${
             acc.name
-          }</strong> ${typeText}${bankInfo} - <span class="balance">${acc.balance.toLocaleString()}đ</span>`;
+          }</strong> ${typeText}${bankInfo} - <span class="balance ${balanceColor}">${balance.toLocaleString()}đ</span>`;
         })
         .join("\n");
-
-      const totalBalance = accounts.reduce(
-        (sum, acc) => sum + (acc.balance || 0),
-        0
-      );
 
       return {
         response: `💼 <strong>Danh sách tài khoản:</strong>\n\n${accountList}\n\n<strong>Tổng số dư: ${totalBalance.toLocaleString()}đ</strong>`,
         action: "CHAT_RESPONSE",
         data: {
-          accounts: accounts.map((acc) => ({
+          accounts: accountsWithBalance.map((acc) => ({
             id: acc._id,
             name: acc.name,
             type: acc.type,
-            balance: acc.balance,
+            balance: acc.realBalance,
+            initialBalance: acc.initialBalance || 0,
             bankName: acc.bankName,
           })),
           totalBalance,
@@ -1462,8 +1536,30 @@ Response:
       if (waitingFor === "goal_deadline") {
         // Trích xuất ngày từ message
         const deadline = this.extractDate(message);
+        console.log("=== EXTRACTING DEADLINE ===");
+        console.log("Input message:", message);
+        console.log("Extracted deadline:", deadline);
+        console.log("=== END DEADLINE EXTRACTION ===");
+
         if (deadline) {
-          pendingData.deadline = deadline;
+          // Convert DD/MM/YYYY to YYYY-MM-DD format for database
+          let formattedDeadline = deadline;
+          if (deadline.includes("/")) {
+            const parts = deadline.split("/");
+            if (parts.length === 3) {
+              formattedDeadline = `${parts[2]}-${parts[1].padStart(
+                2,
+                "0"
+              )}-${parts[0].padStart(2, "0")}`;
+            }
+          }
+
+          pendingData.deadline = formattedDeadline;
+          console.log("=== SETTING DEADLINE ===");
+          console.log("Original deadline:", deadline);
+          console.log("Formatted deadline:", formattedDeadline);
+          console.log("Final pending data:", pendingData);
+          console.log("=== END SETTING DEADLINE ===");
 
           // Reset conversation state
           this.resetConversationState(userId);
@@ -1886,196 +1982,98 @@ Response:
     throw lastError;
   }
 
-  // Xử lý fallback khi Gemini API không khả dụng - MỞ RỘNG
-  async handleFallbackResponse(message, userId) {
-    const lowerMessage = message.toLowerCase().trim();
+  // --- PHƯƠNG PHÁP TỐI ƯU: Sử dụng System Instructions & Chat History ---
+  getSystemInstructions() {
+    const currentYear = new Date().getFullYear();
+    const nextYear = currentYear + 1;
 
-    // Fallback cho thống kê
-    if (
-      /(?:thống kê|tổng|chi tiêu|thu nhập|báo cáo|số dư|tài chính).*(?:tháng|month)/i.test(
-        message
-      )
-    ) {
-      console.log("Fallback: Providing statistics");
-      return await this.getQuickStats(userId, null, null);
-    }
+    return `Bạn là AI assistant tài chính Việt Nam. Trả về JSON thuần túy theo format:
 
-    // Fallback cho danh sách
-    if (/(?:xem|liệt kê|danh sách)/i.test(message)) {
-      if (/giao.*dịch/i.test(message)) {
-        console.log("Fallback: Providing recent transactions");
-        return await this.getRecentTransactions(userId);
-      } else if (/tài.*khoản/i.test(message)) {
-        console.log("Fallback: Providing account list");
-        return await this.getAccountList(userId);
-      } else if (/danh.*mục/i.test(message)) {
-        console.log("Fallback: Providing category list");
-        return await this.getCategoryList(userId);
-      } else if (/mục.*tiêu/i.test(message)) {
-        console.log("Fallback: Providing goal list");
-        return await this.getGoalList(userId);
-      }
-    }
+{
+  "intent": "QUICK_STATS|ADD_TRANSACTION|ADD_CATEGORY|ADD_GOAL|VIEW_ACCOUNTS|QUERY_TRANSACTIONS|UNKNOWN",
+  "transaction": null hoặc {"name":"...","amount":số,"type":"CHITIEU|THUNHAP","accountGuess":"...","categoryGuess":"..."},
+  "category": null hoặc {"name":"...","type":"CHITIEU|THUNHAP"},
+  "goal": null hoặc {"name":"...","targetAmount":số,"deadline":"YYYY-MM-DD"},
+  "responseForUser": "Câu trả lời ngắn gọn"
+}
 
-    // Fallback cho tạo mục tiêu
-    if (/(?:tạo|thêm|đặt).*mục.*tiêu/i.test(message)) {
-      console.log("Fallback: Handling goal creation");
+QUY TẮC:
+- ADD_TRANSACTION: phải có đầy đủ name, amount, type, accountGuess, categoryGuess
+- ADD_GOAL: 
+  * Bắt buộc phải có targetAmount và deadline
+  * Parse thời gian từ user: "mục tiêu đi đà lạt 5 triệu tháng 12" → deadline: "2025-12-31"
+  * "cuối năm" → "${currentYear}-12-31"
+  * "tháng X" → "${currentYear}-X-30" (ngày cuối tháng)
+  * "năm sau" → "${nextYear}-12-31"
+  * Nếu không có thời gian trong câu thì deadline: null
+- VIEW_ACCOUNTS: xem tài khoản, nguồn tiền, số dư → intent "VIEW_ACCOUNTS"
+- QUICK_STATS: KHÔNG tự tạo số liệu, chỉ nói sẽ xem thống kê
+- CHỈ trả JSON, KHÔNG markdown hay giải thích thêm
 
-      // Trích xuất thông tin từ message
-      const goalInfo = this.extractGoalInfoFromMessage(message);
+VÍ DỤ:
+User: "mục tiêu đi du lịch 10 triệu tháng 8"
+→ {"intent":"ADD_GOAL","goal":{"name":"Du lịch","targetAmount":10000000,"deadline":"2025-08-31"},"responseForUser":"Xác nhận mục tiêu du lịch 10 triệu, hạn tháng 8/2025"}
 
-      if (goalInfo.name && goalInfo.amount) {
-        // Có đủ thông tin để tạo mục tiêu
-        const goalData = {
-          name: goalInfo.name,
-          targetAmount: goalInfo.amount,
-          deadline: goalInfo.deadline,
-        };
-
-        return {
-          response: `🎯 <strong>Xác nhận tạo mục tiêu:</strong>
-
-📝 <strong>Tên:</strong> ${goalData.name}
-💰 <strong>Số tiền mục tiêu:</strong> ${goalData.targetAmount.toLocaleString()}đ
-📅 <strong>Thời hạn:</strong> ${goalData.deadline || "Một năm từ bây giờ"}
-
-<em>Bạn có muốn tôi tạo mục tiêu này không?</em>`,
-          action: "CONFIRM_ADD_GOAL",
-          data: goalData,
-        };
-      } else if (goalInfo.name) {
-        // Chỉ có tên, cần hỏi số tiền
-        this.updateConversationState(userId, {
-          waitingFor: "goal_amount",
-          pendingData: { name: goalInfo.name },
-          lastIntent: "ADD_GOAL",
-        });
-
-        return {
-          response: `🎯 <strong>Mục tiêu "${goalInfo.name}"</strong>
-
-Bạn muốn tiết kiệm bao nhiều tiền? 
-<em>(Ví dụ: "5 triệu", "10 triệu đồng")</em>`,
-          action: "CHAT_RESPONSE",
-        };
-      } else {
-        // Không có thông tin cụ thể, hỏi tên mục tiêu
-        return {
-          response: `🎯 <strong>Tạo mục tiêu tiết kiệm mới</strong>
-
-Bạn muốn tạo mục tiêu gì? 
-<em>(Ví dụ: "Mua laptop 20 triệu", "Đi du lịch 5 triệu")</em>`,
-          action: "CHAT_RESPONSE",
-        };
-      }
-    }
-
-    // Fallback cho câu hỏi chung về tính năng
-    if (/(?:làm|có thể|giúp|hỗ trợ|tính năng)/i.test(message)) {
-      return {
-        response: `🤖 <strong>Tôi có thể giúp bạn:</strong>
-
-💰 <strong>Thống kê & Báo cáo:</strong>
-• "Xem thống kê tháng này"
-• "Tổng chi tiêu tháng này"
-
-📝 <strong>Quản lý giao dịch:</strong>
-• "Chi 50k ăn sáng"
-• "Thu 5 triệu lương"
-• "Xem giao dịch gần đây"
-
-📋 <strong>Danh sách & Quản lý:</strong>
-• "Xem danh sách tài khoản"
-• "Liệt kê danh mục"
-• "Xem mục tiêu của tôi"
-
-🎯 <strong>Mục tiêu & Kế hoạch:</strong>
-• "Tạo mục tiêu tiết kiệm"
-• "Thêm danh mục mới"
-
-<em>Hãy thử một trong những câu lệnh trên!</em>`,
-        action: "CHAT_RESPONSE",
-      };
-    }
-
-    // Fallback chung
-    return {
-      response: `⚠️ <strong>Dịch vụ AI hiện đang bận.</strong>
-
-Tôi vẫn có thể giúp bạn:
-• "Xem thống kê tháng này"
-• "Danh sách giao dịch"
-• "Xem tài khoản"
-• "Chi 50k ăn sáng"
-
-<em>Hoặc nói "giúp tôi" để xem đầy đủ tính năng.</em>`,
-      action: "CHAT_RESPONSE",
-    };
+User: "xem nguồn tiền" hoặc "số dư tài khoản"
+→ {"intent":"VIEW_ACCOUNTS","responseForUser":"Để tôi xem danh sách tài khoản và số dư cho bạn"}`;
   }
 
-  // Trích xuất thông tin mục tiêu từ message
-  extractGoalInfoFromMessage(message) {
-    const goalInfo = {
-      name: null,
-      amount: null,
-      deadline: null,
-    };
+  // Tạo context ngắn gọn cho user hiện tại
+  buildUserContext(userContext) {
+    const { categories, accounts, recentTransactions, currentDate } =
+      userContext;
 
-    // Trích xuất số tiền
-    goalInfo.amount = this.extractAmount(message);
+    return `Ngày: ${currentDate}
+Danh mục: ${categories
+      .slice(0, 5)
+      .map((c) => c.name)
+      .join(", ")}${categories.length > 5 ? "..." : ""}
+Tài khoản: ${accounts
+      .slice(0, 3)
+      .map((a) => a.name)
+      .join(", ")}${accounts.length > 3 ? "..." : ""}
+Giao dịch gần đây: ${recentTransactions
+      .slice(0, 2)
+      .map((t) => `${t.name} ${t.amount.toLocaleString()}đ`)
+      .join(", ")}`;
+  }
 
-    // Trích xuất thời hạn
-    goalInfo.deadline = this.extractDate(message);
+  // Gọi Gemini với system instructions tối ưu
+  async callGeminiOptimized(userMessage, userContext, retries = 3) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        console.log(`Gemini API attempt ${attempt}/${retries} (optimized)`);
 
-    // Trích xuất tên mục tiêu
-    // Pattern: "tạo mục tiêu [tên] [số tiền]" hoặc "[số tiền] cho [tên]"
-    const goalNamePatterns = [
-      /(?:tạo|thêm|đặt).*mục.*tiêu\s+(.+?)(?:\s+\d|$)/i,
-      /\d+.*?(?:cho|để)\s+(.+?)$/i,
-      /mục.*tiêu\s+(.+?)(?:\s+\d|$)/i,
-      /tiết.*kiệm.*?(.+?)(?:\s+\d|$)/i,
-    ];
+        // Tạo chat với system instruction đúng format
+        const chat = model.startChat({
+          systemInstruction: {
+            parts: [{ text: this.getSystemInstructions() }],
+            role: "system",
+          },
+          history: [], // Có thể lưu history sau này
+        });
 
-    for (const pattern of goalNamePatterns) {
-      const match = message.match(pattern);
-      if (match && match[1]) {
-        let name = match[1].trim();
+        // Context ngắn gọn
+        const contextMessage = this.buildUserContext(userContext);
+        const fullMessage = `Context: ${contextMessage}\n\nUser: ${userMessage}`;
 
-        // Loại bỏ các từ khóa thừa
-        name = name.replace(
-          /\s*(?:với|bằng|khoảng|để|cho|vào|tháng|năm)\s*/gi,
-          " "
-        );
-        name = name.replace(/\s*\d+.*$/g, ""); // Loại bỏ số ở cuối
-        name = name.trim();
+        console.log("Optimized message length:", fullMessage.length);
 
-        if (name.length > 2) {
-          goalInfo.name = name;
-          break;
+        const result = await chat.sendMessage(fullMessage);
+        console.log("Gemini API successful on attempt", attempt);
+        return result;
+      } catch (error) {
+        console.log(`Gemini API attempt ${attempt} failed:`, error.message);
+
+        if (attempt === retries) {
+          throw error;
         }
+
+        // Exponential backoff
+        const delay = Math.pow(2, attempt) * 1000;
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
-
-    // Fallback: nếu không tìm được tên, thử tìm từ khóa chính
-    if (!goalInfo.name) {
-      const keywords = [
-        "biển",
-        "sapa",
-        "du lịch",
-        "laptop",
-        "điện thoại",
-        "nhà",
-        "xe",
-      ];
-      for (const keyword of keywords) {
-        if (message.toLowerCase().includes(keyword)) {
-          goalInfo.name = keyword.charAt(0).toUpperCase() + keyword.slice(1);
-          break;
-        }
-      }
-    }
-
-    return goalInfo;
   }
 
   // ...existing code...
