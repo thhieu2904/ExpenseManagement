@@ -1,52 +1,63 @@
+/* === LAYOUT THUẦN TÚY - CHỈ CHỨA STRUCTURE, KHÔNG CHỨA STYLE UI === */
+
+/* Base header card container */
 .headerCard {
-  display: grid;
-  grid-template-rows: auto auto;
-  grid-template-columns: 1fr auto;
-  row-gap: var(--component-gap);
-  column-gap: var(--component-gap);
   background: var(--color-background);
   border-radius: var(--border-radius-xl);
   box-shadow: var(--shadow-base);
   border: 1.5px solid var(--color-border);
   padding: var(--component-padding);
-  min-height: var(--header-card-min-height);
+  min-height: 140px;
   margin-bottom: var(--component-margin-bottom);
+  position: relative;
+}
+
+/* Layout mặc định (backward compatible) */
+.defaultLayout {
+  display: grid;
+  grid-template-rows: auto auto;
+  grid-template-columns: 1fr auto;
+  row-gap: var(--component-gap);
+  column-gap: var(--component-gap);
   align-items: center;
 }
 
-.title {
+/* Layout linh hoạt cho custom content */
+.flexibleLayout {
+  display: block;
+}
+
+/* Layout 2x2 Grid chuẩn cho tất cả pages - CHỈ LAYOUT, KHÔNG STYLE UI */
+.gridLayout {
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  grid-template-rows: auto auto !important;
+  gap: 2rem !important;
+  align-items: start !important;
+}
+
+/* Position slots cho default layout - CHỈ VỊ TRÍ */
+.defaultLayout .title {
   grid-row: 1;
   grid-column: 1;
-  font-size: var(--title-font-size-h1);
-  font-weight: 600;
-  letter-spacing: -0.5px;
-
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  line-height: 1.2;
   align-self: start;
-  text-shadow: none;
-  transition: none;
-
-  color: var(--color-text-primary);
 }
 
-.extra {
+.defaultLayout .extra {
   grid-row: 1;
   grid-column: 2;
   justify-self: end;
   align-self: start;
 }
 
-.filter {
+.defaultLayout .filter {
   grid-row: 2;
   grid-column: 1;
   align-self: end;
   justify-self: start;
 }
 
-.action {
+.defaultLayout .action {
   grid-row: 2;
   grid-column: 2;
   justify-self: end;
@@ -54,44 +65,115 @@
 }
 
 /* Responsive: xếp dọc khi mobile */
+
+/* Standard Grid Item Classes - CHỈ VỊ TRÍ, KHÔNG STYLE UI */
+.gridItem1_1 {
+  grid-row: 1;
+  grid-column: 1;
+  z-index: 1;
+}
+
+.gridItem1_2 {
+  grid-row: 1;
+  grid-column: 2;
+  justify-self: end;
+  align-self: start;
+  z-index: 1;
+}
+
+.gridItem2_1 {
+  grid-row: 2;
+  grid-column: 1;
+  align-self: end;
+  z-index: 1;
+}
+
+.gridItem2_2 {
+  grid-row: 2;
+  grid-column: 2;
+  justify-self: end;
+  align-self: end;
+  z-index: 1;
+}
+
+/* === RESPONSIVE LAYOUT - CHỈ LAYOUT, KHÔNG STYLE UI === */
+
+/* Responsive cho default layout */
 @media (max-width: 992px) {
-  .headerCard {
-    padding: var(--component-padding);
+  .defaultLayout {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto auto;
     row-gap: var(--component-gap);
   }
-  .title,
-  .extra,
-  .filter,
-  .action {
+  
+  .defaultLayout .title,
+  .defaultLayout .extra,
+  .defaultLayout .filter,
+  .defaultLayout .action {
     grid-column: 1 !important;
     justify-self: stretch;
     align-self: start;
   }
 
-  .extra {
+  .defaultLayout .extra {
     justify-self: start;
     width: 100%;
   }
 
-  .action {
+  .defaultLayout .action {
     margin-top: 0.5rem;
     justify-self: stretch;
-  }
-  .title {
-    font-size: var(--title-font-size-h1);
-    margin-bottom: 0.7rem;
   }
 }
 
 @media (max-width: 576px) {
-  .filter {
+  .defaultLayout .filter {
     width: 100%;
   }
-  .filter > * {
+  .defaultLayout .filter > * {
     width: 100%;
   }
 }
 
-/* Chỉ áp dụng cho DateRangeNavigator khi nằm trong .headerCard */
+/* Responsive cho grid layout */
+@media (max-width: 992px) {
+  .gridLayout {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto auto auto !important;
+    gap: 1.5rem !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .gridLayout {
+    gap: 1.25rem !important;
+  }
+}
+
+/* Responsive cho grid items */
+@media (max-width: 992px) {
+  .gridItem1_1 {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .gridItem1_2 {
+    grid-row: 2;
+    grid-column: 1;
+    justify-self: stretch;
+    align-self: start;
+  }
+
+  .gridItem2_1 {
+    grid-row: 3;
+    grid-column: 1;
+    align-self: start;
+  }
+
+  .gridItem2_2 {
+    grid-row: 4;
+    grid-column: 1;
+    justify-self: stretch;
+    align-self: start;
+  }
+}

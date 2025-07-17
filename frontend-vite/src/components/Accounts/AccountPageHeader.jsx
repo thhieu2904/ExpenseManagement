@@ -2,16 +2,29 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faWallet } from "@fortawesome/free-solid-svg-icons";
-import ExtendedHeaderCard from "../Common/ExtendedHeaderCard";
+import HeaderCard from "../Common/HeaderCard";
+import PageTitle from "../Common/PageTitle";
 import Button from "../Common/Button";
+import styles from "./AccountPageHeader.module.css";
 
-const AccountPageHeader = ({ onAddAccountClick }) => {
+const AccountPageHeader = ({ 
+  onAddAccountClick, 
+  extra, 
+  filter 
+}) => {
   return (
-    <ExtendedHeaderCard
-      title="Quản Lý Nguồn Tiền"
-      extra={
-        <FontAwesomeIcon icon={faWallet} />
+    <HeaderCard
+      title={
+        <PageTitle 
+          level="h1" 
+          icon={faWallet}
+          iconColor="#4f46e5"
+        >
+          Quản Lý Nguồn Tiền
+        </PageTitle>
       }
+      extra={extra}
+      filter={filter}
       action={
         <Button
           onClick={onAddAccountClick}

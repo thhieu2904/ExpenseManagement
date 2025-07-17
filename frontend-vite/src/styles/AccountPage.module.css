@@ -4,14 +4,119 @@
   background-color: #f9fafb; /* Màu nền chung cho trang */
 }
 
-.mainContent {
+/* === STYLES ĐẶC THÙ CHO ACCOUNTPAGE HEADER === */
+/* Chỉ chứa style UI đặc thù, không chứa layout/typography chung */
+
+/* Greeting Section */
+.greetingSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.greetingIcon {
+  font-size: 2.5rem;
+  color: #4f46e5;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.greetingText {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 0.25rem;
+}
+
+/* mainGreeting giờ chỉ chứa style đặc thù, typography để HeaderTitle lo */
+.mainGreeting {
+  color: var(--color-text) !important; /* Override HeaderTitle nếu cần */
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+/* Context Section */
+.contextSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.smartContext {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.contextText {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.moodEmoji {
+  font-size: 1.25rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.miniStats {
+  font-size: 0.875rem;
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.miniStats::before {
+  content: "📅";
+  font-size: 1rem;
+}
+
+.addButton {
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+  transition: all 0.2s ease;
+}
+
+.addButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
+}
+
+/* === Existing styles === */
+
+.mainContent {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Header row chứa title và filter */
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+/* Content row chứa 2 cột */
+.contentRow {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 @media (min-width: 992px) {
-  .mainContent {
+  .contentRow {
     flex-direction: row;
     align-items: flex-start;
   }
@@ -25,4 +130,46 @@
 .rightColumn {
   flex: 2.5;
   min-width: 0; /* Quan trọng để flexbox hoạt động đúng */
+}
+
+/* Responsive cho headerRow */
+@media (max-width: 768px) {
+  .headerRow {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  
+  .headerRow h2 {
+    margin-bottom: 8px;
+  }
+}
+
+/* Header responsive styles */
+@media (max-width: 992px) {
+  .mainGreeting {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .mainGreeting {
+    font-size: 1.375rem;
+  }
+
+  .greetingIcon {
+    font-size: 2rem;
+  }
+
+  .greetingSection {
+    gap: 0.75rem;
+  }
+  
+  .miniStats {
+    font-size: 0.8rem;
+  }
+  
+  .contextText {
+    font-size: 0.9rem;
+  }
 }

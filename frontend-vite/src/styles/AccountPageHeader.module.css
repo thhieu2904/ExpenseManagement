@@ -1,0 +1,149 @@
+/* src/components/Accounts/AccountPageHeader.module.css */
+
+.headerContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hiệu ứng background */
+.headerContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.03"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  pointer-events: none;
+}
+
+.leftSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1;
+}
+
+.greeting {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.greetingIcon {
+  color: #fbbf24;
+  font-size: 24px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.greetingText {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  letter-spacing: -0.025em;
+}
+
+.context {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  margin-left: 36px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 1;
+}
+
+.addButton {
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+.addButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .headerContainer {
+    padding: 20px 24px;
+  }
+  
+  .greetingText {
+    font-size: 22px;
+  }
+  
+  .context {
+    font-size: 15px;
+  }
+  
+  .rightSection {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .headerContainer {
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    align-items: stretch;
+  }
+  
+  .leftSection {
+    align-items: flex-start;
+  }
+  
+  .rightSection {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .greetingText {
+    font-size: 20px;
+  }
+  
+  .context {
+    margin-left: 0;
+    margin-top: 4px;
+  }
+  
+  .addButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .headerContainer {
+    padding: 16px;
+  }
+  
+  .greetingText {
+    font-size: 18px;
+  }
+  
+  .context {
+    font-size: 14px;
+  }
+  
+  .greetingIcon {
+    font-size: 20px;
+  }
+}

@@ -8,9 +8,6 @@ import {
   faArrowUp,
   faExclamationTriangle,
   faCheckCircle,
-  faTimes,
-  faWallet,
-  faEdit,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Hàm tiện ích để chuyển đổi Date object thành chuỗi 'YYYY-MM-DD'
@@ -394,15 +391,9 @@ const AddEditTransactionModal = ({
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h2 className={styles.modalTitle}>
-            <FontAwesomeIcon 
-              icon={mode === "add" ? faWallet : faEdit} 
-              className={styles.titleIcon}
-            />
-            {modalTitle}
-          </h2>
+          <h2 className={styles.modalTitle}>{modalTitle}</h2>
           <button onClick={onClose} className={styles.closeButton}>
-            <FontAwesomeIcon icon={faTimes} />
+            &times;
           </button>
         </div>
         <form onSubmit={handleSubmit} className={styles.transactionForm}>
@@ -654,29 +645,22 @@ const AddEditTransactionModal = ({
             </button>
             <button
               type="submit"
-              className={`${styles.formButton} ${styles.submitButton} ${
-                isValid ? styles.submitButtonActive : ''
-              }`}
+              className={`${styles.formButton} ${styles.submitButton} ${!isValid ? styles.disabledButton : ''}`}
               disabled={isLoading || isSubmitting || !isValid}
               title={!isValid ? 'Vui lòng kiểm tra lại các trường đã nhập' : 'Nhấn Ctrl+Enter để lưu nhanh'}
             >
               {isSubmitting ? (
                 <>
-                  <FontAwesomeIcon icon={faSpinner} spin className={styles.submitSpinner} />
-                  <span>Đang lưu...</span>
+                  <FontAwesomeIcon icon={faSpinner} spin />
+                  <span className={styles.buttonText}>Đang lưu...</span>
                 </>
               ) : (
                 <>
-                  {isValid && <FontAwesomeIcon icon={faCheckCircle} />}
-                  <span>{submitButtonText}</span>
+                  {isValid && <FontAwesomeIcon icon={faCheckCircle} className={styles.successIcon} />}
+                  <span className={styles.buttonText}>{submitButtonText}</span>
                 </>
               )}
             </button>
-          </div>
-
-          {/* Keyboard Shortcuts Hint */}
-          <div className={styles.keyboardHints}>
-            <span>💡 Mẹo: Nhấn <kbd>Ctrl</kbd> + <kbd>Enter</kbd> để lưu nhanh</span>
           </div>
         </form>
       </div>
