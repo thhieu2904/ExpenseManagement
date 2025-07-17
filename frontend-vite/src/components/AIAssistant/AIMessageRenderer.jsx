@@ -53,6 +53,10 @@ const AIMessageRenderer = ({ content }) => {
       // Check if line has emoji at start (statistics headers)
       const isHeader = /^[📊💰💸🏦📈✅❌🎯]/u.test(line.trim());
 
+      // Check if line is a dash divider (contains only dashes and spaces)
+      const isDashLine =
+        /^[\s─-]+$/.test(line.trim()) && line.trim().length > 10;
+
       // Parse individual line for HTML tags
       const parts = [];
       let currentIndex = 0;
@@ -85,6 +89,15 @@ const AIMessageRenderer = ({ content }) => {
       // Add remaining text
       if (currentIndex < line.length) {
         parts.push(line.substring(currentIndex));
+      }
+
+      // Special handling for dash lines
+      if (isDashLine) {
+        return (
+          <div key={index} className={styles.dashLine}>
+            ──────────────────────────────────────
+          </div>
+        );
       }
 
       return (

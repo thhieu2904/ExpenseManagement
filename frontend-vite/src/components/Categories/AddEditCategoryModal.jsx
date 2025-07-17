@@ -33,7 +33,7 @@ const AddEditCategoryModal = ({
   const [name, setName] = useState("");
   const [type, setType] = useState(initialType || CATEGORY_TYPE.CHITIEU);
   const [selectedIcon, setSelectedIcon] = useState(
-    availableIconsForSelection[0]?.identifier || "default"
+    availableIconsForSelection[0]?.identifier || "fa-bullseye"
   );
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -120,15 +120,21 @@ const AddEditCategoryModal = ({
   const handleKeyDown = useCallback(
     (e) => {
       if (e.key === "Escape") {
-        handleClose();
+        onClose();
       } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         if (isValid && !isSubmitting) {
-          handleSubmit(e);
+          // Submit form trực tiếp thay vì gọi handleSubmit
+          const form = e.target.closest("form");
+          if (form) {
+            form.dispatchEvent(
+              new Event("submit", { cancelable: true, bubbles: true })
+            );
+          }
         }
       }
     },
-    [isValid, isSubmitting]
+    [isValid, isSubmitting, onClose]
   );
 
   // Focus management and keyboard listeners
@@ -158,7 +164,7 @@ const AddEditCategoryModal = ({
         setSelectedIcon(
           initialData.icon ||
             availableIconsForSelection[0]?.identifier ||
-            "default"
+            "fa-bullseye"
         );
         setError("");
         setFieldErrors({});
@@ -170,7 +176,9 @@ const AddEditCategoryModal = ({
             ? CATEGORY_TYPE.CHITIEU
             : initialType || CATEGORY_TYPE.CHITIEU
         );
-        setSelectedIcon(availableIconsForSelection[0]?.identifier || "default");
+        setSelectedIcon(
+          availableIconsForSelection[0]?.identifier || "fa-bullseye"
+        );
         setError("");
         setFieldErrors({});
         setTouched({});

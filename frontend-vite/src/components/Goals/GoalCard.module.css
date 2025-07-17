@@ -35,12 +35,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f3f4f6;
+  background-color: #eef2ff; /* Màu nền nhẹ giống NextGoalWidget */
   flex-shrink: 0;
 }
 
 .icon {
   font-size: 1.6rem;
+  color: #4f46e5; /* Màu tím đẹp giống NextGoalWidget */
 }
 
 .goalName {

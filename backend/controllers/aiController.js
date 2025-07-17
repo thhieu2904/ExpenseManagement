@@ -292,16 +292,30 @@ class AIController {
       throw new Error("Missing intent field in AI response");
     }
 
+    // Validate entities structure
+    if (!parsed.entities) {
+      parsed.entities = {
+        specificAccount: null,
+        bankFilter: null,
+        categoryFilter: null,
+        timeFilter: null,
+        amountFilter: null,
+        searchTerm: null,
+        typeFilter: null,
+        statusFilter: null,
+      };
+    }
+
     return parsed;
   }
 
   // --- HÀM MỚI: Xây dựng prompt cho Gemini ---
-  // --- HÀM NÂNG CẤP: buildPrompt với context đầy đủ ---
+  // --- HÀM NÂNG CẤP: buildPrompt với context đầy đủ và entity extraction ---
   buildPrompt(userMessage, userContext) {
     const { categories, accounts, recentTransactions, currentDate } =
       userContext;
 
-    // Tạo danh sách categories và accounts dưới dạng string
+    // Tạo danh sách categories và accounts dưới dạng string với format chi tiết
     const categoryList = categories
       .map((c) => `"${c.name}" (${c.type})`)
       .join(", ");
@@ -311,8 +325,16 @@ class AIController {
       )
       .join(", ");
 
+    // Tạo danh sách để AI nhận diện entities
+    const accountNames = accounts.map((a) => a.name).join(", ");
+    const bankNames = accounts
+      .filter((a) => a.bankName)
+      .map((a) => a.bankName)
+      .join(", ");
+    const categoryNames = categories.map((c) => c.name).join(", ");
+
     return `
-SYSTEM: Bạn là AI assistant chuyên về tài chính cá nhân. Phân tích yêu cầu người dùng và trả về JSON response chính xác.
+SYSTEM: Bạn là AI assistant chuyên về tài chính cá nhân. Phân tích yêu cầu người dùng, xác định INTENT và trích xuất ENTITIES (thực thể) cụ thể.
 
 ### THÔNG TIN NGƯỜI DÙNG HIỆN TẠI
 - Ngày hiện tại: ${currentDate}
@@ -324,45 +346,176 @@ SYSTEM: Bạn là AI assistant chuyên về tài chính cá nhân. Phân tích y
         .join(", ") || "Chưa có giao dịch nào"
     }
 
+### DANH SÁCH ENTITIES ĐỂ NHẬN DIỆN
+- Tên tài khoản: ${accountNames || "Không có"}
+- Tên ngân hàng: ${bankNames || "Không có"}  
+- Tên danh mục: ${categoryNames || "Không có"}
+
 ### YÊU CẦU NGƯỜI DÙNG
 "${userMessage}"
 
-### CÁC INTENT CÓ THỂ XỬ LÝ
-1. QUICK_STATS - Xem thống kê, báo cáo, tổng quan
-2. ADD_TRANSACTION - Thêm giao dịch mới  
-3. ADD_CATEGORY - Thêm danh mục mới
-4. ADD_GOAL - Thêm mục tiêu mới
-5. QUERY_TRANSACTIONS - Tìm kiếm giao dịch
-6. UNKNOWN - Không xác định được
+### CÁC INTENT CÓ THỂ XỬ LÝ VÀ ENTITIES CẦN TRÍCH XUẤT
+1. **QUICK_STATS** - Xem thống kê, báo cáo, tổng quan
+   - Entities: timeFilter (tháng này, tháng trước, tháng X)
+
+2. **VIEW_ACCOUNTS** - Xem danh sách tài khoản và số dư
+   - Entities: specificAccount (tên tài khoản cụ thể), bankFilter (ngân hàng cụ thể)
+
+3. **VIEW_TRANSACTIONS** - Xem giao dịch
+   - Entities: timeFilter, accountFilter, categoryFilter, amountFilter
+
+4. **VIEW_CATEGORIES** - Xem danh sách danh mục
+   - Entities: typeFilter (chi tiêu/thu nhập)
+
+5. **VIEW_GOALS** - Xem mục tiêu
+   - Entities: statusFilter (đang thực hiện, hoàn thành, quá hạn)
+
+6. **ADD_TRANSACTION** - Thêm giao dịch mới
+   - Entities: amount, description, accountGuess, categoryGuess
+
+7. **ADD_CATEGORY** - Thêm danh mục mới
+   - Entities: name, type
+
+8. **ADD_GOAL** - Thêm mục tiêu mới  
+   - Entities: name, targetAmount, deadline
+
+9. **QUERY_TRANSACTIONS** - Tìm kiếm giao dịch
+   - Entities: searchTerm, timeFilter, amountRange
+
+10. **UNKNOWN** - Không xác định được
+
+### HƯỚNG DẪN TRÍCH XUẤT ENTITIES
+- **specificAccount**: Tìm chính xác tên tài khoản được nhắc đến
+- **bankFilter**: Tìm tên ngân hàng (Vietcombank, BIDV, Techcombank, MB Bank, etc.)
+- **timeFilter**: "tháng này", "tháng trước", "tháng X", "hôm nay", "tuần này", etc.
+- **categoryFilter**: Tên danh mục cụ thể được nhắc đến
+- **amountFilter**: Khoảng số tiền ("trên 1 triệu", "dưới 500k", etc.)
+- **searchTerm**: Từ khóa tìm kiếm giao dịch
 
 ### QUY TẮC PHẢN HỒI
 - Chỉ trả về JSON thuần túy, không có markdown hay giải thích
-- Sử dụng đúng tên category/account có sẵn của user
+- LUÔN trích xuất entities từ câu nói của user
+- Sử dụng đúng tên category/account có sẵn của user để match entities
+- Với VIEW_ACCOUNTS: nếu có specificAccount hoặc bankFilter, chỉ hiển thị những account đó
 - Với ADD_TRANSACTION: phải có đầy đủ name, amount, type, accountGuess, categoryGuess
-- Với QUICK_STATS: KHÔNG tự tạo số liệu, chỉ nói "Tôi sẽ xem thống kê cho bạn"
-- Với ADD_CATEGORY/ADD_GOAL: HỎI XÁC NHẬN, không khẳng định đã thêm
-- responseForUser phải ngắn gọn, thân thiện, KHÔNG chứa số liệu cụ thể
+- Với QUICK_STATS: KHÔNG tự tạo số liệu, sử dụng timeFilter nếu có
+- responseForUser phải ngắn gọn, thân thiện, phản ánh đúng entities được trích xuất
 
 ### XỬ LÝ THỜI GIAN CHO MỤC TIÊU
-- Hiểu các cụm từ: "tháng 1 năm 2026", "tháng 1 năm sau", "cuối năm", "đầu năm sau"
-- Format deadline: "YYYY-MM-DD" (ví dụ: "2026-01-31" cho "tháng 1 năm 2026")
+- Hiểu các cụm từ về NGÀY: "15/3/2026", "ngày 15 tháng 3", "15 tháng 3 năm 2026"
+- Hiểu các cụm từ về THÁNG: "tháng 1 năm 2026", "tháng 1 năm sau", "cuối năm", "đầu năm sau"
+- Hiểu các cụm từ về TUẦN: "tuần sau", "cuối tuần này", "đầu tuần tới"
+- Hiểu các cụm từ về NGÀY GẦN: "hôm nay", "ngày mai", "ngày kia", "tuần tới", "tháng tới"
+- Format deadline: "YYYY-MM-DD" (ví dụ: "2026-03-15" cho "15 tháng 3 năm 2026")
 - Năm hiện tại: ${new Date().getFullYear()}
+- Tháng hiện tại: ${new Date().getMonth() + 1}
+- Ngày hiện tại: ${new Date().getDate()}
 - Mặc định: nếu không có năm thì là năm hiện tại, nếu nói "năm sau/tới" thì +1 năm
 - "cuối năm" = "31/12/năm", "đầu năm" = "31/01/năm", "tháng X" = "ngày cuối tháng X"
+- "ngày mai" = +1 ngày, "tuần sau" = +7 ngày, "tháng sau" = +1 tháng
 
-### VÍ DỤ XỬ LÝ THỜI GIAN
+### VÍ DỤ XỬ LÝ THỜI GIAN CHI TIẾT
+- "15/3/2026" → deadline: "2026-03-15"
+- "ngày 15 tháng 3" → deadline: "${new Date().getFullYear()}-03-15"
+- "15 tháng 3 năm 2026" → deadline: "2026-03-15"
 - "tháng 1 năm 2026" → deadline: "2026-01-31"
 - "tháng 1 năm sau" → deadline: "${new Date().getFullYear() + 1}-01-31"
 - "cuối năm" → deadline: "${new Date().getFullYear()}-12-31"
 - "tháng 6" → deadline: "${new Date().getFullYear()}-06-30"
+- "ngày mai" → deadline: "${
+      new Date(Date.now() + 86400000).toISOString().split("T")[0]
+    }"
+- "tuần sau" → deadline: "${
+      new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0]
+    }"
+- "tháng tới" → deadline: "${
+      new Date(
+        new Date().getFullYear(),
+        new Date().getMonth() + 1,
+        new Date().getDate()
+      )
+        .toISOString()
+        .split("T")[0]
+    }"
 
 ### FORMAT JSON BẮT BUỘC
 {
   "intent": "...",
+  "entities": {
+    "specificAccount": "tên tài khoản cụ thể hoặc null",
+    "bankFilter": "tên ngân hàng cụ thể hoặc null", 
+    "categoryFilter": "tên danh mục cụ thể hoặc null",
+    "timeFilter": "tháng này|tháng trước|tháng X|hôm nay|tuần này hoặc null",
+    "amountFilter": "trên X|dưới X|từ X đến Y hoặc null",
+    "searchTerm": "từ khóa tìm kiếm hoặc null",
+    "typeFilter": "CHITIEU|THUNHAP hoặc null",
+    "statusFilter": "active|completed|overdue hoặc null"
+  },
   "transaction": null hoặc { "name": "...", "amount": số, "type": "CHITIEU/THUNHAP", "accountGuess": "...", "categoryGuess": "..." },
   "category": null hoặc { "name": "...", "type": "CHITIEU/THUNHAP" },
   "goal": null hoặc { "name": "...", "targetAmount": số, "deadline": "YYYY-MM-DD" },
-  "responseForUser": "Câu trả lời ngắn gọn"
+  "responseForUser": "Câu trả lời ngắn gọn phản ánh entities được trích xuất"
+}
+
+### VÍ DỤ TRÍCH XUẤT ENTITIES
+User: "xem nguồn tiền Vietcombank"
+Response:
+{
+  "intent": "VIEW_ACCOUNTS",
+  "entities": {
+    "specificAccount": null,
+    "bankFilter": "Vietcombank",
+    "categoryFilter": null,
+    "timeFilter": null,
+    "amountFilter": null,
+    "searchTerm": null,
+    "typeFilter": null,
+    "statusFilter": null
+  },
+  "transaction": null,
+  "category": null,
+  "goal": null,
+  "responseForUser": "Tôi sẽ xem các tài khoản Vietcombank của bạn."
+}
+
+User: "xem tài khoản Ví tiền mặt"
+Response:
+{
+  "intent": "VIEW_ACCOUNTS",
+  "entities": {
+    "specificAccount": "Ví tiền mặt",
+    "bankFilter": null,
+    "categoryFilter": null,
+    "timeFilter": null,
+    "amountFilter": null,
+    "searchTerm": null,
+    "typeFilter": null,
+    "statusFilter": null
+  },
+  "transaction": null,
+  "category": null,
+  "goal": null,
+  "responseForUser": "Tôi sẽ xem thông tin tài khoản Ví tiền mặt của bạn."
+}
+
+User: "xem giao dịch ăn uống tháng này"
+Response:
+{
+  "intent": "VIEW_TRANSACTIONS",
+  "entities": {
+    "specificAccount": null,
+    "bankFilter": null,
+    "categoryFilter": "Ăn uống",
+    "timeFilter": "tháng này",
+    "amountFilter": null,
+    "searchTerm": null,
+    "typeFilter": null,
+    "statusFilter": null
+  },
+  "transaction": null,
+  "category": null,
+  "goal": null,
+  "responseForUser": "Tôi sẽ xem các giao dịch ăn uống trong tháng này."
 }
 
 ### VÍ DỤ
@@ -370,6 +523,16 @@ User: "chi 50k ăn sáng"
 Response:
 {
   "intent": "ADD_TRANSACTION",
+  "entities": {
+    "specificAccount": null,
+    "bankFilter": null,
+    "categoryFilter": null,
+    "timeFilter": null,
+    "amountFilter": null,
+    "searchTerm": null,
+    "typeFilter": null,
+    "statusFilter": null
+  },
   "transaction": { "name": "Ăn sáng", "amount": 50000, "type": "CHITIEU", "accountGuess": "${
     accounts[0]?.name || "Ví"
   }", "categoryGuess": "Ăn uống" },
@@ -381,51 +544,53 @@ Response:
 User: "xem thống kê tháng này"
 Response:
 {
-  "intent": "QUICK_STATS", 
+  "intent": "QUICK_STATS",
+  "entities": {
+    "specificAccount": null,
+    "bankFilter": null,
+    "categoryFilter": null,
+    "timeFilter": "tháng này",
+    "amountFilter": null,
+    "searchTerm": null,
+    "typeFilter": null,
+    "statusFilter": null
+  },
   "transaction": null,
   "category": null,
   "goal": null,
   "responseForUser": "Để tôi xem thống kê tài chính tháng này cho bạn."
 }
 
-User: "thêm danh mục trả tiền AI"
+User: "tìm giao dịch trên 1 triệu"
 Response:
 {
-  "intent": "ADD_CATEGORY",
+  "intent": "QUERY_TRANSACTIONS",
+  "entities": {
+    "specificAccount": null,
+    "bankFilter": null,
+    "categoryFilter": null,
+    "timeFilter": null,
+    "amountFilter": "trên 1000000",
+    "searchTerm": null,
+    "typeFilter": null,
+    "statusFilter": null
+  },
   "transaction": null,
-  "category": { "name": "Trả tiền AI", "type": "CHITIEU" },
+  "category": null,
   "goal": null,
-  "responseForUser": "Bạn có muốn tôi tạo danh mục chi tiêu 'Trả tiền AI' không?"
-}
-
-User: "tạo mục tiêu tiết kiệm 5 triệu đi sapa tháng 1 năm 2026"
-Response:
-{
-  "intent": "ADD_GOAL",
-  "transaction": null,
-  "category": null,
-  "goal": { "name": "Đi Sapa", "targetAmount": 5000000, "deadline": "2026-01-31" },
-  "responseForUser": "Bạn có muốn tạo mục tiêu tiết kiệm 5.000.000đ cho chuyến đi Sapa với hạn cuối tháng 1 năm 2026 không?"
-}
-
-User: "mục tiêu mua nhà 2 tỷ cuối năm"
-Response:
-{
-  "intent": "ADD_GOAL",
-  "transaction": null,
-  "category": null,
-  "goal": { "name": "Mua nhà", "targetAmount": 2000000000, "deadline": "${new Date().getFullYear()}-12-31" },
-  "responseForUser": "Bạn có muốn tạo mục tiêu tiết kiệm 2.000.000.000đ để mua nhà với hạn cuối năm nay không?"
+  "responseForUser": "Tôi sẽ tìm các giao dịch có số tiền trên 1 triệu đồng."
 }
     `;
   }
 
   // --- HÀM XỬ LÝ RESPONSE CẢI TIẾN ---
   async handleAIResponse(aiResponse, userId) {
-    const { intent, transaction, category, goal, responseForUser } = aiResponse;
+    const { intent, transaction, category, goal, responseForUser, entities } =
+      aiResponse;
 
     console.log("=== HANDLING AI RESPONSE ===");
     console.log("Intent:", intent);
+    console.log("Entities:", JSON.stringify(entities, null, 2));
     console.log("Transaction data:", transaction);
     console.log("Category data:", category);
     console.log("Goal data:", goal);
@@ -445,15 +610,36 @@ Response:
         return await this.handleAddGoal(goal, userId, responseForUser);
 
       case "QUICK_STATS":
-        // For QUICK_STATS from Gemini, use current month
-        return await this.getQuickStats(userId, null, null);
+        // For QUICK_STATS từ Gemini, sử dụng timeFilter từ entities
+        const timeFilter = entities?.timeFilter;
+        return await this.getQuickStatsWithFilter(userId, timeFilter);
 
       case "VIEW_ACCOUNTS":
-        // Xem danh sách tài khoản và số dư
-        return await this.getAccountList(userId);
+        // Xem danh sách tài khoản với filter từ entities
+        return await this.getAccountListWithFilter(userId, entities);
+
+      case "VIEW_TRANSACTIONS":
+        // Xem giao dịch với filter từ entities
+        return await this.getTransactionsWithFilter(
+          userId,
+          entities,
+          responseForUser
+        );
+
+      case "VIEW_CATEGORIES":
+        // Xem danh mục với filter từ entities
+        return await this.getCategoryListWithFilter(userId, entities);
+
+      case "VIEW_GOALS":
+        // Xem mục tiêu với filter từ entities
+        return await this.getGoalListWithFilter(userId, entities);
 
       case "QUERY_TRANSACTIONS":
-        return await this.handleQueryTransactions(userId, responseForUser);
+        return await this.handleQueryTransactionsWithFilter(
+          userId,
+          entities,
+          responseForUser
+        );
 
       default:
         return {
@@ -758,7 +944,561 @@ Response:
     }
   }
 
-  // Lấy thống kê nhanh từ API thống kê thực tế
+  // Lấy thống kê với filter thời gian từ entities
+  async getQuickStatsWithFilter(userId, timeFilter) {
+    try {
+      console.log("=== GETTING STATS WITH TIME FILTER ===");
+      console.log("Time filter:", timeFilter);
+
+      let targetMonth = new Date().getMonth() + 1;
+      let targetYear = new Date().getFullYear();
+
+      // Parse timeFilter để xác định tháng/năm cụ thể
+      if (timeFilter) {
+        const timeInfo = this.parseTimeFilter(timeFilter);
+        if (timeInfo) {
+          targetMonth = timeInfo.month;
+          targetYear = timeInfo.year;
+        }
+      }
+
+      console.log(`Using month: ${targetMonth}, year: ${targetYear}`);
+      return await this.getQuickStats(userId, targetMonth, targetYear);
+    } catch (error) {
+      console.error("Error getting stats with filter:", error);
+      return await this.getQuickStats(userId, null, null);
+    }
+  }
+
+  // Lấy danh sách tài khoản với filter từ entities
+  async getAccountListWithFilter(userId, entities) {
+    try {
+      console.log("=== GETTING ACCOUNTS WITH FILTER ===");
+      console.log("Entities:", JSON.stringify(entities, null, 2));
+
+      const userObjectId =
+        typeof userId === "string"
+          ? new mongoose.Types.ObjectId(userId)
+          : userId;
+
+      // Tạo filter query dựa trên entities
+      let accountFilter = { userId: userObjectId };
+
+      // Filter theo tài khoản cụ thể
+      if (entities?.specificAccount) {
+        accountFilter.name = {
+          $regex: new RegExp(entities.specificAccount, "i"),
+        };
+      }
+
+      // Filter theo ngân hàng
+      if (entities?.bankFilter) {
+        accountFilter.bankName = {
+          $regex: new RegExp(entities.bankFilter, "i"),
+        };
+      }
+
+      console.log("Account filter:", accountFilter);
+
+      const accounts = await Account.find(accountFilter);
+
+      if (accounts.length === 0) {
+        const filterText = entities?.specificAccount
+          ? `tài khoản "${entities.specificAccount}"`
+          : entities?.bankFilter
+          ? `ngân hàng "${entities.bankFilter}"`
+          : "tài khoản";
+
+        return {
+          response: `Không tìm thấy ${filterText} nào.`,
+          action: "CHAT_RESPONSE",
+        };
+      }
+
+      console.log("Found filtered accounts:", accounts.length);
+
+      let totalBalance = 0;
+      const accountsWithBalance = [];
+
+      // Tính balance thực cho mỗi account
+      for (const account of accounts) {
+        const initialBalance = account.initialBalance || 0;
+
+        const transactions = await Transaction.find({
+          userId: userObjectId,
+          accountId: account._id,
+        });
+
+        const accountTransactionSum = transactions.reduce(
+          (sum, transaction) => {
+            if (transaction.type === "THUNHAP") {
+              return sum + (transaction.amount || 0);
+            } else if (transaction.type === "CHITIEU") {
+              return sum - (transaction.amount || 0);
+            }
+            return sum;
+          },
+          0
+        );
+
+        const realBalance = initialBalance + accountTransactionSum;
+        totalBalance += realBalance;
+
+        accountsWithBalance.push({
+          ...account.toObject(),
+          realBalance,
+        });
+      }
+
+      // Tạo tiêu đề phù hợp với filter
+      let title = "💼 <strong>Danh sách tài khoản";
+      if (entities?.specificAccount) {
+        title += ` "${entities.specificAccount}"`;
+      } else if (entities?.bankFilter) {
+        title += ` ${entities.bankFilter}`;
+      }
+      title += ":</strong>";
+
+      const accountList = accountsWithBalance
+        .map((acc, index) => {
+          const typeText =
+            acc.type === "TIENMAT" ? "💵 Tiền mặt" : "🏦 Ngân hàng";
+          const bankInfo = acc.bankName ? ` (${acc.bankName})` : "";
+          const balance = acc.realBalance;
+          const balanceColor = balance >= 0 ? "positive" : "negative";
+          return `${index + 1}. <strong>${
+            acc.name
+          }</strong> ${typeText}${bankInfo} - <span class="balance ${balanceColor}">${balance.toLocaleString()}đ</span>`;
+        })
+        .join("\n");
+
+      return {
+        response: `${title}\n\n${accountList}\n\n<strong>Tổng số dư: ${totalBalance.toLocaleString()}đ</strong>`,
+        action: "CHAT_RESPONSE",
+        data: {
+          accounts: accountsWithBalance.map((acc) => ({
+            id: acc._id,
+            name: acc.name,
+            type: acc.type,
+            balance: acc.realBalance,
+            initialBalance: acc.initialBalance || 0,
+            bankName: acc.bankName,
+          })),
+          totalBalance,
+          filters: entities,
+        },
+      };
+    } catch (error) {
+      console.error("Error getting filtered account list:", error);
+      return {
+        response: "Có lỗi xảy ra khi lấy danh sách tài khoản.",
+        action: "CHAT_RESPONSE",
+      };
+    }
+  }
+
+  // Lấy giao dịch với filter từ entities
+  async getTransactionsWithFilter(userId, entities, responseForUser) {
+    try {
+      console.log("=== GETTING TRANSACTIONS WITH FILTER ===");
+      console.log("Entities:", JSON.stringify(entities, null, 2));
+
+      const userObjectId =
+        typeof userId === "string"
+          ? new mongoose.Types.ObjectId(userId)
+          : userId;
+
+      // Tạo filter query dựa trên entities
+      let transactionFilter = { userId: userObjectId };
+      let dateFilter = {};
+
+      // Filter theo thời gian
+      if (entities?.timeFilter) {
+        const timeInfo = this.parseTimeFilter(entities.timeFilter);
+        if (timeInfo) {
+          const startOfMonth = new Date(timeInfo.year, timeInfo.month - 1, 1);
+          const endOfMonth = new Date(
+            timeInfo.year,
+            timeInfo.month,
+            0,
+            23,
+            59,
+            59,
+            999
+          );
+          dateFilter = {
+            date: {
+              $gte: startOfMonth,
+              $lte: endOfMonth,
+            },
+          };
+        }
+      }
+
+      // Filter theo danh mục
+      if (entities?.categoryFilter) {
+        const category = await Category.findOne({
+          userId: userObjectId,
+          name: { $regex: new RegExp(entities.categoryFilter, "i") },
+        });
+        if (category) {
+          transactionFilter.categoryId = category._id;
+        }
+      }
+
+      // Filter theo tài khoản
+      if (entities?.specificAccount) {
+        const account = await Account.findOne({
+          userId: userObjectId,
+          name: { $regex: new RegExp(entities.specificAccount, "i") },
+        });
+        if (account) {
+          transactionFilter.accountId = account._id;
+        }
+      }
+
+      // Filter theo số tiền
+      if (entities?.amountFilter) {
+        const amountCondition = this.parseAmountFilter(entities.amountFilter);
+        if (amountCondition) {
+          transactionFilter.amount = amountCondition;
+        }
+      }
+
+      // Combine filters
+      const finalFilter = { ...transactionFilter, ...dateFilter };
+      console.log("Transaction filter:", finalFilter);
+
+      const transactions = await Transaction.find(finalFilter)
+        .sort({ date: -1 })
+        .limit(20)
+        .populate("categoryId", "name type")
+        .populate("accountId", "name type");
+
+      if (transactions.length === 0) {
+        return {
+          response:
+            responseForUser ||
+            "Không tìm thấy giao dịch nào phù hợp với điều kiện.",
+          action: "CHAT_RESPONSE",
+        };
+      }
+
+      // Tạo tiêu đề phù hợp với filter
+      let title = "📋 <strong>Giao dịch";
+      if (entities?.categoryFilter) title += ` ${entities.categoryFilter}`;
+      if (entities?.timeFilter) title += ` ${entities.timeFilter}`;
+      if (entities?.specificAccount) title += ` từ ${entities.specificAccount}`;
+      title += ":</strong>";
+
+      const transactionList = transactions
+        .map((t, index) => {
+          const typeIcon = t.type === "CHITIEU" ? "💸" : "💰";
+          const amount = t.amount ? t.amount.toLocaleString() : "0";
+          return `${index + 1}. ${typeIcon} <strong>${
+            t.name
+          }</strong> - <span class="${t.type.toLowerCase()}">${amount}đ</span>\n   📂 ${
+            t.categoryId?.name || "Không có danh mục"
+          } | 🏦 ${t.accountId?.name || "Không có tài khoản"} | 📅 ${new Date(
+            t.date
+          ).toLocaleDateString("vi-VN")}`;
+        })
+        .join("\n\n");
+
+      return {
+        response: `${title}\n\n${transactionList}`,
+        action: "CHAT_RESPONSE",
+        data: {
+          transactions: transactions.map((t) => ({
+            id: t._id,
+            name: t.name,
+            amount: t.amount,
+            type: t.type,
+            category: t.categoryId?.name,
+            account: t.accountId?.name,
+            date: t.date,
+          })),
+          filters: entities,
+        },
+      };
+    } catch (error) {
+      console.error("Error getting filtered transactions:", error);
+      return {
+        response: "Có lỗi xảy ra khi lấy danh sách giao dịch.",
+        action: "CHAT_RESPONSE",
+      };
+    }
+  }
+
+  // Parse time filter thành month/year
+  parseTimeFilter(timeFilter) {
+    if (!timeFilter) return null;
+
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+
+    const lowerFilter = timeFilter.toLowerCase();
+
+    if (
+      lowerFilter.includes("tháng này") ||
+      lowerFilter.includes("this month")
+    ) {
+      return { month: currentMonth, year: currentYear };
+    }
+
+    if (
+      lowerFilter.includes("tháng trước") ||
+      lowerFilter.includes("last month")
+    ) {
+      const lastMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+      const lastYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+      return { month: lastMonth, year: lastYear };
+    }
+
+    // Parse "tháng X"
+    const monthMatch = lowerFilter.match(/tháng\s*(\d+)/);
+    if (monthMatch) {
+      const month = parseInt(monthMatch[1]);
+      if (month >= 1 && month <= 12) {
+        return { month, year: currentYear };
+      }
+    }
+
+    return null;
+  }
+
+  // Parse amount filter thành MongoDB condition
+  parseAmountFilter(amountFilter) {
+    if (!amountFilter) return null;
+
+    const lowerFilter = amountFilter.toLowerCase();
+
+    // "trên X"
+    const aboveMatch = lowerFilter.match(/trên\s*(\d+)/);
+    if (aboveMatch) {
+      return { $gt: parseInt(aboveMatch[1]) };
+    }
+
+    // "dưới X"
+    const belowMatch = lowerFilter.match(/dưới\s*(\d+)/);
+    if (belowMatch) {
+      return { $lt: parseInt(belowMatch[1]) };
+    }
+
+    // "từ X đến Y"
+    const rangeMatch = lowerFilter.match(/từ\s*(\d+)\s*đến\s*(\d+)/);
+    if (rangeMatch) {
+      return {
+        $gte: parseInt(rangeMatch[1]),
+        $lte: parseInt(rangeMatch[2]),
+      };
+    }
+
+    return null;
+  }
+
+  // Lấy danh mục với filter
+  async getCategoryListWithFilter(userId, entities) {
+    try {
+      const userObjectId =
+        typeof userId === "string"
+          ? new mongoose.Types.ObjectId(userId)
+          : userId;
+
+      let categoryFilter = { userId: userObjectId };
+
+      // Filter theo type nếu có
+      if (entities?.typeFilter) {
+        categoryFilter.type = entities.typeFilter;
+      }
+
+      const categories = await Category.find(categoryFilter).sort({
+        type: 1,
+        name: 1,
+      });
+
+      if (categories.length === 0) {
+        return {
+          response: "Không tìm thấy danh mục nào phù hợp.",
+          action: "CHAT_RESPONSE",
+        };
+      }
+
+      const incomeCategories = categories.filter((c) => c.type === "THUNHAP");
+      const expenseCategories = categories.filter((c) => c.type === "CHITIEU");
+
+      let responseText = "📂 <strong>Danh sách danh mục";
+      if (entities?.typeFilter === "CHITIEU") {
+        responseText += " chi tiêu";
+      } else if (entities?.typeFilter === "THUNHAP") {
+        responseText += " thu nhập";
+      }
+      responseText += ":</strong>\n\n";
+
+      if (entities?.typeFilter !== "THUNHAP" && expenseCategories.length > 0) {
+        responseText += "💸 <strong>Chi tiêu:</strong>\n";
+        responseText += expenseCategories
+          .map((cat, index) => `${index + 1}. ${cat.name}`)
+          .join("\n");
+        responseText += "\n\n";
+      }
+
+      if (entities?.typeFilter !== "CHITIEU" && incomeCategories.length > 0) {
+        responseText += "💰 <strong>Thu nhập:</strong>\n";
+        responseText += incomeCategories
+          .map((cat, index) => `${index + 1}. ${cat.name}`)
+          .join("\n");
+      }
+
+      return {
+        response: responseText.trim(),
+        action: "CHAT_RESPONSE",
+        data: {
+          categories: categories.map((cat) => ({
+            id: cat._id,
+            name: cat.name,
+            type: cat.type,
+            icon: cat.icon,
+          })),
+          filters: entities,
+        },
+      };
+    } catch (error) {
+      console.error("Error getting filtered categories:", error);
+      return await this.getCategoryList(userId);
+    }
+  }
+
+  // Lấy mục tiêu với filter
+  async getGoalListWithFilter(userId, entities) {
+    try {
+      let goalFilter = { user: userId, archived: false };
+      let sortOrder = { isPinned: -1, createdAt: -1 };
+
+      // Filter theo status nếu có
+      if (entities?.statusFilter === "completed") {
+        // Mục tiêu hoàn thành (currentAmount >= targetAmount)
+        goalFilter = {
+          ...goalFilter,
+          $expr: { $gte: ["$currentAmount", "$targetAmount"] },
+        };
+      } else if (entities?.statusFilter === "overdue") {
+        // Mục tiêu quá hạn
+        goalFilter.deadline = { $lt: new Date() };
+      } else if (entities?.statusFilter === "nearest_deadline") {
+        // Mục tiêu gần nhất (sắp hết hạn)
+        goalFilter.deadline = { $exists: true, $ne: null };
+        sortOrder = { deadline: 1 }; // Sắp xếp theo deadline gần nhất
+      }
+
+      const goals = await Goal.find(goalFilter).sort(sortOrder).limit(10);
+
+      if (goals.length === 0) {
+        return {
+          response: "Không tìm thấy mục tiêu nào phù hợp.",
+          action: "CHAT_RESPONSE",
+        };
+      }
+
+      let title = "🎯 <strong>Danh sách mục tiêu";
+      if (entities?.statusFilter === "completed") {
+        title += " đã hoàn thành";
+      } else if (entities?.statusFilter === "overdue") {
+        title += " quá hạn";
+      } else if (entities?.statusFilter === "nearest_deadline") {
+        title += " gần nhất (theo thời hạn)";
+      }
+      title += ":</strong>";
+
+      const goalList = goals
+        .map((goal, index) => {
+          const progress = (
+            ((goal.currentAmount || 0) / goal.targetAmount) *
+            100
+          ).toFixed(1);
+          const pinIcon = goal.isPinned ? "📌 " : "";
+          const progressBar =
+            progress >= 100 ? "✅" : progress >= 50 ? "🟡" : "🔴";
+
+          // Format deadline với thông tin thời gian chi tiết
+          let deadlineText = "";
+          if (goal.deadline) {
+            const deadlineDate = new Date(goal.deadline);
+            const now = new Date();
+            const diffTime = deadlineDate.getTime() - now.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            const formattedDate = deadlineDate.toLocaleDateString("vi-VN");
+
+            if (diffDays < 0) {
+              deadlineText = `⚠️ Quá hạn ${Math.abs(
+                diffDays
+              )} ngày (${formattedDate})`;
+            } else if (diffDays === 0) {
+              deadlineText = `🔥 Hạn cuối hôm nay (${formattedDate})`;
+            } else if (diffDays <= 7) {
+              deadlineText = `⏰ Còn ${diffDays} ngày (${formattedDate})`;
+            } else if (diffDays <= 30) {
+              deadlineText = `📅 Còn ${diffDays} ngày (${formattedDate})`;
+            } else {
+              deadlineText = `📅 Hạn: ${formattedDate}`;
+            }
+          } else {
+            deadlineText = "📅 Chưa đặt hạn";
+          }
+
+          return `${index + 1}. ${pinIcon}<strong>${
+            goal.name
+          }</strong> ${progressBar}\n   💰 Tiến độ: <span class="progress">${(
+            goal.currentAmount || 0
+          ).toLocaleString()}đ / ${goal.targetAmount.toLocaleString()}đ (${progress}%)</span>\n   ${deadlineText}\n   ────────────────────────────────────────`;
+        })
+        .join("\n\n");
+
+      return {
+        response: `${title}\n\n${goalList}`,
+        action: "CHAT_RESPONSE",
+        data: {
+          goals: goals.map((goal) => ({
+            id: goal._id,
+            name: goal.name,
+            targetAmount: goal.targetAmount,
+            currentAmount: goal.currentAmount || 0,
+            progress: (
+              ((goal.currentAmount || 0) / goal.targetAmount) *
+              100
+            ).toFixed(1),
+            isPinned: goal.isPinned,
+            deadline: goal.deadline,
+            formattedDeadline: goal.deadline
+              ? new Date(goal.deadline).toLocaleDateString("vi-VN")
+              : null,
+            daysRemaining: goal.deadline
+              ? Math.ceil(
+                  (new Date(goal.deadline).getTime() - new Date().getTime()) /
+                    (1000 * 60 * 60 * 24)
+                )
+              : null,
+          })),
+          filters: entities,
+        },
+      };
+    } catch (error) {
+      console.error("Error getting filtered goals:", error);
+      return await this.getGoalList(userId);
+    }
+  }
+
+  // Xử lý tìm kiếm giao dịch với entities
+  async handleQueryTransactionsWithFilter(userId, entities, responseForUser) {
+    // Sử dụng getTransactionsWithFilter để xử lý tìm kiếm
+    return await this.getTransactionsWithFilter(
+      userId,
+      entities,
+      responseForUser
+    );
+  }
   async getQuickStats(userId, targetMonth = null, targetYear = null) {
     try {
       const currentMonth = targetMonth || new Date().getMonth() + 1;
@@ -1411,7 +2151,7 @@ Response:
     }
   }
 
-  // Lấy danh sách mục tiêu
+  // Lấy danh sách mục tiêu - CẢI TIẾN HIỂN THỊ THỜI GIAN
   async getGoalList(userId) {
     try {
       const goals = await Goal.find({ user: userId, archived: false })
@@ -1435,11 +2175,38 @@ Response:
           const progressBar =
             progress >= 100 ? "✅" : progress >= 50 ? "🟡" : "🔴";
 
+          // Format deadline với thông tin thời gian chi tiết
+          let deadlineText = "";
+          if (goal.deadline) {
+            const deadlineDate = new Date(goal.deadline);
+            const now = new Date();
+            const diffTime = deadlineDate.getTime() - now.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            const formattedDate = deadlineDate.toLocaleDateString("vi-VN");
+
+            if (diffDays < 0) {
+              deadlineText = `⚠️ Quá hạn ${Math.abs(
+                diffDays
+              )} ngày (${formattedDate})`;
+            } else if (diffDays === 0) {
+              deadlineText = `🔥 Hạn cuối hôm nay (${formattedDate})`;
+            } else if (diffDays <= 7) {
+              deadlineText = `⏰ Còn ${diffDays} ngày (${formattedDate})`;
+            } else if (diffDays <= 30) {
+              deadlineText = `📅 Còn ${diffDays} ngày (${formattedDate})`;
+            } else {
+              deadlineText = `📅 Hạn: ${formattedDate}`;
+            }
+          } else {
+            deadlineText = "📅 Chưa đặt hạn";
+          }
+
           return `${index + 1}. ${pinIcon}<strong>${
             goal.name
-          }</strong> ${progressBar}\n   Tiến độ: <span class="progress">${(
+          }</strong> ${progressBar}\n   💰 Tiến độ: <span class="progress">${(
             goal.currentAmount || 0
-          ).toLocaleString()}đ / ${goal.targetAmount.toLocaleString()}đ (${progress}%)</span>`;
+          ).toLocaleString()}đ / ${goal.targetAmount.toLocaleString()}đ (${progress}%)</span>\n   ${deadlineText}\n   ────────────────────────────────────────`;
         })
         .join("\n\n");
 
@@ -1458,6 +2225,15 @@ Response:
             ).toFixed(1),
             isPinned: goal.isPinned,
             deadline: goal.deadline,
+            formattedDeadline: goal.deadline
+              ? new Date(goal.deadline).toLocaleDateString("vi-VN")
+              : null,
+            daysRemaining: goal.deadline
+              ? Math.ceil(
+                  (new Date(goal.deadline).getTime() - new Date().getTime()) /
+                    (1000 * 60 * 60 * 24)
+                )
+              : null,
           })),
         },
       };
@@ -1631,40 +2407,118 @@ Response:
     return null;
   }
 
-  // Trích xuất ngày từ text
+  // Trích xuất ngày từ text - CẢI TIẾN HỖ TRỢ NGÀY CỤ THỂ
   extractDate(text) {
     if (!text) return null;
 
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth() + 1;
+    const currentDay = now.getDate();
 
     // Clean text
     const cleanText = text.toLowerCase().trim();
 
-    // Patterns cho ngày cụ thể
+    // Patterns cho ngày cụ thể - MỞ RỘNG
     const datePatterns = [
       /(\d{1,2})\/(\d{1,2})\/(\d{4})/, // DD/MM/YYYY
       /(\d{1,2})\/(\d{1,2})/, // DD/MM (năm hiện tại)
+      /ngày\s*(\d{1,2})\s*tháng\s*(\d{1,2})\s*năm\s*(\d{4})/i, // ngày X tháng Y năm Z
+      /ngày\s*(\d{1,2})\s*tháng\s*(\d{1,2})/i, // ngày X tháng Y (năm hiện tại)
+      /(\d{1,2})\s*tháng\s*(\d{1,2})\s*năm\s*(\d{4})/i, // X tháng Y năm Z
+      /(\d{1,2})\s*tháng\s*(\d{1,2})/i, // X tháng Y (năm hiện tại)
     ];
 
     // Kiểm tra ngày cụ thể trước
     for (const pattern of datePatterns) {
       const match = cleanText.match(pattern);
       if (match) {
-        if (match[3]) {
+        if (pattern.source.includes("ngày.*tháng.*năm")) {
+          // "ngày X tháng Y năm Z"
+          const day = parseInt(match[1]);
+          const month = parseInt(match[2]);
+          const year = parseInt(match[3]);
+          if (this.isValidDate(day, month, year)) {
+            return `${day.toString().padStart(2, "0")}/${month
+              .toString()
+              .padStart(2, "0")}/${year}`;
+          }
+        } else if (pattern.source.includes("ngày.*tháng")) {
+          // "ngày X tháng Y"
+          const day = parseInt(match[1]);
+          const month = parseInt(match[2]);
+          if (this.isValidDate(day, month, currentYear)) {
+            return `${day.toString().padStart(2, "0")}/${month
+              .toString()
+              .padStart(2, "0")}/${currentYear}`;
+          }
+        } else if (pattern.source.includes("tháng.*năm")) {
+          // "X tháng Y năm Z"
+          const day = parseInt(match[1]);
+          const month = parseInt(match[2]);
+          const year = parseInt(match[3]);
+          if (this.isValidDate(day, month, year)) {
+            return `${day.toString().padStart(2, "0")}/${month
+              .toString()
+              .padStart(2, "0")}/${year}`;
+          }
+        } else if (pattern.source.includes("tháng")) {
+          // "X tháng Y"
+          const day = parseInt(match[1]);
+          const month = parseInt(match[2]);
+          if (this.isValidDate(day, month, currentYear)) {
+            return `${day.toString().padStart(2, "0")}/${month
+              .toString()
+              .padStart(2, "0")}/${currentYear}`;
+          }
+        } else if (match[3]) {
           // DD/MM/YYYY
-          return `${match[1].padStart(2, "0")}/${match[2].padStart(2, "0")}/${
-            match[3]
-          }`;
+          const day = parseInt(match[1]);
+          const month = parseInt(match[2]);
+          const year = parseInt(match[3]);
+          if (this.isValidDate(day, month, year)) {
+            return `${day.toString().padStart(2, "0")}/${month
+              .toString()
+              .padStart(2, "0")}/${year}`;
+          }
         } else if (match[2]) {
           // DD/MM (năm hiện tại)
-          return `${match[1].padStart(2, "0")}/${match[2].padStart(
-            2,
-            "0"
-          )}/${currentYear}`;
+          const day = parseInt(match[1]);
+          const month = parseInt(match[2]);
+          if (this.isValidDate(day, month, currentYear)) {
+            return `${day.toString().padStart(2, "0")}/${month
+              .toString()
+              .padStart(2, "0")}/${currentYear}`;
+          }
         }
       }
+    }
+
+    // Xử lý các ngày tương đối - MỞ RỘNG
+    if (cleanText.includes("hôm nay")) {
+      return `${currentDay.toString().padStart(2, "0")}/${currentMonth
+        .toString()
+        .padStart(2, "0")}/${currentYear}`;
+    }
+
+    if (cleanText.includes("ngày mai")) {
+      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      return `${tomorrow.getDate().toString().padStart(2, "0")}/${(
+        tomorrow.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, "0")}/${tomorrow.getFullYear()}`;
+    }
+
+    if (cleanText.includes("ngày kia")) {
+      const dayAfterTomorrow = new Date(
+        now.getTime() + 2 * 24 * 60 * 60 * 1000
+      );
+      return `${dayAfterTomorrow.getDate().toString().padStart(2, "0")}/${(
+        dayAfterTomorrow.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, "0")}/${dayAfterTomorrow.getFullYear()}`;
     }
 
     // Xử lý các cụm từ thời gian phức tạp
@@ -1754,6 +2608,10 @@ Response:
       return `01/${targetMonth.toString().padStart(2, "0")}/${targetYear}`;
     }
 
+    if (cleanText.includes("giữa tháng") && targetMonth) {
+      return `15/${targetMonth.toString().padStart(2, "0")}/${targetYear}`;
+    }
+
     // Nếu có tháng thì tạo ngày cuối tháng
     if (targetMonth && targetMonth >= 1 && targetMonth <= 12) {
       const lastDay = new Date(targetYear, targetMonth, 0).getDate();
@@ -1762,8 +2620,8 @@ Response:
         .padStart(2, "0")}/${targetYear}`;
     }
 
-    // Fallback patterns
-    if (cleanText.includes("tuần sau")) {
+    // Fallback patterns cho tuần
+    if (cleanText.includes("tuần sau") || cleanText.includes("tuần tới")) {
       const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
       return `${nextWeek.getDate().toString().padStart(2, "0")}/${(
         nextWeek.getMonth() + 1
@@ -1772,7 +2630,7 @@ Response:
         .padStart(2, "0")}/${nextWeek.getFullYear()}`;
     }
 
-    if (cleanText.includes("tháng sau")) {
+    if (cleanText.includes("tháng sau") || cleanText.includes("tháng tới")) {
       const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;
       const nextYear = currentMonth === 12 ? currentYear + 1 : currentYear;
       const lastDay = new Date(nextYear, nextMonth, 0).getDate();
@@ -1780,6 +2638,15 @@ Response:
     }
 
     return null;
+  }
+
+  // Helper function để validate ngày tháng
+  isValidDate(day, month, year) {
+    if (month < 1 || month > 12) return false;
+    if (day < 1) return false;
+
+    const lastDayOfMonth = new Date(year, month, 0).getDate();
+    return day <= lastDayOfMonth;
   }
 
   // Extract tháng và năm từ user message
@@ -1855,69 +2722,116 @@ Response:
     return { month: currentMonth, year: currentYear };
   }
 
-  // Thử xử lý local trước khi gọi Gemini API
+  // Thử xử lý local trước khi gọi Gemini API - CẢI TIẾN VỚI ENTITY DETECTION
   async tryLocalProcessing(message, userId) {
     const lowerMessage = message.toLowerCase().trim();
 
-    // Patterns cho thống kê
+    // Patterns cho thống kê với entity detection
     const statsPatterns = [
       /(?:xem|check|kiểm tra|thống kê|tổng kết).*(thống kê|tổng|chi tiêu|thu nhập|tài chính).*(?:tháng|month)/i,
       /tổng.*chi.*tiêu.*tháng/i,
       /thu.*nhập.*tháng/i,
       /báo.*cáo.*tài.*chính/i,
-      /xem.*số.*dư/i,
       /tài.*chính.*tháng/i,
     ];
 
     for (const pattern of statsPatterns) {
       if (pattern.test(message)) {
-        console.log("Local processing: QUICK_STATS pattern matched");
+        console.log("Local processing: QUICK_STATS detected");
+        // Extract time filter
+        const timeFilter = this.extractTimeFilterFromMessage(message);
+        return await this.getQuickStatsWithFilter(userId, timeFilter);
+      }
+    }
 
-        // Extract month from message
-        const monthInfo = this.extractMonthFromMessage(message);
-        return await this.getQuickStats(
+    // Patterns cho xem tài khoản với entity detection
+    const accountPatterns = [
+      /(?:xem|liệt kê|danh sách).*(?:tài khoản|account|nguồn tiền)/i,
+      /số.*dư.*(?:tài khoản|account)/i,
+      /(?:nguồn tiền|tài khoản).*(?:vietcombank|bidv|techcombank|mb bank|acb|vpbank)/i,
+    ];
+
+    for (const pattern of accountPatterns) {
+      if (pattern.test(message)) {
+        console.log("Local processing: VIEW_ACCOUNTS detected");
+        // Extract entities từ message
+        const entities = await this.extractEntitiesFromMessage(message, userId);
+        return await this.getAccountListWithFilter(userId, entities);
+      }
+    }
+
+    // Patterns cho xem giao dịch với entity detection
+    const transactionPatterns = [
+      /(?:xem|liệt kê|danh sách).*(?:giao dịch|transaction)/i,
+      /giao.*dịch.*(?:ăn uống|xăng xe|mua sắm|giải trí)/i,
+      /(?:chi tiêu|thu nhập).*(?:tháng|tuần|ngày)/i,
+    ];
+
+    for (const pattern of transactionPatterns) {
+      if (pattern.test(message)) {
+        console.log("Local processing: VIEW_TRANSACTIONS detected");
+        const entities = await this.extractEntitiesFromMessage(message, userId);
+        return await this.getTransactionsWithFilter(
           userId,
-          monthInfo.month,
-          monthInfo.year
+          entities,
+          "Tôi sẽ xem giao dịch phù hợp cho bạn."
         );
       }
     }
 
-    // Patterns cho xem danh sách
-    const listPatterns = [
-      /(?:xem|liệt kê|danh sách).*(?:giao dịch|transaction)/i,
-      /giao.*dịch.*gần.*đây/i,
-      /(?:xem|liệt kê|danh sách).*(?:tài khoản|account)/i,
+    // Patterns cho xem danh mục
+    const categoryPatterns = [
       /(?:xem|liệt kê|danh sách).*(?:danh mục|category)/i,
-      /(?:xem|liệt kê|danh sách).*(?:mục tiêu|goal)/i,
-      /mục.*tiêu.*của.*tôi/i,
+      /danh.*mục.*(?:chi tiêu|thu nhập)/i,
     ];
 
-    for (const pattern of listPatterns) {
+    for (const pattern of categoryPatterns) {
       if (pattern.test(message)) {
-        if (/giao.*dịch/i.test(message)) {
-          console.log("Local processing: LIST_TRANSACTIONS pattern matched");
-          return await this.getRecentTransactions(userId);
-        } else if (/tài.*khoản/i.test(message)) {
-          console.log("Local processing: LIST_ACCOUNTS pattern matched");
-          return await this.getAccountList(userId);
-        } else if (/danh.*mục/i.test(message)) {
-          console.log("Local processing: LIST_CATEGORIES pattern matched");
-          return await this.getCategoryList(userId);
-        } else if (/mục.*tiêu/i.test(message)) {
-          console.log("Local processing: LIST_GOALS pattern matched");
-          return await this.getGoalList(userId);
+        console.log("Local processing: VIEW_CATEGORIES detected");
+        const entities = await this.extractEntitiesFromMessage(message, userId);
+        return await this.getCategoryListWithFilter(userId, entities);
+      }
+    }
+
+    // Patterns cho xem mục tiêu
+    const goalPatterns = [
+      /(?:xem|liệt kê|danh sách).*(?:mục tiêu|goal)/i,
+      /mục.*tiêu.*của.*tôi/i,
+      /tiết.*kiệm.*mục tiêu/i,
+      /mục.*tiêu.*gần.*nhất/i,
+      /mục.*tiêu.*sắp.*hết.*hạn/i,
+      /mục.*tiêu.*quá.*hạn/i,
+      /mục.*tiêu.*hoàn.*thành/i,
+    ];
+
+    for (const pattern of goalPatterns) {
+      if (pattern.test(message)) {
+        console.log("Local processing: VIEW_GOALS detected");
+        const entities = await this.extractEntitiesFromMessage(message, userId);
+
+        // Detect specific goal filters từ message
+        if (
+          lowerMessage.includes("gần nhất") ||
+          lowerMessage.includes("sắp hết hạn")
+        ) {
+          entities.statusFilter = "nearest_deadline";
+        } else if (lowerMessage.includes("quá hạn")) {
+          entities.statusFilter = "overdue";
+        } else if (lowerMessage.includes("hoàn thành")) {
+          entities.statusFilter = "completed";
         }
+
+        return await this.getGoalListWithFilter(userId, entities);
       }
     }
 
     // Patterns cho thêm giao dịch đơn giản
-    const transactionPatterns = [
+    const addTransactionPatterns = [
       /(?:chi|mua|thanh toán|trả)\s+(\d+[k|nghìn|triệu|tr]?)\s+(.+)/i,
       /(?:thu|nhận|lương|tiền)\s+(\d+[k|nghìn|triệu|tr]?)\s*(.*)$/i,
     ];
 
-    for (const pattern of transactionPatterns) {
+    for (const pattern of addTransactionPatterns) {
       const match = message.match(pattern);
       if (match) {
         const amount = this.extractAmount(match[1]);
@@ -1943,7 +2857,142 @@ Response:
       }
     }
 
-    return null; // Không thể xử lý local, cần Gemini
+    return null; // Không xử lý được local, cần gọi Gemini
+  }
+
+  // Trích xuất entities từ message của user
+  async extractEntitiesFromMessage(message, userId) {
+    const entities = {
+      specificAccount: null,
+      bankFilter: null,
+      categoryFilter: null,
+      timeFilter: null,
+      amountFilter: null,
+      searchTerm: null,
+      typeFilter: null,
+      statusFilter: null,
+    };
+
+    const lowerMessage = message.toLowerCase();
+
+    // Lấy user context để match entities
+    const userContext = await this.getUserContext(userId);
+
+    // Extract specificAccount
+    for (const account of userContext.accounts) {
+      if (lowerMessage.includes(account.name.toLowerCase())) {
+        entities.specificAccount = account.name;
+        break;
+      }
+    }
+
+    // Extract bankFilter (các ngân hàng phổ biến)
+    const banks = [
+      "vietcombank",
+      "vcb",
+      "bidv",
+      "techcombank",
+      "tcb",
+      "mb bank",
+      "mbbank",
+      "acb",
+      "vpbank",
+      "sacombank",
+      "stb",
+      "agribank",
+      "oceanbank",
+      "maritimebank",
+      "vietinbank",
+      "vib",
+      "tpbank",
+      "shb",
+      "kienlongbank",
+      "lienvietpostbank",
+    ];
+
+    for (const bank of banks) {
+      if (lowerMessage.includes(bank)) {
+        // Chuẩn hóa tên ngân hàng
+        if (bank === "vcb") entities.bankFilter = "Vietcombank";
+        else if (bank === "tcb") entities.bankFilter = "Techcombank";
+        else if (bank === "mbbank") entities.bankFilter = "MB Bank";
+        else entities.bankFilter = bank.charAt(0).toUpperCase() + bank.slice(1);
+        break;
+      }
+    }
+
+    // Extract categoryFilter
+    for (const category of userContext.categories) {
+      if (lowerMessage.includes(category.name.toLowerCase())) {
+        entities.categoryFilter = category.name;
+        break;
+      }
+    }
+
+    // Extract timeFilter
+    entities.timeFilter = this.extractTimeFilterFromMessage(message);
+
+    // Extract amountFilter
+    const amountPatterns = [
+      /trên\s*(\d+(?:\.\d+)?)\s*(?:triệu|tr|k|nghìn)?/i,
+      /dưới\s*(\d+(?:\.\d+)?)\s*(?:triệu|tr|k|nghìn)?/i,
+      /từ\s*(\d+(?:\.\d+)?)\s*đến\s*(\d+(?:\.\d+)?)\s*(?:triệu|tr|k|nghìn)?/i,
+    ];
+
+    for (const pattern of amountPatterns) {
+      const match = lowerMessage.match(pattern);
+      if (match) {
+        entities.amountFilter = match[0];
+        break;
+      }
+    }
+
+    // Extract typeFilter
+    if (lowerMessage.includes("chi tiêu") || lowerMessage.includes("chi phí")) {
+      entities.typeFilter = "CHITIEU";
+    } else if (
+      lowerMessage.includes("thu nhập") ||
+      lowerMessage.includes("thu")
+    ) {
+      entities.typeFilter = "THUNHAP";
+    }
+
+    // Extract statusFilter cho goals
+    if (
+      lowerMessage.includes("hoàn thành") ||
+      lowerMessage.includes("đã xong")
+    ) {
+      entities.statusFilter = "completed";
+    } else if (
+      lowerMessage.includes("quá hạn") ||
+      lowerMessage.includes("trễ hạn")
+    ) {
+      entities.statusFilter = "overdue";
+    }
+
+    console.log("=== EXTRACTED ENTITIES ===");
+    console.log(JSON.stringify(entities, null, 2));
+    console.log("=== END EXTRACTED ENTITIES ===");
+
+    return entities;
+  }
+
+  // Trích xuất time filter từ message
+  extractTimeFilterFromMessage(message) {
+    const lowerMessage = message.toLowerCase();
+
+    if (lowerMessage.includes("tháng này")) return "tháng này";
+    if (lowerMessage.includes("tháng trước")) return "tháng trước";
+    if (lowerMessage.includes("tuần này")) return "tuần này";
+    if (lowerMessage.includes("hôm nay")) return "hôm nay";
+
+    // Extract "tháng X"
+    const monthMatch = lowerMessage.match(/tháng\s*(\d+)/);
+    if (monthMatch) {
+      return `tháng ${monthMatch[1]}`;
+    }
+
+    return null;
   }
 
   // Gọi Gemini API với retry mechanism

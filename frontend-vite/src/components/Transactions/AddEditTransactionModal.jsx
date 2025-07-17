@@ -11,7 +11,10 @@ import {
   faTimes,
   faWallet,
   faEdit,
+  faIcons,
 } from "@fortawesome/free-solid-svg-icons";
+import IconSelector from "../Common/IconSelector";
+import { getIconObject } from "../../utils/iconMap";
 
 // Hàm tiện ích để chuyển đổi Date object thành chuỗi 'YYYY-MM-DD'
 const formatDateForInput = (date) => {
@@ -32,7 +35,7 @@ const AddEditTransactionModal = ({
   // Refs for focus management
   const firstInputRef = useRef(null);
   const amountInputRef = useRef(null);
-  
+
   // State cho các trường trong form
   const [type, setType] = useState("CHITIEU");
   const [amount, setAmount] = useState("");
@@ -52,7 +55,7 @@ const AddEditTransactionModal = ({
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Smart validation state
   const [touched, setTouched] = useState({});
   const [isValid, setIsValid] = useState(false);
@@ -60,29 +63,30 @@ const AddEditTransactionModal = ({
   // Smart validation functions
   const validateField = useCallback((fieldName, value) => {
     switch (fieldName) {
-      case 'amount':
-        if (!value || value === '0') return 'Số tiền không được để trống';
-        if (parseFloat(value) <= 0) return 'Số tiền phải lớn hơn 0';
-        if (parseFloat(value) > 999999999) return 'Số tiền quá lớn';
+      case "amount":
+        if (!value || value === "0") return "Số tiền không được để trống";
+        if (parseFloat(value) <= 0) return "Số tiền phải lớn hơn 0";
+        if (parseFloat(value) > 999999999) return "Số tiền quá lớn";
         return null;
-      case 'description':
-        if (!value?.trim()) return 'Mô tả giao dịch không được để trống';
-        if (value.trim().length < 3) return 'Mô tả phải có ít nhất 3 ký tự';
-        if (value.trim().length > 100) return 'Mô tả không được quá 100 ký tự';
+      case "description":
+        if (!value?.trim()) return "Mô tả giao dịch không được để trống";
+        if (value.trim().length < 3) return "Mô tả phải có ít nhất 3 ký tự";
+        if (value.trim().length > 100) return "Mô tả không được quá 100 ký tự";
         return null;
-      case 'categoryId':
-        if (!value) return 'Vui lòng chọn danh mục';
+      case "categoryId":
+        if (!value) return "Vui lòng chọn danh mục";
         return null;
-      case 'accountId':
-        if (!value) return 'Vui lòng chọn tài khoản';
+      case "accountId":
+        if (!value) return "Vui lòng chọn tài khoản";
         return null;
-      case 'date':
-        if (!value) return 'Vui lòng chọn ngày';
+      case "date":
+        if (!value) return "Vui lòng chọn ngày";
         const selectedDate = new Date(value);
         const today = new Date();
         const futureLimit = new Date();
         futureLimit.setDate(today.getDate() + 30);
-        if (selectedDate > futureLimit) return 'Ngày không được quá 30 ngày trong tương lai';
+        if (selectedDate > futureLimit)
+          return "Ngày không được quá 30 ngày trong tương lai";
         return null;
       default:
         return null;
@@ -92,62 +96,78 @@ const AddEditTransactionModal = ({
   // Real-time validation
   const validateForm = useCallback(() => {
     const errors = {};
-    errors.amount = validateField('amount', amount);
-    errors.description = validateField('description', description);
-    errors.categoryId = validateField('categoryId', categoryId);
-    errors.accountId = validateField('accountId', accountId);
-    errors.date = validateField('date', date);
-    
+    errors.amount = validateField("amount", amount);
+    errors.description = validateField("description", description);
+    errors.categoryId = validateField("categoryId", categoryId);
+    errors.accountId = validateField("accountId", accountId);
+    errors.date = validateField("date", date);
+
     setFieldErrors(errors);
-    const hasErrors = Object.values(errors).some(error => error !== null);
+    const hasErrors = Object.values(errors).some((error) => error !== null);
     setIsValid(!hasErrors);
     return !hasErrors;
   }, [amount, description, categoryId, accountId, date, validateField]);
 
   // Handle field blur for smart validation
   const handleFieldBlur = (fieldName) => {
-    setTouched(prev => ({ ...prev, [fieldName]: true }));
+    setTouched((prev) => ({ ...prev, [fieldName]: true }));
   };
 
   // Smart amount formatting
   const formatAmountDisplay = (value) => {
-    if (!value) return '';
-    const numericValue = value.replace(/[^0-9]/g, '');
-    if (!numericValue) return '';
-    return parseInt(numericValue, 10).toLocaleString('vi-VN');
+    if (!value) return "";
+    const numericValue = value.replace(/[^0-9]/g, "");
+    if (!numericValue) return "";
+    return parseInt(numericValue, 10).toLocaleString("vi-VN");
   };
 
   // Smart amount suggestions based on common values
   const getAmountSuggestions = () => {
     const commonAmounts = [
-      10000, 20000, 50000, 100000, 200000, 500000, 1000000
+      10000, 20000, 50000, 100000, 200000, 500000, 1000000,
     ];
     return commonAmounts;
   };
 
   // Auto-complete for description based on category
   const getDescriptionSuggestions = () => {
-    const selectedCategory = filteredCategories.find(cat => cat._id === categoryId);
+    const selectedCategory = filteredCategories.find(
+      (cat) => cat._id === categoryId
+    );
     if (!selectedCategory) return [];
-    
+
     const suggestions = {
-      'Ăn uống': ['Ăn sáng', 'Ăn trưa', 'Ăn tối', 'Cà phê', 'Trà sữa', 'Nhà hàng'],
-      'Di chuyển': ['Xăng xe', 'Taxi', 'Grab', 'Xe bus', 'Vé tàu', 'Vé máy bay'],
-      'Mua sắm': ['Quần áo', 'Giày dép', 'Mỹ phẩm', 'Siêu thị', 'Điện tử'],
-      'Giải trí': ['Xem phim', 'Karaoke', 'Game', 'Sách', 'Du lịch'],
-      'Lương': ['Lương tháng', 'Thưởng', 'Phụ cấp', 'Làm thêm'],
-      'Đầu tư': ['Cổ phiếu', 'Tiết kiệm', 'Bảo hiểm', 'Vàng']
+      "Ăn uống": [
+        "Ăn sáng",
+        "Ăn trưa",
+        "Ăn tối",
+        "Cà phê",
+        "Trà sữa",
+        "Nhà hàng",
+      ],
+      "Di chuyển": [
+        "Xăng xe",
+        "Taxi",
+        "Grab",
+        "Xe bus",
+        "Vé tàu",
+        "Vé máy bay",
+      ],
+      "Mua sắm": ["Quần áo", "Giày dép", "Mỹ phẩm", "Siêu thị", "Điện tử"],
+      "Giải trí": ["Xem phim", "Karaoke", "Game", "Sách", "Du lịch"],
+      Lương: ["Lương tháng", "Thưởng", "Phụ cấp", "Làm thêm"],
+      "Đầu tư": ["Cổ phiếu", "Tiết kiệm", "Bảo hiểm", "Vàng"],
     };
-    
+
     return suggestions[selectedCategory.name] || [];
   };
 
   // Enhanced amount change handler
   const handleAmountChange = (e) => {
     const inputValue = e.target.value;
-    const rawValue = inputValue.replace(/[^0-9]/g, '');
+    const rawValue = inputValue.replace(/[^0-9]/g, "");
     setAmount(rawValue);
-    
+
     // Auto-move cursor to end
     setTimeout(() => {
       if (amountInputRef.current) {
@@ -160,38 +180,41 @@ const AddEditTransactionModal = ({
   // Quick amount selection
   const handleAmountSuggestionClick = (suggestedAmount) => {
     setAmount(String(suggestedAmount));
-    setTouched(prev => ({ ...prev, amount: true }));
+    setTouched((prev) => ({ ...prev, amount: true }));
   };
 
   // Smart description suggestions
   const handleDescriptionSuggestionClick = (suggestion) => {
     setDescription(suggestion);
-    setTouched(prev => ({ ...prev, description: true }));
+    setTouched((prev) => ({ ...prev, description: true }));
   };
 
   // Keyboard shortcuts
-  const handleKeyDown = useCallback((e) => {
-    if (e.key === 'Escape') {
-      onClose();
-    } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      if (isValid && !isSubmitting) {
-        handleSubmit(e);
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        if (isValid && !isSubmitting) {
+          handleSubmit(e);
+        }
       }
-    }
-  }, [onClose, isValid, isSubmitting]);
+    },
+    [onClose, isValid, isSubmitting]
+  );
 
   // Focus management and keyboard listeners
   useEffect(() => {
     if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener("keydown", handleKeyDown);
       // Auto-focus first input after modal animation
       setTimeout(() => {
         firstInputRef.current?.focus();
       }, 100);
     }
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, handleKeyDown]);
 
@@ -308,7 +331,7 @@ const AddEditTransactionModal = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Comprehensive validation before submit
     if (!validateForm()) {
       setError("Vui lòng kiểm tra lại các trường đã nhập.");
@@ -318,7 +341,7 @@ const AddEditTransactionModal = ({
         description: true,
         categoryId: true,
         accountId: true,
-        date: true
+        date: true,
       });
       return;
     }
@@ -348,12 +371,11 @@ const AddEditTransactionModal = ({
       await axios[httpMethod](url, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       // Success feedback
       setTimeout(() => {
         onSubmitSuccess();
       }, 300); // Small delay for better UX
-      
     } catch (apiError) {
       setError(
         apiError.response?.data?.message ||
@@ -376,7 +398,7 @@ const AddEditTransactionModal = ({
   // Helper function to get field error class
   const getFieldErrorClass = (fieldName) => {
     const hasError = touched[fieldName] && fieldErrors[fieldName];
-    return hasError ? styles.fieldError : '';
+    return hasError ? styles.fieldError : "";
   };
 
   // Helper function to show field error message
@@ -384,7 +406,10 @@ const AddEditTransactionModal = ({
     const hasError = touched[fieldName] && fieldErrors[fieldName];
     return hasError ? (
       <span className={styles.errorText}>
-        <FontAwesomeIcon icon={faExclamationTriangle} className={styles.errorIcon} />
+        <FontAwesomeIcon
+          icon={faExclamationTriangle}
+          className={styles.errorIcon}
+        />
         {fieldErrors[fieldName]}
       </span>
     ) : null;
@@ -395,8 +420,8 @@ const AddEditTransactionModal = ({
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>
-            <FontAwesomeIcon 
-              icon={mode === "add" ? faWallet : faEdit} 
+            <FontAwesomeIcon
+              icon={mode === "add" ? faWallet : faEdit}
               className={styles.titleIcon}
             />
             {modalTitle}
@@ -411,7 +436,7 @@ const AddEditTransactionModal = ({
               <FontAwesomeIcon icon={faSpinner} spin /> Đang tải dữ liệu...
             </div>
           )}
-          
+
           {error && (
             <div className={styles.errorMessage}>
               <FontAwesomeIcon icon={faExclamationTriangle} />
@@ -423,17 +448,20 @@ const AddEditTransactionModal = ({
           {!isLoading && (
             <div className={styles.formProgress}>
               <div className={styles.progressBar}>
-                <div 
-                  className={styles.progressFill} 
-                  style={{ 
-                    width: `${Math.min(100, ((Object.keys(touched).length / 5) * 100))}%` 
+                <div
+                  className={styles.progressFill}
+                  style={{
+                    width: `${Math.min(100, (Object.keys(touched).length / 5) * 100)}%`,
                   }}
                 />
               </div>
               <span className={styles.progressText}>
                 {isValid ? (
                   <>
-                    <FontAwesomeIcon icon={faCheckCircle} className={styles.successIcon} />
+                    <FontAwesomeIcon
+                      icon={faCheckCircle}
+                      className={styles.successIcon}
+                    />
                     Sẵn sàng để lưu
                   </>
                 ) : (
@@ -493,29 +521,33 @@ const AddEditTransactionModal = ({
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              onBlur={() => handleFieldBlur('description')}
-              className={`${styles.formInput} ${getFieldErrorClass('description')}`}
+              onBlur={() => handleFieldBlur("description")}
+              className={`${styles.formInput} ${getFieldErrorClass("description")}`}
               placeholder="Ví dụ: Lương tháng 6, Ăn trưa..."
               required
               disabled={isLoading}
               maxLength={100}
             />
-            {renderFieldError('description')}
-            
+            {renderFieldError("description")}
+
             {/* Smart suggestions for description */}
             {categoryId && getDescriptionSuggestions().length > 0 && (
               <div className={styles.amountSuggestions}>
-                {getDescriptionSuggestions().slice(0, 4).map((suggestion) => (
-                  <button
-                    key={suggestion}
-                    type="button"
-                    className={styles.amountSuggestion}
-                    onClick={() => handleDescriptionSuggestionClick(suggestion)}
-                    disabled={isLoading}
-                  >
-                    {suggestion}
-                  </button>
-                ))}
+                {getDescriptionSuggestions()
+                  .slice(0, 4)
+                  .map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      className={styles.amountSuggestion}
+                      onClick={() =>
+                        handleDescriptionSuggestionClick(suggestion)
+                      }
+                      disabled={isLoading}
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
               </div>
             )}
           </div>
@@ -532,16 +564,16 @@ const AddEditTransactionModal = ({
                 inputMode="numeric"
                 value={displayAmount}
                 onChange={handleAmountChange}
-                onBlur={() => handleFieldBlur('amount')}
-                className={`${styles.amountInput} ${getFieldErrorClass('amount')}`}
+                onBlur={() => handleFieldBlur("amount")}
+                className={`${styles.amountInput} ${getFieldErrorClass("amount")}`}
                 placeholder="0"
                 required
                 disabled={isLoading}
               />
               <span className={styles.currencySymbol}>₫</span>
             </div>
-            {renderFieldError('amount')}
-            
+            {renderFieldError("amount")}
+
             {/* Smart amount suggestions */}
             {!amount && (
               <div className={styles.amountSuggestions}>
@@ -553,7 +585,7 @@ const AddEditTransactionModal = ({
                     onClick={() => handleAmountSuggestionClick(suggestedAmount)}
                     disabled={isLoading}
                   >
-                    {suggestedAmount.toLocaleString('vi-VN')}₫
+                    {suggestedAmount.toLocaleString("vi-VN")}₫
                   </button>
                 ))}
               </div>
@@ -569,8 +601,8 @@ const AddEditTransactionModal = ({
                 id="category"
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                onBlur={() => handleFieldBlur('categoryId')}
-                className={`${styles.formInput} ${getFieldErrorClass('categoryId')}`}
+                onBlur={() => handleFieldBlur("categoryId")}
+                className={`${styles.formInput} ${getFieldErrorClass("categoryId")}`}
                 required
                 disabled={isLoading || filteredCategories.length === 0}
               >
@@ -581,7 +613,7 @@ const AddEditTransactionModal = ({
                   </option>
                 ))}
               </select>
-              {renderFieldError('categoryId')}
+              {renderFieldError("categoryId")}
             </div>
 
             <div className={styles.formGroup}>
@@ -592,8 +624,8 @@ const AddEditTransactionModal = ({
                 id="account"
                 value={accountId}
                 onChange={(e) => setAccountId(e.target.value)}
-                onBlur={() => handleFieldBlur('accountId')}
-                className={`${styles.formInput} ${getFieldErrorClass('accountId')}`}
+                onBlur={() => handleFieldBlur("accountId")}
+                className={`${styles.formInput} ${getFieldErrorClass("accountId")}`}
                 required
                 disabled={isLoading || accounts.length === 0}
               >
@@ -604,7 +636,7 @@ const AddEditTransactionModal = ({
                   </option>
                 ))}
               </select>
-              {renderFieldError('accountId')}
+              {renderFieldError("accountId")}
             </div>
           </div>
 
@@ -618,13 +650,17 @@ const AddEditTransactionModal = ({
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                onBlur={() => handleFieldBlur('date')}
-                className={`${styles.formInput} ${getFieldErrorClass('date')}`}
+                onBlur={() => handleFieldBlur("date")}
+                className={`${styles.formInput} ${getFieldErrorClass("date")}`}
                 required
                 disabled={isLoading}
-                max={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                max={
+                  new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                    .toISOString()
+                    .split("T")[0]
+                }
               />
-              {renderFieldError('date')}
+              {renderFieldError("date")}
             </div>
 
             <div className={styles.formGroup}>
@@ -655,14 +691,22 @@ const AddEditTransactionModal = ({
             <button
               type="submit"
               className={`${styles.formButton} ${styles.submitButton} ${
-                isValid ? styles.submitButtonActive : ''
+                isValid ? styles.submitButtonActive : ""
               }`}
               disabled={isLoading || isSubmitting || !isValid}
-              title={!isValid ? 'Vui lòng kiểm tra lại các trường đã nhập' : 'Nhấn Ctrl+Enter để lưu nhanh'}
+              title={
+                !isValid
+                  ? "Vui lòng kiểm tra lại các trường đã nhập"
+                  : "Nhấn Ctrl+Enter để lưu nhanh"
+              }
             >
               {isSubmitting ? (
                 <>
-                  <FontAwesomeIcon icon={faSpinner} spin className={styles.submitSpinner} />
+                  <FontAwesomeIcon
+                    icon={faSpinner}
+                    spin
+                    className={styles.submitSpinner}
+                  />
                   <span>Đang lưu...</span>
                 </>
               ) : (
@@ -676,7 +720,9 @@ const AddEditTransactionModal = ({
 
           {/* Keyboard Shortcuts Hint */}
           <div className={styles.keyboardHints}>
-            <span>💡 Mẹo: Nhấn <kbd>Ctrl</kbd> + <kbd>Enter</kbd> để lưu nhanh</span>
+            <span>
+              💡 Mẹo: Nhấn <kbd>Ctrl</kbd> + <kbd>Enter</kbd> để lưu nhanh
+            </span>
           </div>
         </form>
       </div>

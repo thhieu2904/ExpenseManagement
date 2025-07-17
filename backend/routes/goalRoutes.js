@@ -8,6 +8,7 @@ const {
   addFundsToGoal,
   toggleArchiveGoal,
   togglePinGoal,
+  fixGoalCategoriesIcon,
 } = require("../controllers/goalController");
 
 const protect = require("../middleware/verifyToken");
@@ -29,6 +30,9 @@ router.delete("/all", protect, async (req, res) => {
 
 // Các route chính
 router.route("/").get(protect, getGoals).post(protect, createGoal);
+
+// Route fix icon cho goal categories (phải đặt trước /:id)
+router.patch("/fix-categories-icon", protect, fixGoalCategoriesIcon);
 
 router.route("/:id").put(protect, updateGoal).delete(protect, deleteGoal);
 

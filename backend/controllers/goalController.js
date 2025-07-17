@@ -4,6 +4,35 @@ const Transaction = require("../models/Transaction"); // Import model Transactio
 const Category = require("../models/Category");
 const Account = require("../models/Account");
 
+// ✅ HELPER FUNCTION: TÌM HOẶC TẠO CATEGORY CHO GOAL
+const findOrCreateGoalCategory = async (goal, userId) => {
+  const categoryName = goal.name; // Bỏ emoji 💰, chỉ dùng tên goal
+  let goalCategory = await Category.findOne({
+    name: categoryName,
+    userId: userId,
+    isGoalCategory: true, // Thêm điều kiện này để tránh trùng với category thường
+  });
+
+  if (!goalCategory) {
+    goalCategory = await Category.create({
+      name: categoryName,
+      type: "CHITIEU",
+      userId: userId,
+      icon: "fa-bullseye", // Set icon mặc định cho goal category
+      isGoalCategory: true,
+      goalId: goal._id,
+    });
+  } else {
+    // Cập nhật icon nếu category đã tồn tại nhưng chưa có icon hoặc có icon mặc định
+    if (!goalCategory.icon || goalCategory.icon === "fa-question-circle") {
+      goalCategory.icon = "fa-bullseye";
+      await goalCategory.save();
+    }
+  }
+
+  return goalCategory;
+};
+
 // @desc    Lấy tất cả mục tiêu của người dùng
 // @route   GET /api/goals
 // @access  Private
@@ -74,7 +103,7 @@ const createGoal = asyncHandler(async (req, res) => {
     name,
     targetAmount,
     deadline,
-    icon,
+    icon: icon || "🎯", // Icon mặc định emoji đẹp cho mục tiêu
   });
 
   res.status(201).json(goal);
@@ -95,6 +124,26 @@ const updateGoal = asyncHandler(async (req, res) => {
   if (goal.user.toString() !== req.user.id) {
     res.status(401);
     throw new Error("Không được phép");
+  }
+
+  // ✅ CẬP NHẬT CATEGORY NẾU TÊN GOAL THAY ĐỔI
+  const oldCategoryName = goal.name; // Bỏ emoji 💰
+  const newName = req.body.name;
+
+  if (newName && newName !== goal.name) {
+    const newCategoryName = newName; // Bỏ emoji 💰
+    await Category.findOneAndUpdate(
+      {
+        name: oldCategoryName,
+        userId: req.user.id,
+        isGoalCategory: true,
+        goalId: goal._id,
+      },
+      {
+        name: newCategoryName,
+        icon: "fa-bullseye", // Đảm bảo icon được set khi update
+      }
+    );
   }
 
   const updatedGoal = await Goal.findByIdAndUpdate(req.params.id, req.body, {
@@ -122,6 +171,15 @@ const deleteGoal = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("Không tìm thấy mục tiêu hoặc bạn không có quyền xóa");
   }
+
+  // ✅ DỌN DẸP CATEGORY LIÊN QUAN ĐẾN GOAL (NẾU CÓ)
+  const categoryName = goal.name; // Bỏ emoji 💰
+  await Category.findOneAndDelete({
+    name: categoryName,
+    userId: req.user.id,
+    isGoalCategory: true,
+    goalId: goal._id,
+  });
 
   // Nếu xóa thành công, trả về id đã xóa
   res.status(200).json({ id: req.params.id });
@@ -162,31 +220,28 @@ const addFundsToGoal = asyncHandler(async (req, res) => {
     throw new Error("Không được phép truy cập mục tiêu này");
   }
 
-  // ✅ 2. TÌM HOẶC TẠO CATEGORY "TIẾT KIỆM MỤC TIÊU"
-  let savingsCategory = await Category.findOne({
-    name: "Tiết kiệm Mục tiêu",
-    userId: req.user.id,
-  });
-  if (!savingsCategory) {
-    savingsCategory = await Category.create({
-      name: "Tiết kiệm cho mục tiêu ",
-      type: "CHITIEU", // Đảm bảo type này khớp với schema của bạn
-      userId: req.user.id,
-      icon: "fa-piggy-bank",
-    });
-  }
+  // ✅ 2. TÌM HOẶC TẠO CATEGORY CHO GOAL
+  const goalCategory = await findOrCreateGoalCategory(goal, req.user.id);
 
-  // ✅ 3. TẠO TRANSACTION HỢP LỆ THEO ĐÚNG SCHEMA
+  // ✅ 3. TẠO TRANSACTION VỚI THÔNG TIN CHI TIẾT VÀ DỄ HIỂU
+  const currentProgress = (
+    ((goal.currentAmount + Number(amount)) / goal.targetAmount) *
+    100
+  ).toFixed(1);
   const transaction = await Transaction.create({
     userId: req.user.id,
-    type: "CHITIEU", // Sử dụng giá trị enum đúng: 'CHITIEU'
-    name: `Nạp tiền cho mục tiêu: "${goal.name}"`, // Thêm trường 'name'
+    type: "CHITIEU",
+    name: `Tiết kiệm: ${goal.name}`,
     amount: Number(amount),
     date: new Date(),
     accountId: accountId,
-    categoryId: savingsCategory._id, // Sử dụng ID của category
-    note: `Nạp vào mục tiêu tiết kiệm.`, // Thêm note (tùy chọn nhưng nên có)
-    icon: "fa-piggy-bank",
+    categoryId: goalCategory._id,
+    note: `💰 Nạp ${Number(amount).toLocaleString(
+      "vi-VN"
+    )}đ | Tiến độ: ${currentProgress}% (${(
+      goal.currentAmount + Number(amount)
+    ).toLocaleString("vi-VN")}đ/${goal.targetAmount.toLocaleString("vi-VN")}đ)`,
+    // Không set icon cho transaction, để frontend sử dụng icon mặc định
     goalId: goal._id,
   });
 
@@ -238,6 +293,36 @@ const togglePinGoal = asyncHandler(async (req, res) => {
   res.status(200).json(goal);
 });
 
+// @desc    Fix icon cho các goal categories hiện tại
+// @route   PATCH /api/goals/fix-categories-icon
+// @access  Private
+const fixGoalCategoriesIcon = asyncHandler(async (req, res) => {
+  try {
+    // Tìm tất cả goal categories của user hiện tại
+    const goalCategories = await Category.find({
+      userId: req.user.id,
+      isGoalCategory: true,
+    });
+
+    let updatedCount = 0;
+    for (const category of goalCategories) {
+      if (!category.icon || category.icon === "fa-question-circle") {
+        category.icon = "fa-bullseye";
+        await category.save();
+        updatedCount++;
+      }
+    }
+
+    res.status(200).json({
+      message: `Đã cập nhật icon cho ${updatedCount} goal categories`,
+      updatedCount,
+    });
+  } catch (error) {
+    res.status(500);
+    throw new Error("Lỗi khi cập nhật icon cho goal categories");
+  }
+});
+
 module.exports = {
   getGoals,
   createGoal,
@@ -246,4 +331,5 @@ module.exports = {
   addFundsToGoal,
   toggleArchiveGoal,
   togglePinGoal,
+  fixGoalCategoriesIcon,
 };

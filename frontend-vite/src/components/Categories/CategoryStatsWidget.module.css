@@ -27,7 +27,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #5c7cfa 0%, #4c63d2 100%);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -59,7 +59,7 @@
   width: 1.125rem; /* Giảm kích thước */
   height: 1.125rem;
   border-radius: 0.25rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #5c7cfa 0%, #4c63d2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -194,7 +194,7 @@
 /* Always highlight state cho "Dùng" - Màu xanh blue navbar */
 .statItemHorizontal.alwaysHighlight {
   background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%);
-  border-color: #3f51b5;
+  border-color: #5c7cfa;
   transform: translateY(-0.5px) scale(1.005);
   box-shadow: 0 1px 4px rgba(63, 81, 181, 0.08);
 }
@@ -205,13 +205,13 @@
 }
 
 .statItemHorizontal.alwaysHighlight .statLabel {
-  color: #3f51b5;
+  color: #5c7cfa;
   font-weight: 600;
 }
 
 .statItemHorizontal.alwaysHighlight .statIcon {
-  background: linear-gradient(135deg, #3f51b5 0%, #1a237e 100%);
-  box-shadow: 0 1px 4px rgba(63, 81, 181, 0.15);
+  background: linear-gradient(135deg, #5c7cfa 0%, #4c63d2 100%);
+  box-shadow: 0 1px 4px rgba(92, 124, 250, 0.2);
 }
 
 .statItemHorizontal.alwaysHighlight:hover {
@@ -313,7 +313,7 @@
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, #3f51b5 0%, #1a237e 100%);
+  background: linear-gradient(90deg, #5c7cfa 0%, #4c63d2 100%);
   border-radius: 0.125rem;
   transition: width 0.5s ease;
   position: relative;
@@ -352,7 +352,7 @@
   padding: 0.1875rem 0.375rem; /* Giảm padding */
   background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%);
   border-radius: 0.25rem;
-  border: 1px solid #3f51b5;
+  border: 1px solid #5c7cfa;
   font-size: 0.5rem; /* Giảm font size */
   color: #1a237e;
   font-weight: 500;
@@ -361,7 +361,7 @@
 }
 
 .mostUsedInline .starIcon {
-  color: #3f51b5;
+  color: #5c7cfa;
   font-size: 0.5rem;
 }
 

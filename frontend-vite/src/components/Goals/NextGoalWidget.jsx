@@ -3,6 +3,8 @@ import React from "react";
 import styles from "./NextGoalWidget.module.css";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { renderIcon } from "../../utils/iconMap";
 
 const formatCurrency = (amount) =>
   new Intl.NumberFormat("vi-VN").format(amount);
@@ -29,7 +31,19 @@ const NextGoalWidget = ({ goal, isLoading }) => {
     <div className={styles.widgetContainer}>
       {/* Cột 1: Icon */}
       <div className={styles.iconWrapper}>
-        <span className={styles.icon}>{goal.icon || "🎯"}</span>
+        {(() => {
+          const iconData = renderIcon(goal.icon);
+          if (iconData.type === "emoji") {
+            return <span className={styles.icon}>{iconData.content}</span>;
+          } else {
+            return (
+              <FontAwesomeIcon
+                icon={iconData.content}
+                className={styles.icon}
+              />
+            );
+          }
+        })()}
       </div>
 
       {/* Cột 2: Toàn bộ thông tin */}

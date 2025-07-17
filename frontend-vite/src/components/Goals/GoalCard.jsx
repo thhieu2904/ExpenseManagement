@@ -16,6 +16,7 @@ import {
 import { format, formatDistanceToNow, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
 import { FaTrophy, FaExclamationCircle } from "react-icons/fa";
+import { renderIcon } from "../../utils/iconMap";
 
 // Helper Functions
 const formatCurrency = (amount) =>
@@ -113,7 +114,19 @@ export default function GoalCard({
 
       <div className={styles.cardHeader}>
         <div className={styles.iconWrapper}>
-          <span className={styles.icon}>{goal.icon || "🎯"}</span>
+          {(() => {
+            const iconData = renderIcon(goal.icon);
+            if (iconData.type === "emoji") {
+              return <span className={styles.icon}>{iconData.content}</span>;
+            } else {
+              return (
+                <FontAwesomeIcon
+                  icon={iconData.content}
+                  className={styles.icon}
+                />
+              );
+            }
+          })()}
         </div>
         <h3 className={styles.goalName}>{goal.name}</h3>
         <div className={styles.actionsMenu} ref={menuRef}>
