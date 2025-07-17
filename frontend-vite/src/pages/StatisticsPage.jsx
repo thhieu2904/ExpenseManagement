@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 // Components
 import Header from "../components/Header/Header";
 import Navbar from "../components/Navbar/Navbar";
@@ -20,6 +21,7 @@ import LoadingState from "../components/Common/LoadingState";
 import statisticsService from "../api/statisticsService";
 import { getDetailedAnalyticsData } from "../api/analyticsService";
 import { getTransactions } from "../api/transactionsService";
+import { getProfile } from "../api/profileService";
 // Utilities
 import { getYear, getMonth, startOfWeek, format } from "date-fns";
 import { getGreeting, getFullDate } from "../utils/timeHelpers";
@@ -40,8 +42,15 @@ import styles from "../styles/StatisticsPage.module.css";
 const StatisticsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // State cho user data
-  const [userData, setUserData] = useState(null);
+  // ✅ SỬ DỤNG REACT QUERY ĐỂ FETCH USER PROFILE
+  const { data: userProfile, isLoading: isUserLoading } = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: async () => {
+      const profile = await getProfile();
+      return profile?.data || null;
+    },
+    placeholderData: null,
+  });
 
   // State cho bộ lọc và điều hướng
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -65,12 +74,6 @@ const StatisticsPage = () => {
     transactions: false,
   });
   const [error, setError] = useState("");
-
-  // Load user data
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUserData(JSON.parse(storedUser));
-  }, []);
 
   // Khởi tạo tab từ URL params
   useEffect(() => {
@@ -318,7 +321,10 @@ const StatisticsPage = () => {
 
   return (
     <div className={styles.pageContainer}>
-      <Header userName={userData?.name} userAvatar={userData?.avatarUrl} />
+      <Header
+        userName={!isUserLoading ? userProfile?.fullname : undefined}
+        userAvatar={!isUserLoading ? userProfile?.avatar : undefined}
+      />
       <Navbar />
 
       <main className={styles.pageWrapper}>
@@ -344,7 +350,7 @@ const StatisticsPage = () => {
               {/* Header Card với tổng quan và điều khiển */}
               <HeaderCard
                 gridIcon={<FontAwesomeIcon icon={faChartBar} />}
-                gridTitle={`${getGreeting()}, ${userData?.name || "Bạn"}!`}
+                gridTitle={`${getGreeting()}, ${!isUserLoading && userProfile?.fullname ? userProfile.fullname : "Bạn"}!`}
                 gridSubtitle={getDynamicTitle()}
                 gridStats={null}
                 gridInfo={

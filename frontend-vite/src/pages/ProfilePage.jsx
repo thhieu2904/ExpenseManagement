@@ -52,6 +52,7 @@ const clearUserData = async () => {
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("info");
   const navigate = useNavigate();
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
 
   // Profile Info State
   const [user, setUser] = useState({
@@ -105,6 +106,7 @@ const ProfilePage = () => {
   // --- DATA FETCHING ---
   const fetchProfileData = async () => {
     try {
+      setIsProfileLoading(true);
       const [profileRes, historyRes] = await Promise.all([
         getProfile(),
         getLoginHistory(),
@@ -119,6 +121,8 @@ const ProfilePage = () => {
         type: "error",
       });
       console.error("Lỗi tải dữ liệu profile:", error);
+    } finally {
+      setIsProfileLoading(false);
     }
   };
 
@@ -619,7 +623,10 @@ const ProfilePage = () => {
     <div
       style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
     >
-      <Header userName={user?.fullname} userAvatar={user?.avatar} />
+      <Header
+        userName={!isProfileLoading ? user?.fullname : undefined}
+        userAvatar={!isProfileLoading ? user?.avatar : undefined}
+      />
       <Navbar />
 
       <main className={styles.pageWrapper}>
@@ -628,13 +635,13 @@ const ProfilePage = () => {
           <HeaderCard
             className={styles.profilePageHeader}
             gridIcon={<FontAwesomeIcon icon={faUserCog} />}
-            gridTitle={`${getGreeting()}, ${user?.fullname || "Bạn"}!`}
+            gridTitle={`${getGreeting()}, ${!isProfileLoading && user?.fullname ? user.fullname : "Bạn"}!`}
             gridSubtitle="Quản lý thông tin cá nhân"
             gridStats={
               <ProfileStatsWidget
                 user={user}
                 activeTab={activeTab}
-                isLoading={!user.username}
+                isLoading={isProfileLoading}
               />
             }
             gridInfo={

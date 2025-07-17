@@ -157,6 +157,7 @@ class AIController {
       let aiResponse;
       try {
         aiResponse = this.parseGeminiResponse(responseText);
+        aiResponse.originalMessage = message; // Thêm originalMessage để dùng cho extract date
         console.log("=== PARSED AI RESPONSE ===");
         console.log(JSON.stringify(aiResponse, null, 2));
         console.log("=== END PARSED RESPONSE ===");
@@ -355,34 +356,38 @@ SYSTEM: Bạn là AI assistant chuyên về tài chính cá nhân. Phân tích y
 "${userMessage}"
 
 ### CÁC INTENT CÓ THỂ XỬ LÝ VÀ ENTITIES CẦN TRÍCH XUẤT
-1. **QUICK_STATS** - Xem thống kê, báo cáo, tổng quan
+1. **ADD_ACCOUNT** - Thêm tài khoản mới (ngân hàng hoặc tiền mặt)
+   - Entities: name, type (TIENMAT/THENGANHANG), bankName, accountNumber
+   - Patterns: "tạo tài khoản", "thêm tài khoản", "mở tài khoản", "tạo ví"
+
+2. **QUICK_STATS** - Xem thống kê, báo cáo, tổng quan
    - Entities: timeFilter (tháng này, tháng trước, tháng X)
 
-2. **VIEW_ACCOUNTS** - Xem danh sách tài khoản và số dư
+3. **VIEW_ACCOUNTS** - Xem danh sách tài khoản và số dư
    - Entities: specificAccount (tên tài khoản cụ thể), bankFilter (ngân hàng cụ thể)
 
-3. **VIEW_TRANSACTIONS** - Xem giao dịch
+4. **VIEW_TRANSACTIONS** - Xem giao dịch
    - Entities: timeFilter, accountFilter, categoryFilter, amountFilter
 
-4. **VIEW_CATEGORIES** - Xem danh sách danh mục
+5. **VIEW_CATEGORIES** - Xem danh sách danh mục
    - Entities: typeFilter (chi tiêu/thu nhập)
 
-5. **VIEW_GOALS** - Xem mục tiêu
+6. **VIEW_GOALS** - Xem mục tiêu
    - Entities: statusFilter (đang thực hiện, hoàn thành, quá hạn)
 
-6. **ADD_TRANSACTION** - Thêm giao dịch mới
+7. **ADD_TRANSACTION** - Thêm giao dịch mới
    - Entities: amount, description, accountGuess, categoryGuess
 
-7. **ADD_CATEGORY** - Thêm danh mục mới
+8. **ADD_CATEGORY** - Thêm danh mục mới
    - Entities: name, type
 
-8. **ADD_GOAL** - Thêm mục tiêu mới  
+9. **ADD_GOAL** - Thêm mục tiêu mới  
    - Entities: name, targetAmount, deadline
 
-9. **QUERY_TRANSACTIONS** - Tìm kiếm giao dịch
+10. **QUERY_TRANSACTIONS** - Tìm kiếm giao dịch
    - Entities: searchTerm, timeFilter, amountRange
 
-10. **UNKNOWN** - Không xác định được
+11. **UNKNOWN** - Không xác định được
 
 ### HƯỚNG DẪN TRÍCH XUẤT ENTITIES
 - **specificAccount**: Tìm chính xác tên tài khoản được nhắc đến
@@ -396,6 +401,7 @@ SYSTEM: Bạn là AI assistant chuyên về tài chính cá nhân. Phân tích y
 - Chỉ trả về JSON thuần túy, không có markdown hay giải thích
 - LUÔN trích xuất entities từ câu nói của user
 - Sử dụng đúng tên category/account có sẵn của user để match entities
+- Với ADD_ACCOUNT: khi user nói "tạo tài khoản", "thêm tài khoản", "mở tài khoản" => PHẢI trả về intent: "ADD_ACCOUNT"
 - Với VIEW_ACCOUNTS: nếu có specificAccount hoặc bankFilter, chỉ hiển thị những account đó
 - Với ADD_TRANSACTION: phải có đầy đủ name, amount, type, accountGuess, categoryGuess
 - Với QUICK_STATS: KHÔNG tự tạo số liệu, sử dụng timeFilter nếu có
@@ -453,6 +459,7 @@ SYSTEM: Bạn là AI assistant chuyên về tài chính cá nhân. Phân tích y
   },
   "transaction": null hoặc { "name": "...", "amount": số, "type": "CHITIEU/THUNHAP", "accountGuess": "...", "categoryGuess": "..." },
   "category": null hoặc { "name": "...", "type": "CHITIEU/THUNHAP" },
+  "account": null hoặc { "name": "...", "type": "TIENMAT/THENGANHANG", "bankName": "...", "accountNumber": "..." },
   "goal": null hoặc { "name": "...", "targetAmount": số, "deadline": "YYYY-MM-DD" },
   "responseForUser": "Câu trả lời ngắn gọn phản ánh entities được trích xuất"
 }
@@ -580,6 +587,111 @@ Response:
   "goal": null,
   "responseForUser": "Tôi sẽ tìm các giao dịch có số tiền trên 1 triệu đồng."
 }
+
+User: "tạo tài khoản ACB mới"
+Response:
+{
+  "intent": "ADD_ACCOUNT",
+  "entities": {
+    "specificAccount": null,
+    "bankFilter": null,
+    "categoryFilter": null,
+    "timeFilter": null,
+    "amountFilter": null,
+    "searchTerm": null,
+    "typeFilter": null,
+    "statusFilter": null
+  },
+  "transaction": null,
+  "category": null,
+  "account": { "name": "Tài khoản ACB", "type": "THENGANHANG", "bankName": "ACB", "accountNumber": "" },
+  "goal": null,
+  "responseForUser": "Tôi sẽ tạo tài khoản ngân hàng ACB cho bạn."
+}
+
+User: "thêm tài khoản Vietcombank"
+Response:
+{
+  "intent": "ADD_ACCOUNT",
+  "entities": {
+    "specificAccount": null,
+    "bankFilter": null,
+    "categoryFilter": null,
+    "timeFilter": null,
+    "amountFilter": null,
+    "searchTerm": null,
+    "typeFilter": null,
+    "statusFilter": null
+  },
+  "transaction": null,
+  "category": null,
+  "account": { "name": "Tài khoản Vietcombank", "type": "THENGANHANG", "bankName": "Vietcombank", "accountNumber": "" },
+  "goal": null,
+  "responseForUser": "Tôi sẽ tạo tài khoản Vietcombank cho bạn."
+}
+
+User: "tạo ví tiền mặt mới"
+Response:
+{
+  "intent": "ADD_ACCOUNT",
+  "entities": {
+    "specificAccount": null,
+    "bankFilter": null,
+    "categoryFilter": null,
+    "timeFilter": null,
+    "amountFilter": null,
+    "searchTerm": null,
+    "typeFilter": null,
+    "statusFilter": null
+  },
+  "transaction": null,
+  "category": null,
+  "account": { "name": "Ví tiền mặt", "type": "TIENMAT", "bankName": "", "accountNumber": "" },
+  "goal": null,
+  "responseForUser": "Tôi sẽ tạo ví tiền mặt cho bạn."
+}
+
+User: "mở tài khoản Techcombank"
+Response:
+{
+  "intent": "ADD_ACCOUNT",
+  "entities": {
+    "specificAccount": null,
+    "bankFilter": null,
+    "categoryFilter": null,
+    "timeFilter": null,
+    "amountFilter": null,
+    "searchTerm": null,
+    "typeFilter": null,
+    "statusFilter": null
+  },
+  "transaction": null,
+  "category": null,
+  "account": { "name": "Tài khoản Techcombank", "type": "THENGANHANG", "bankName": "Techcombank", "accountNumber": "" },
+  "goal": null,
+  "responseForUser": "Tôi sẽ mở tài khoản Techcombank cho bạn."
+}
+
+User: "tạo tài khoản BIDV số 123456"
+Response:
+{
+  "intent": "ADD_ACCOUNT", 
+  "entities": {
+    "specificAccount": null,
+    "bankFilter": null,
+    "categoryFilter": null,
+    "timeFilter": null,
+    "amountFilter": null,
+    "searchTerm": null,
+    "typeFilter": null,
+    "statusFilter": null
+  },
+  "transaction": null,
+  "category": null,
+  "account": { "name": "Tài khoản BIDV", "type": "THENGANHANG", "bankName": "BIDV", "accountNumber": "123456" },
+  "goal": null,
+  "responseForUser": "Tôi sẽ tạo tài khoản BIDV số 123456 cho bạn."
+}
     `;
   }
 
@@ -600,11 +712,19 @@ Response:
         return await this.handleAddTransaction(
           transaction,
           userId,
-          responseForUser
+          responseForUser,
+          aiResponse.originalMessage || ""
         );
 
       case "ADD_CATEGORY":
         return await this.handleAddCategory(category, userId, responseForUser);
+
+      case "ADD_ACCOUNT":
+        return await this.handleAddAccount(
+          aiResponse.account,
+          userId,
+          responseForUser
+        );
 
       case "ADD_GOAL":
         return await this.handleAddGoal(goal, userId, responseForUser);
@@ -652,7 +772,12 @@ Response:
   }
 
   // Xử lý thêm giao dịch
-  async handleAddTransaction(transaction, userId, responseForUser) {
+  async handleAddTransaction(
+    transaction,
+    userId,
+    responseForUser,
+    originalMessage = ""
+  ) {
     try {
       // Kiểm tra nếu transaction thiếu thông tin
       if (!transaction || !transaction.amount || transaction.amount === null) {
@@ -664,6 +789,7 @@ Response:
             type: transaction?.type || "CHITIEU",
             accountGuess: transaction?.accountGuess,
             categoryGuess: transaction?.categoryGuess,
+            originalMessage: originalMessage, // Lưu message gốc để extract date sau
           },
           lastIntent: "ADD_TRANSACTION",
         });
@@ -686,6 +812,20 @@ Response:
         };
       }
 
+      // Extract date từ originalMessage nếu có
+      let transactionDate = new Date(); // Default là hôm nay
+      if (originalMessage) {
+        transactionDate =
+          this.extractDateFromTransactionMessage(originalMessage);
+        console.log("=== EXTRACTING DATE FROM ORIGINAL MESSAGE ===");
+        console.log("Original message:", originalMessage);
+        console.log("Extracted date:", transactionDate);
+        console.log("=== END EXTRACT DATE ===");
+      }
+
+      // Format date cho hiển thị
+      const formattedDate = transactionDate.toLocaleDateString("vi-VN");
+
       return {
         response:
           responseForUser ||
@@ -695,7 +835,9 @@ Response:
             transaction.amount
           ).toLocaleString()}đ\n• Loại: ${
             transaction.type === "CHITIEU" ? "Chi tiêu" : "Thu nhập"
-          }\n• Danh mục: ${transaction.categoryGuess || "Không xác định"}`,
+          }\n• Danh mục: ${
+            transaction.categoryGuess || "Không xác định"
+          }\n• Ngày: ${formattedDate}`,
         action: "CONFIRM_ADD_TRANSACTION",
         data: {
           name: transaction.name,
@@ -703,6 +845,7 @@ Response:
           type: transaction.type,
           categoryGuess: transaction.categoryGuess,
           accountGuess: transaction.accountGuess,
+          date: transactionDate, // Thêm date vào data
         },
       };
     } catch (error) {
@@ -735,7 +878,7 @@ Response:
         data: {
           name: category.name,
           type: category.type,
-          icon: category.icon || "fa-question-circle",
+          icon: this.getCategoryIcon(category.name, category.type),
         },
       };
     } catch (error) {
@@ -743,6 +886,45 @@ Response:
       return {
         response:
           "Có lỗi xảy ra khi xử lý thông tin danh mục. Vui lòng thử lại.",
+        action: "CHAT_RESPONSE",
+      };
+    }
+  }
+
+  // Xử lý thêm tài khoản
+  async handleAddAccount(account, userId, responseForUser) {
+    try {
+      if (!account || !account.name) {
+        return {
+          response: "Tên tài khoản không được để trống. Vui lòng thử lại.",
+          action: "CHAT_RESPONSE",
+        };
+      }
+
+      // Set default type nếu không có
+      const accountType = account.type || "TIENMAT";
+      const bankName = account.bankName || null;
+
+      return {
+        response:
+          responseForUser ||
+          `Xác nhận tạo tài khoản:\n• Tên: ${account.name}\n• Loại: ${
+            accountType === "TIENMAT" ? "Tiền mặt" : "Thẻ ngân hàng"
+          }${bankName ? `\n• Ngân hàng: ${bankName}` : ""}`,
+        action: "CONFIRM_ADD_ACCOUNT",
+        data: {
+          name: account.name,
+          type: accountType,
+          bankName: bankName,
+          accountNumber: account.accountNumber || "", // Thêm accountNumber
+          initialBalance: account.initialBalance || 0,
+        },
+      };
+    } catch (error) {
+      console.error("Error handling add account:", error);
+      return {
+        response:
+          "Có lỗi xảy ra khi xử lý thông tin tài khoản. Vui lòng thử lại.",
         action: "CHAT_RESPONSE",
       };
     }
@@ -1195,13 +1377,12 @@ Response:
         .map((t, index) => {
           const typeIcon = t.type === "CHITIEU" ? "💸" : "💰";
           const amount = t.amount ? t.amount.toLocaleString() : "0";
-          return `${index + 1}. ${typeIcon} <strong>${
-            t.name
-          }</strong> - <span class="${t.type.toLowerCase()}">${amount}đ</span>\n   📂 ${
-            t.categoryId?.name || "Không có danh mục"
-          } | 🏦 ${t.accountId?.name || "Không có tài khoản"} | 📅 ${new Date(
-            t.date
-          ).toLocaleDateString("vi-VN")}`;
+          const formattedDate = new Date(t.date).toLocaleDateString("vi-VN");
+
+          return `${index + 1}. ${typeIcon} ${t.name} - ${amount}đ
+   📂 ${t.categoryId?.name || "Không có danh mục"}
+   🏦 ${t.accountId?.name || "Không có tài khoản"}
+   📅 ${formattedDate}`;
         })
         .join("\n\n");
 
@@ -1650,8 +1831,15 @@ Response:
       console.log("=== AI CREATE TRANSACTION ===");
       console.log("Request body:", req.body);
 
-      const { amount, type, name, description, accountGuess, categoryGuess } =
-        req.body;
+      const {
+        amount,
+        type,
+        name,
+        description,
+        accountGuess,
+        categoryGuess,
+        date,
+      } = req.body;
       const userId = req.user.id;
 
       // Convert type to proper enum value
@@ -1731,7 +1919,7 @@ Response:
         type: transactionType,
         categoryId: categoryDoc._id,
         accountId: account._id,
-        date: new Date(),
+        date: date ? new Date(date) : new Date(), // Sử dụng date từ request hoặc ngày hiện tại
         note: description || transactionName,
       };
 
@@ -1852,6 +2040,71 @@ Response:
     }
   }
 
+  // Thực hiện tạo tài khoản tự động - sử dụng trực tiếp accountController
+  async createAccount(req, res) {
+    try {
+      console.log("=== AI CREATE ACCOUNT ===");
+      console.log("Request body:", req.body);
+
+      const { name, type, bankName, accountNumber, initialBalance } = req.body;
+      const userId = req.user.id;
+
+      if (!name) {
+        return res.status(400).json({
+          success: false,
+          message: "Thiếu tên tài khoản",
+        });
+      }
+
+      // Sử dụng trực tiếp accountController
+      const accountController = require("./accountController");
+
+      // Tạo request data chuẩn cho accountController
+      const accountReq = {
+        user: { id: userId },
+        body: {
+          name,
+          type: type || "TIENMAT",
+          bankName: bankName || null,
+          accountNumber: accountNumber || "", // Thêm accountNumber
+          initialBalance: initialBalance || 0,
+        },
+      };
+
+      // Tạo promise để capture response từ accountController
+      const accountResult = await new Promise((resolve, reject) => {
+        const mockRes = {
+          status: (code) => {
+            mockRes.statusCode = code;
+            return mockRes;
+          },
+          json: (data) => {
+            if (mockRes.statusCode >= 400) {
+              reject(new Error(data.message || "Account creation failed"));
+            } else {
+              resolve(data);
+            }
+          },
+        };
+
+        accountController.createAccount(accountReq, mockRes);
+      });
+
+      res.json({
+        success: true,
+        message: "Tài khoản đã được tạo thành công bởi AI",
+        account: accountResult.account || accountResult.data,
+      });
+    } catch (error) {
+      console.error("Error creating account:", error);
+      res.status(500).json({
+        success: false,
+        message: "Lỗi khi tạo tài khoản",
+        error: error.message,
+      });
+    }
+  }
+
   // Thực hiện tạo mục tiêu tự động - sử dụng trực tiếp goalController
   async createGoal(req, res) {
     try {
@@ -1952,15 +2205,17 @@ Response:
       }
 
       const transactionList = transactions
-        .map(
-          (t, index) =>
-            `${index + 1}. <strong>${
-              t.name
-            }</strong> - <span class="${t.type.toLowerCase()}">${t.amount.toLocaleString()}đ</span> (${
-              t.categoryId?.name || "Không có danh mục"
-            }) - ${new Date(t.date).toLocaleDateString("vi-VN")}`
-        )
-        .join("\n");
+        .map((t, index) => {
+          const typeIcon = t.type === "CHITIEU" ? "💸" : "💰";
+          const formattedDate = new Date(t.date).toLocaleDateString("vi-VN");
+
+          return `${index + 1}. ${typeIcon} ${
+            t.name
+          } - ${t.amount.toLocaleString()}đ
+   📂 ${t.categoryId?.name || "Không có danh mục"}
+   📅 ${formattedDate}`;
+        })
+        .join("\n\n");
 
       return {
         response: `📋 <strong>10 giao dịch gần đây:</strong>\n\n${transactionList}`,
@@ -2262,6 +2517,17 @@ Response:
         if (amount) {
           pendingData.amount = amount;
 
+          // Extract date từ original message hoặc current message
+          let transactionDate = new Date();
+          if (pendingData.originalMessage) {
+            transactionDate = this.extractDateFromTransactionMessage(
+              pendingData.originalMessage
+            );
+          }
+
+          // Format date cho hiển thị
+          const formattedDate = transactionDate.toLocaleDateString("vi-VN");
+
           // Reset conversation state
           this.resetConversationState(userId);
 
@@ -2271,9 +2537,15 @@ Response:
               pendingData.name
             }\n• Số tiền: ${amount.toLocaleString()}đ\n• Loại: ${
               pendingData.type === "CHITIEU" ? "Chi tiêu" : "Thu nhập"
-            }\n• Danh mục: ${pendingData.categoryGuess}`,
+            }\n• Danh mục: ${
+              pendingData.categoryGuess
+            }\n• Ngày: ${formattedDate}`,
             action: "CONFIRM_ADD_TRANSACTION",
-            data: pendingData,
+            data: {
+              ...pendingData,
+              amount: amount,
+              date: transactionDate,
+            },
           };
         } else {
           return {
@@ -2419,14 +2691,19 @@ Response:
     // Clean text
     const cleanText = text.toLowerCase().trim();
 
-    // Patterns cho ngày cụ thể - MỞ RỘNG
+    // Patterns cho ngày cụ thể - MỞ RỘNG THÊM NHIỀU FORMAT
     const datePatterns = [
       /(\d{1,2})\/(\d{1,2})\/(\d{4})/, // DD/MM/YYYY
       /(\d{1,2})\/(\d{1,2})/, // DD/MM (năm hiện tại)
+      /(\d{1,2})-(\d{1,2})-(\d{4})/, // DD-MM-YYYY
+      /(\d{1,2})-(\d{1,2})/, // DD-MM (năm hiện tại)
+      /ngày\s*(\d{1,2})\s*\/\s*(\d{1,2})/, // ngày DD/MM
       /ngày\s*(\d{1,2})\s*tháng\s*(\d{1,2})\s*năm\s*(\d{4})/i, // ngày X tháng Y năm Z
       /ngày\s*(\d{1,2})\s*tháng\s*(\d{1,2})/i, // ngày X tháng Y (năm hiện tại)
       /(\d{1,2})\s*tháng\s*(\d{1,2})\s*năm\s*(\d{4})/i, // X tháng Y năm Z
       /(\d{1,2})\s*tháng\s*(\d{1,2})/i, // X tháng Y (năm hiện tại)
+      /vào\s*ngày\s*(\d{1,2})\/(\d{1,2})/i, // vào ngày DD/MM
+      /vào\s*(\d{1,2})\/(\d{1,2})/i, // vào DD/MM
     ];
 
     // Kiểm tra ngày cụ thể trước
@@ -2471,8 +2748,20 @@ Response:
               .toString()
               .padStart(2, "0")}/${currentYear}`;
           }
+        } else if (
+          pattern.source.includes("vào.*ngày") ||
+          pattern.source.includes("vào")
+        ) {
+          // "vào ngày DD/MM" hoặc "vào DD/MM"
+          const day = parseInt(match[1]);
+          const month = parseInt(match[2]);
+          if (this.isValidDate(day, month, currentYear)) {
+            return `${day.toString().padStart(2, "0")}/${month
+              .toString()
+              .padStart(2, "0")}/${currentYear}`;
+          }
         } else if (match[3]) {
-          // DD/MM/YYYY
+          // DD/MM/YYYY hoặc DD-MM-YYYY
           const day = parseInt(match[1]);
           const month = parseInt(match[2]);
           const year = parseInt(match[3]);
@@ -2482,7 +2771,7 @@ Response:
               .padStart(2, "0")}/${year}`;
           }
         } else if (match[2]) {
-          // DD/MM (năm hiện tại)
+          // DD/MM hoặc DD-MM (năm hiện tại)
           const day = parseInt(match[1]);
           const month = parseInt(match[2]);
           if (this.isValidDate(day, month, currentYear)) {
@@ -2649,6 +2938,70 @@ Response:
     return day <= lastDayOfMonth;
   }
 
+  // Trích xuất ngày từ transaction message - PHƯƠNG THỨC MỚI
+  extractDateFromTransactionMessage(message) {
+    const cleanText = message.toLowerCase().trim();
+
+    // Tìm các pattern ngày trong transaction
+    const transactionDatePatterns = [
+      /vào\s*ngày\s*(\d{1,2})\/(\d{1,2})/i, // vào ngày DD/MM
+      /vào\s*(\d{1,2})\/(\d{1,2})/i, // vào DD/MM
+      /ngày\s*(\d{1,2})\/(\d{1,2})/i, // ngày DD/MM
+      /ngày\s*(\d{1,2})(?!\d)/i, // ngày DD (không có MM, dùng tháng hiện tại)
+      /(\d{1,2})\/(\d{1,2})\s*này/i, // DD/MM này
+      /tháng\s*(\d{1,2})\s*ngày\s*(\d{1,2})/i, // tháng X ngày Y
+    ];
+
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1;
+
+    for (const pattern of transactionDatePatterns) {
+      const match = cleanText.match(pattern);
+      if (match) {
+        let day, month;
+
+        if (pattern.source.includes("tháng.*ngày")) {
+          // "tháng X ngày Y"
+          month = parseInt(match[1]);
+          day = parseInt(match[2]);
+        } else if (pattern.source.includes("ngày.*(?!\\d)")) {
+          // "ngày DD" (không có MM, dùng tháng hiện tại)
+          day = parseInt(match[1]);
+          month = currentMonth;
+        } else {
+          // Các patterns khác: "vào ngày DD/MM", "vào DD/MM", "ngày DD/MM"
+          day = parseInt(match[1]);
+          month = parseInt(match[2]);
+        }
+
+        if (this.isValidDate(day, month, currentYear)) {
+          // Return as Date object cho transaction
+          return new Date(currentYear, month - 1, day);
+        }
+      }
+    }
+
+    // Kiểm tra từ khóa tương đối
+    if (cleanText.includes("hôm nay")) {
+      return new Date();
+    }
+
+    if (cleanText.includes("ngày mai")) {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return tomorrow;
+    }
+
+    if (cleanText.includes("hôm qua")) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      return yesterday;
+    }
+
+    // Default về hôm nay nếu không tìm thấy ngày cụ thể
+    return new Date();
+  }
+
   // Extract tháng và năm từ user message
   extractMonthFromMessage(message) {
     const currentYear = new Date().getFullYear();
@@ -2744,6 +3097,23 @@ Response:
       }
     }
 
+    // Patterns cho tạo tài khoản mới - KIỂM TRA TRƯỚC VIEW_ACCOUNTS
+    const addAccountPatterns = [
+      /(?:tạo|thêm|mở).*(?:tài khoản|account|ví)/i, // Thêm "ví" vào pattern chính
+      /(?:tạo|thêm|mở).*(?:tài khoản|account|ví).*(?:mới|new)/i,
+      /(?:tạo|thêm|mở).*(?:tài khoản|account).*(?:vietcombank|bidv|techcombank|mb bank|acb|vpbank)/i,
+    ];
+
+    for (const pattern of addAccountPatterns) {
+      if (pattern.test(message)) {
+        console.log(
+          "Local processing: ADD_ACCOUNT pattern detected, calling Gemini"
+        );
+        // Để Gemini xử lý ADD_ACCOUNT
+        return null; // Trả về null để gọi Gemini API
+      }
+    }
+
     // Patterns cho xem tài khoản với entity detection
     const accountPatterns = [
       /(?:xem|liệt kê|danh sách).*(?:tài khoản|account|nguồn tiền)/i,
@@ -2760,11 +3130,63 @@ Response:
       }
     }
 
-    // Patterns cho xem giao dịch với entity detection
+    // Patterns cho thêm giao dịch đơn giản - KIỂM TRA TRƯỚC KHI XEM GIAO DỊCH
+    const addTransactionPatterns = [
+      /(?:thêm|tạo|ghi|nhập).*(?:giao dịch|chi tiêu|thu nhập)/i, // thêm giao dịch
+      /(?:chi|mua|thanh toán|trả)\s+(\d+[k|nghìn|triệu|tr]?)\s+(.+)/i,
+      /(?:thu|nhận|lương|tiền)\s+(\d+[k|nghìn|triệu|tr]?)\s*(.*)$/i,
+      /(?:thêm|tạo).*(?:chi tiêu|thu nhập).*(\d+[k|nghìn|triệu|tr]?)/i, // thêm chi tiêu X
+    ];
+
+    for (const pattern of addTransactionPatterns) {
+      const match = message.match(pattern);
+      if (match) {
+        console.log(
+          "Local processing: ADD_TRANSACTION pattern detected, calling Gemini"
+        );
+        // Để Gemini xử lý ADD_TRANSACTION thay vì xử lý local
+        return null; // Trả về null để gọi Gemini API
+      }
+    }
+
+    // Patterns cho tạo danh mục mới - KIỂM TRA TRƯỚC VIEW patterns
+    const addCategoryPatterns = [
+      /(?:tạo|thêm|mở).*(?:danh mục|category).*(?:mới|new)/i,
+      /(?:tạo|thêm).*(?:danh mục|category)/i,
+    ];
+
+    for (const pattern of addCategoryPatterns) {
+      if (pattern.test(message)) {
+        console.log(
+          "Local processing: ADD_CATEGORY pattern detected, calling Gemini"
+        );
+        // Để Gemini xử lý ADD_CATEGORY
+        return null; // Trả về null để gọi Gemini API
+      }
+    }
+
+    // Patterns cho tạo mục tiêu mới - KIỂM TRA TRƯỚC VIEW patterns
+    const addGoalPatterns = [
+      /(?:tạo|thêm|đặt).*(?:mục tiêu|goal).*(?:mới|new)/i,
+      /(?:tạo|thêm|đặt).*(?:mục tiêu|goal)/i,
+      /(?:tiết kiệm).*(?:mục tiêu)/i,
+    ];
+
+    for (const pattern of addGoalPatterns) {
+      if (pattern.test(message)) {
+        console.log(
+          "Local processing: ADD_GOAL pattern detected, calling Gemini"
+        );
+        // Để Gemini xử lý ADD_GOAL
+        return null; // Trả về null để gọi Gemini API
+      }
+    }
+
+    // Patterns cho xem giao dịch với entity detection - SAU KHI KIỂM TRA ADD_TRANSACTION
     const transactionPatterns = [
-      /(?:xem|liệt kê|danh sách).*(?:giao dịch|transaction)/i,
+      /(?:xem|liệt kê|danh sách|hiển thị).*(?:giao dịch|transaction)/i, // Thêm "hiển thị"
       /giao.*dịch.*(?:ăn uống|xăng xe|mua sắm|giải trí)/i,
-      /(?:chi tiêu|thu nhập).*(?:tháng|tuần|ngày)/i,
+      /(?:xem|liệt kê).*(?:chi tiêu|thu nhập).*(?:tháng|tuần)/i, // Thêm "xem" hoặc "liệt kê"
     ];
 
     for (const pattern of transactionPatterns) {
@@ -2822,38 +3244,6 @@ Response:
         }
 
         return await this.getGoalListWithFilter(userId, entities);
-      }
-    }
-
-    // Patterns cho thêm giao dịch đơn giản
-    const addTransactionPatterns = [
-      /(?:chi|mua|thanh toán|trả)\s+(\d+[k|nghìn|triệu|tr]?)\s+(.+)/i,
-      /(?:thu|nhận|lương|tiền)\s+(\d+[k|nghìn|triệu|tr]?)\s*(.*)$/i,
-    ];
-
-    for (const pattern of addTransactionPatterns) {
-      const match = message.match(pattern);
-      if (match) {
-        const amount = this.extractAmount(match[1]);
-        const description = match[2] || "Giao dịch";
-        const isExpense = /chi|mua|thanh toán|trả/i.test(message);
-
-        if (amount && amount > 0) {
-          console.log("Local processing: TRANSACTION pattern matched");
-          return {
-            response: `Xác nhận ${
-              isExpense ? "chi tiêu" : "thu nhập"
-            } <strong>${amount.toLocaleString()}đ</strong> cho "<em>${description}</em>"?`,
-            action: "CONFIRM_ADD_TRANSACTION",
-            data: {
-              name: description,
-              amount: amount,
-              type: isExpense ? "CHITIEU" : "THUNHAP",
-              categoryGuess: isExpense ? "Ăn uống" : "Thu nhập khác",
-              accountGuess: null,
-            },
-          };
-        }
       }
     }
 
@@ -3039,15 +3429,21 @@ Response:
     return `Bạn là AI assistant tài chính Việt Nam. Trả về JSON thuần túy theo format:
 
 {
-  "intent": "QUICK_STATS|ADD_TRANSACTION|ADD_CATEGORY|ADD_GOAL|VIEW_ACCOUNTS|QUERY_TRANSACTIONS|UNKNOWN",
+  "intent": "ADD_ACCOUNT|QUICK_STATS|ADD_TRANSACTION|ADD_CATEGORY|ADD_GOAL|VIEW_ACCOUNTS|QUERY_TRANSACTIONS|UNKNOWN",
   "transaction": null hoặc {"name":"...","amount":số,"type":"CHITIEU|THUNHAP","accountGuess":"...","categoryGuess":"..."},
   "category": null hoặc {"name":"...","type":"CHITIEU|THUNHAP"},
+  "account": null hoặc {"name":"...","type":"TIENMAT|THENGANHANG","bankName":"...","accountNumber":"..."},
   "goal": null hoặc {"name":"...","targetAmount":số,"deadline":"YYYY-MM-DD"},
   "responseForUser": "Câu trả lời ngắn gọn"
 }
 
 QUY TẮC:
+- ADD_ACCOUNT: "tạo tài khoản", "thêm tài khoản", "mở tài khoản", "tạo ví" → intent "ADD_ACCOUNT"
+  * Tạo account object với name, type (TIENMAT/THENGANHANG), bankName từ câu user
+  * VD: "tạo tài khoản ACB" → {"name":"Tài khoản ACB","type":"THENGANHANG","bankName":"ACB","accountNumber":""}
 - ADD_TRANSACTION: phải có đầy đủ name, amount, type, accountGuess, categoryGuess
+  * Parse thời gian từ câu: "thêm chi tiêu cơm trưa 50k vào ngày 15/7" → transaction với đầy đủ thông tin
+  * "hôm nay", "ngày mai", "hôm qua", "vào ngày DD/MM" → system sẽ tự động extract date
 - ADD_GOAL: 
   * Bắt buộc phải có targetAmount và deadline
   * Parse thời gian từ user: "mục tiêu đi đà lạt 5 triệu tháng 12" → deadline: "2025-12-31"
@@ -3060,6 +3456,18 @@ QUY TẮC:
 - CHỈ trả JSON, KHÔNG markdown hay giải thích thêm
 
 VÍ DỤ:
+User: "tạo tài khoản ACB"
+→ {"intent":"ADD_ACCOUNT","account":{"name":"Tài khoản ACB","type":"THENGANHANG","bankName":"ACB","accountNumber":""},"responseForUser":"Tôi sẽ tạo tài khoản ngân hàng ACB cho bạn"}
+
+User: "thêm tài khoản Vietcombank"
+→ {"intent":"ADD_ACCOUNT","account":{"name":"Tài khoản Vietcombank","type":"THENGANHANG","bankName":"Vietcombank","accountNumber":""},"responseForUser":"Tôi sẽ tạo tài khoản Vietcombank cho bạn"}
+
+User: "tạo ví tiền mặt"
+→ {"intent":"ADD_ACCOUNT","account":{"name":"Ví tiền mặt","type":"TIENMAT","bankName":"","accountNumber":""},"responseForUser":"Tôi sẽ tạo ví tiền mặt cho bạn"}
+
+User: "thêm thu nhập thưởng tăng ca 800k vào ngày 16/7"
+→ {"intent":"ADD_TRANSACTION","transaction":{"name":"Thưởng tăng ca","amount":800000,"type":"THUNHAP","accountGuess":"Ví cá nhân","categoryGuess":"Thưởng"},"responseForUser":"Đã thêm giao dịch thưởng tăng ca 800.000đ vào ngày 16/7"}
+
 User: "mục tiêu đi du lịch 10 triệu tháng 8"
 → {"intent":"ADD_GOAL","goal":{"name":"Du lịch","targetAmount":10000000,"deadline":"2025-08-31"},"responseForUser":"Xác nhận mục tiêu du lịch 10 triệu, hạn tháng 8/2025"}
 
@@ -3123,6 +3531,143 @@ Giao dịch gần đây: ${recentTransactions
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
+  }
+
+  // Helper method để lấy icon phù hợp cho category dựa trên tên và loại
+  getCategoryIcon(categoryName, categoryType) {
+    const name = categoryName.toLowerCase();
+
+    // Icon mapping cho chi tiêu
+    if (categoryType === "CHITIEU") {
+      if (
+        name.includes("ăn") ||
+        name.includes("uống") ||
+        name.includes("thức ăn") ||
+        name.includes("đồ ăn")
+      ) {
+        return "fa-utensils";
+      }
+      if (
+        name.includes("xăng") ||
+        name.includes("xe") ||
+        name.includes("taxi") ||
+        name.includes("grab")
+      ) {
+        return "fa-gas-pump";
+      }
+      if (
+        name.includes("mua sắm") ||
+        name.includes("shopping") ||
+        name.includes("quần áo") ||
+        name.includes("đồ")
+      ) {
+        return "fa-shopping-bag";
+      }
+      if (
+        name.includes("giải trí") ||
+        name.includes("game") ||
+        name.includes("phim") ||
+        name.includes("vui chơi")
+      ) {
+        return "fa-gamepad";
+      }
+      if (
+        name.includes("học") ||
+        name.includes("sách") ||
+        name.includes("khóa học") ||
+        name.includes("học phí")
+      ) {
+        return "fa-graduation-cap";
+      }
+      if (
+        name.includes("y tế") ||
+        name.includes("thuốc") ||
+        name.includes("bệnh viện") ||
+        name.includes("khám")
+      ) {
+        return "fa-heartbeat";
+      }
+      if (
+        name.includes("nhà") ||
+        name.includes("thuê") ||
+        name.includes("điện") ||
+        name.includes("nước")
+      ) {
+        return "fa-home";
+      }
+      if (
+        name.includes("quà") ||
+        name.includes("tặng") ||
+        name.includes("sinh nhật")
+      ) {
+        return "fa-gift";
+      }
+      if (
+        name.includes("internet") ||
+        name.includes("điện thoại") ||
+        name.includes("vinaphone") ||
+        name.includes("viettel")
+      ) {
+        return "fa-wifi";
+      }
+      if (
+        name.includes("tiết kiệm") ||
+        name.includes("gửi") ||
+        name.includes("đầu tư")
+      ) {
+        return "fa-piggy-bank";
+      }
+      if (
+        name.includes("quỹ đen") ||
+        name.includes("bí mật") ||
+        name.includes("cá nhân")
+      ) {
+        return "fa-user-secret";
+      }
+      if (
+        name.includes("cà phê") ||
+        name.includes("coffee") ||
+        name.includes("trà")
+      ) {
+        return "fa-coffee";
+      }
+      if (
+        name.includes("gym") ||
+        name.includes("thể thao") ||
+        name.includes("fitness")
+      ) {
+        return "fa-dumbbell";
+      }
+    }
+
+    // Icon mapping cho thu nhập
+    if (categoryType === "THUNHAP") {
+      if (name.includes("lương") || name.includes("salary")) {
+        return "fa-money-bill-wave";
+      }
+      if (name.includes("thưởng") || name.includes("bonus")) {
+        return "fa-award";
+      }
+      if (
+        name.includes("đầu tư") ||
+        name.includes("lãi") ||
+        name.includes("cổ phiếu")
+      ) {
+        return "fa-chart-line";
+      }
+      if (name.includes("bán") || name.includes("kinh doanh")) {
+        return "fa-store";
+      }
+      if (name.includes("freelance") || name.includes("tự do")) {
+        return "fa-laptop";
+      }
+      if (name.includes("quà") || name.includes("tặng")) {
+        return "fa-gift";
+      }
+    }
+
+    // Default icons
+    return categoryType === "CHITIEU" ? "fa-minus-circle" : "fa-plus-circle";
   }
 
   // ...existing code...

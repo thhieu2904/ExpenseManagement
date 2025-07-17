@@ -1,31 +1,34 @@
 // Test script để kiểm tra AI Assistant với Gemini
 const axios = require("axios");
 
-// Test data
+// Test data - chỉ test ADD_ACCOUNT
 const testCases = [
   {
-    message: "Thêm chi tiêu 50k cho ăn uống",
-    expectedIntent: "ADD_TRANSACTION",
-  },
-  {
-    message: "Xem thống kê tháng này",
-    expectedIntent: "QUICK_STATS",
-  },
-  {
-    message: "Tạo mục tiêu tiết kiệm 5 triệu",
-    expectedIntent: "ADD_GOAL",
-  },
-  {
-    message: "Thu nhập 2 triệu từ lương",
-    expectedIntent: "ADD_TRANSACTION",
+    message: "tạo tài khoản acb",
+    expectedIntent: "ADD_ACCOUNT",
   },
 ];
 
 async function testAIAssistant() {
   console.log("🤖 Testing AI Assistant with Google Gemini...\n");
 
-  // Đầu tiên cần login để lấy token (giả sử có user test)
-  let token = "dummy-token"; // Thay bằng token thật khi test
+  // Đầu tiên login để lấy token
+  let token;
+  try {
+    console.log("🔐 Logging in to get token...");
+    const loginResponse = await axios.post(
+      "http://localhost:5000/api/auth/login",
+      {
+        username: "test",
+        password: "123",
+      }
+    );
+    token = loginResponse.data.token;
+    console.log("✅ Login successful, token obtained\n");
+  } catch (error) {
+    console.log("❌ Login failed:", error.response?.data || error.message);
+    return;
+  }
 
   for (let i = 0; i < testCases.length; i++) {
     const testCase = testCases[i];

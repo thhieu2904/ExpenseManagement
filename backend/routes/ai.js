@@ -24,6 +24,13 @@ router.post(
   aiController.createCategory.bind(aiController)
 );
 
+// Route để tạo tài khoản sau khi AI đã phân tích và người dùng xác nhận
+router.post(
+  "/create-account",
+  verifyToken,
+  aiController.createAccount.bind(aiController)
+);
+
 // Route để tạo mục tiêu sau khi AI đã phân tích và người dùng xác nhận
 router.post(
   "/create-goal",
