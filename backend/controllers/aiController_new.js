@@ -505,9 +505,8 @@ SYSTEM: Bạn là AI assistant chuyên về tài chính cá nhân. Phân tích y
 
 ### CÁC INTENT CÓ THỂ XỬ LÝ VÀ ENTITIES CẦN TRÍCH XUẤT
 1. **ADD_ACCOUNT** - Thêm tài khoản mới (ngân hàng hoặc tiền mặt)
-   - Entities: name, type (TIENMAT/THENGANHANG), bankName, accountNumber, initialBalance
+   - Entities: name, type (TIENMAT/THENGANHANG), bankName, accountNumber
    - Patterns: "tạo tài khoản", "thêm tài khoản", "mở tài khoản", "tạo ví"
-   - Balance patterns: "với số dư", "balance", "số tiền ban đầu", "nạp"
 
 2. **QUICK_STATS** - Xem thống kê, báo cáo, tổng quan
    - Entities: timeFilter (tháng này, tháng trước, tháng X)
@@ -559,7 +558,7 @@ SYSTEM: Bạn là AI assistant chuyên về tài chính cá nhân. Phân tích y
   },
   "transaction": null hoặc { "name": "...", "amount": số, "type": "CHITIEU/THUNHAP", "accountGuess": "...", "categoryGuess": "..." },
   "category": null hoặc { "name": "...", "type": "CHITIEU/THUNHAP" },
-  "account": null hoặc { "name": "...", "type": "TIENMAT/THENGANHANG", "bankName": "...", "accountNumber": "...", "initialBalance": số },
+  "account": null hoặc { "name": "...", "type": "TIENMAT/THENGANHANG", "bankName": "...", "accountNumber": "..." },
   "goal": null hoặc { "name": "...", "targetAmount": số, "deadline": "YYYY-MM-DD" },
   "responseForUser": "Câu trả lời ngắn gọn phản ánh entities được trích xuất"
 }
@@ -626,177 +625,6 @@ SYSTEM: Bạn là AI assistant chuyên về tài chính cá nhân. Phân tích y
     }
 
     return null; // Không xử lý được local
-  }
-
-  // =============== METHODS FOR ROUTES ===============
-  // Các method này được gọi từ routes/ai.js sau khi user confirm
-
-  // Tạo transaction sau khi user confirm
-  async createTransaction(req, res) {
-    try {
-      const { name, amount, type, categoryGuess, accountGuess, date } =
-        req.body;
-      const userId = req.user.id;
-
-      console.log("=== CREATE TRANSACTION FROM ROUTE ===");
-      console.log("Request body:", req.body);
-      console.log("User ID:", userId);
-
-      if (!name || !amount || !type) {
-        return res.status(400).json({
-          success: false,
-          message: "Thiếu thông tin giao dịch bắt buộc",
-        });
-      }
-
-      // Sử dụng transactionHandler để tạo transaction thực tế
-      const result = await this.transactionHandler.createTransactionInDB({
-        name,
-        amount: Number(amount),
-        type,
-        categoryGuess,
-        accountGuess,
-        date: date ? new Date(date) : new Date(),
-        userId,
-      });
-
-      res.json({
-        success: true,
-        message: "Đã tạo giao dịch thành công",
-        data: result,
-      });
-    } catch (error) {
-      console.error("Error creating transaction:", error);
-      res.status(500).json({
-        success: false,
-        message: "Có lỗi xảy ra khi tạo giao dịch",
-        error:
-          process.env.NODE_ENV === "development" ? error.message : undefined,
-      });
-    }
-  }
-
-  // Tạo category sau khi user confirm
-  async createCategory(req, res) {
-    try {
-      const { name, type, icon } = req.body;
-      const userId = req.user.id;
-
-      console.log("=== CREATE CATEGORY FROM ROUTE ===");
-      console.log("Request body:", req.body);
-
-      if (!name || !type) {
-        return res.status(400).json({
-          success: false,
-          message: "Thiếu thông tin danh mục bắt buộc",
-        });
-      }
-
-      // Sử dụng categoryHandler để tạo category thực tế
-      const result = await this.categoryHandler.createCategoryInDB({
-        name,
-        type,
-        icon: icon || this.categoryHandler.getCategoryIcon(name, type),
-        userId,
-      });
-
-      res.json({
-        success: true,
-        message: "Đã tạo danh mục thành công",
-        data: result,
-      });
-    } catch (error) {
-      console.error("Error creating category:", error);
-      res.status(500).json({
-        success: false,
-        message: "Có lỗi xảy ra khi tạo danh mục",
-        error:
-          process.env.NODE_ENV === "development" ? error.message : undefined,
-      });
-    }
-  }
-
-  // Tạo account sau khi user confirm
-  async createAccount(req, res) {
-    try {
-      const { name, type, bankName, accountNumber, initialBalance } = req.body;
-      const userId = req.user.id;
-
-      console.log("=== CREATE ACCOUNT FROM ROUTE ===");
-      console.log("Request body:", req.body);
-
-      if (!name) {
-        return res.status(400).json({
-          success: false,
-          message: "Tên tài khoản không được để trống",
-        });
-      }
-
-      // Sử dụng accountHandler để tạo account thực tế
-      const result = await this.accountHandler.createAccountInDB({
-        name,
-        type: type || "TIENMAT",
-        bankName: bankName || null,
-        accountNumber: accountNumber || "",
-        initialBalance: Number(initialBalance) || 0,
-        userId,
-      });
-
-      res.json({
-        success: true,
-        message: "Đã tạo tài khoản thành công",
-        data: result,
-      });
-    } catch (error) {
-      console.error("Error creating account:", error);
-      res.status(500).json({
-        success: false,
-        message: "Có lỗi xảy ra khi tạo tài khoản",
-        error:
-          process.env.NODE_ENV === "development" ? error.message : undefined,
-      });
-    }
-  }
-
-  // Tạo goal sau khi user confirm
-  async createGoal(req, res) {
-    try {
-      const { name, targetAmount, deadline, icon } = req.body;
-      const userId = req.user.id;
-
-      console.log("=== CREATE GOAL FROM ROUTE ===");
-      console.log("Request body:", req.body);
-
-      if (!name || !targetAmount) {
-        return res.status(400).json({
-          success: false,
-          message: "Thiếu thông tin mục tiêu bắt buộc",
-        });
-      }
-
-      // Sử dụng goalHandler để tạo goal thực tế
-      const result = await this.goalHandler.createGoalInDB({
-        name,
-        targetAmount: Number(targetAmount),
-        deadline: deadline ? new Date(deadline) : null,
-        icon: icon || "fa-bullseye",
-        userId,
-      });
-
-      res.json({
-        success: true,
-        message: "Đã tạo mục tiêu thành công",
-        data: result,
-      });
-    } catch (error) {
-      console.error("Error creating goal:", error);
-      res.status(500).json({
-        success: false,
-        message: "Có lỗi xảy ra khi tạo mục tiêu",
-        error:
-          process.env.NODE_ENV === "development" ? error.message : undefined,
-      });
-    }
   }
 }
 

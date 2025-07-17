@@ -222,14 +222,27 @@ class AIService {
   // Tạo giao dịch tự động thông qua AI
   async createTransactionFromAI(transactionData) {
     try {
+      console.log("=== CREATE TRANSACTION FROM AI ===");
+      console.log("Original transaction data:", transactionData);
+
+      const requestData = {
+        name:
+          transactionData.name ||
+          transactionData.description ||
+          transactionData.note,
+        amount: transactionData.amount,
+        type: transactionData.type, // Giữ nguyên CHITIEU/THUNHAP
+        categoryGuess:
+          transactionData.categoryGuess || transactionData.category,
+        accountGuess: transactionData.accountGuess,
+        date: transactionData.date,
+      };
+
+      console.log("Request data to backend:", requestData);
+
       const response = await axiosInstance.post(
         "/ai-assistant/create-transaction",
-        {
-          amount: transactionData.amount,
-          type: transactionData.type === "CHITIEU" ? "expense" : "income",
-          category: transactionData.categoryGuess,
-          description: transactionData.name || transactionData.note,
-        }
+        requestData
       );
       return response.data;
     } catch (error) {
@@ -264,6 +277,57 @@ class AIService {
       };
     } catch (error) {
       console.error("Error creating account from AI:", error);
+      throw error;
+    }
+  }
+
+  // Tạo mục tiêu tự động thông qua AI
+  async createGoalFromAI(goalData) {
+    try {
+      console.log("=== CREATE GOAL FROM AI ===");
+      console.log("Original goal data:", goalData);
+
+      const requestData = {
+        name: goalData.name,
+        targetAmount: goalData.targetAmount || goalData.amount,
+        deadline: goalData.deadline,
+        icon: goalData.icon || "fa-bullseye",
+      };
+
+      console.log("Request data to backend:", requestData);
+
+      const response = await axiosInstance.post(
+        "/ai-assistant/create-goal",
+        requestData
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error creating goal from AI:", error);
+      throw error;
+    }
+  }
+
+  // Tạo danh mục tự động thông qua AI
+  async createCategoryFromAI(categoryData) {
+    try {
+      console.log("=== CREATE CATEGORY FROM AI ===");
+      console.log("Original category data:", categoryData);
+
+      const requestData = {
+        name: categoryData.name,
+        type: categoryData.type, // CHITIEU hoặc THUNHAP
+        icon: categoryData.icon,
+      };
+
+      console.log("Request data to backend:", requestData);
+
+      const response = await axiosInstance.post(
+        "/ai-assistant/create-category",
+        requestData
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error creating category from AI:", error);
       throw error;
     }
   }

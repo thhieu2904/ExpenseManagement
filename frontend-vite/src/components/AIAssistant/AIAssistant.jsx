@@ -205,6 +205,25 @@ const AIAssistant = () => {
         ]);
         break;
 
+      case "CONFIRM_ADD_ACCOUNT":
+        // Hiển thị confirmation với quick action buttons cho account
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: "assistant",
+            content: `Xác nhận tạo tài khoản:\n• Tên: ${data.name}\n• Loại: ${
+              data.type === "TIENMAT" ? "Tiền mặt" : "Thẻ ngân hàng"
+            }${data.bankName ? `\n• Ngân hàng: ${data.bankName}` : ""}${
+              data.initialBalance > 0
+                ? `\n• Số dư ban đầu: ${data.initialBalance.toLocaleString()}đ`
+                : ""
+            }`,
+            showConfirmButtons: true,
+            accountData: data,
+          },
+        ]);
+        break;
+
       case "ADD_TRANSACTION":
         // Có thể mở modal thêm giao dịch hoặc navigate với pre-filled data
         setTimeout(() => {
@@ -236,6 +255,17 @@ const AIAssistant = () => {
 ${data.formatted.isPositive ? "✅ Tháng này bạn đã tiết kiệm được tiền!" : "⚠️ Tháng này bạn đã chi tiêu vượt thu nhập."}`,
             showStatsCard: true,
             statsData: data,
+          },
+        ]);
+        break;
+
+      case "ACCOUNT_CREATED":
+        // Hiển thị thông báo tài khoản đã được tạo thành công
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: "assistant",
+            content: `✅ Tài khoản "${data.name}" đã được tạo thành công!`,
           },
         ]);
         break;
@@ -361,6 +391,44 @@ ${data.formatted.isPositive ? "✅ Tháng này bạn đã tiết kiệm được
         {
           type: "assistant",
           content: "❌ Có lỗi xảy ra khi tạo mục tiêu. Vui lòng thử lại.",
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleConfirmAccount = async (accountData) => {
+    try {
+      setIsLoading(true);
+
+      const result = await aiService.createAccountFromAI(accountData);
+
+      if (result.success) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: "assistant",
+            content: `✅ Đã tạo thành công tài khoản "${accountData.name}"!`,
+          },
+        ]);
+        playNotificationSound();
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: "assistant",
+            content: "❌ Có lỗi xảy ra khi tạo tài khoản. Vui lòng thử lại.",
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error("Error creating account:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          type: "assistant",
+          content: "❌ Có lỗi xảy ra khi tạo tài khoản. Vui lòng thử lại.",
         },
       ]);
     } finally {
@@ -507,6 +575,8 @@ ${data.formatted.isPositive ? "✅ Tháng này bạn đã tiết kiệm được
                                 handleConfirmCategory(msg.categoryData);
                               } else if (msg.goalData) {
                                 handleConfirmGoal(msg.goalData);
+                              } else if (msg.accountData) {
+                                handleConfirmAccount(msg.accountData);
                               }
                             }}
                           >

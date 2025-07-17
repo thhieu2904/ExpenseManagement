@@ -355,6 +355,19 @@
     max-width: 300px;
     justify-content: center;
   }
+
+  /* Responsive cho action buttons */
+  .actionButtons {
+    gap: 4px;
+    flex-direction: row; /* Đảm bảo vẫn nằm ngang trên mobile */
+  }
+
+  .actionButton {
+    min-width: 30px;
+    height: 30px;
+    padding: 5px 7px;
+    font-size: 0.8rem; /* Giảm font size trên mobile */
+  }
 }
 
 @media (max-width: 480px) {
@@ -380,6 +393,19 @@
   .transactionsTable th:nth-child(3),
   .transactionsTable td:nth-child(3) {
     display: none;
+  }
+
+  /* Responsive cho action buttons */
+  .actionButtons {
+    gap: 6px;
+    flex-direction: row; /* Đảm bảo vẫn nằm ngang trên mobile nhỏ */
+  }
+
+  .actionButton {
+    min-width: 28px;
+    height: 28px;
+    padding: 5px 6px;
+    font-size: 0.75rem; /* Font size nhỏ hơn cho mobile nhỏ */
   }
 }
 
@@ -435,4 +461,70 @@
   background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+}
+
+/* Action Buttons Container */
+.actionButtons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row; /* Đảm bảo các nút nằm ngang */
+  flex-wrap: nowrap; /* Không cho phép xuống hàng */
+}
+
+/* Base style cho tất cả action buttons */
+.actionButton {
+  background: none;
+  border: 1px solid #e9ecef;
+  cursor: pointer;
+  padding: 6px 8px;
+  font-size: 0.85rem;
+  color: #6c757d;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 4px;
+  display: inline-flex; /* Sử dụng inline-flex thay vì flex */
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  white-space: nowrap; /* Ngăn text xuống hàng */
+}
+
+.actionButton:hover {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Edit Button */
+.editButton:hover {
+  color: #007bff;
+  border-color: #007bff;
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+/* Delete Button */
+.deleteButton:hover {
+  color: #dc3545;
+  border-color: #dc3545;
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Disabled state cho action buttons */
+.actionButton:disabled {
+  background-color: #f8f9fa;
+  color: #dee2e6;
+  border-color: #e9ecef;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.actionButton:disabled:hover {
+  background-color: #f8f9fa;
+  color: #dee2e6;
+  border-color: #e9ecef;
+  box-shadow: none;
 }
