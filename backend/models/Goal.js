@@ -33,14 +33,6 @@ const goalSchema = new mongoose.Schema(
       type: String,
       default: "🎯",
     },
-    archived: {
-      type: Boolean,
-      default: false,
-    },
-    isPinned: {
-      type: Boolean,
-      default: false,
-    },
   },
   {
     timestamps: true,

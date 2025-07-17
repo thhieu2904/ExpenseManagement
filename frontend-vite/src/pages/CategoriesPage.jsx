@@ -317,29 +317,26 @@ const CategoriesPage = () => {
             onPeriodChange: handlePeriodChange,
           }}
           headerExtra={
-            <fieldset className={styles.typeFilterFieldset}>
-              <legend className={styles.typeFilterLegend}>Loại danh mục</legend>
-              <div className={styles.typeFilterButtons}>
-                <button
-                  className={activeType === "ALL" ? styles.active : ""}
-                  onClick={() => handleCategoryTypeChange("ALL")}
-                >
-                  Tất cả
-                </button>
-                <button
-                  className={activeType === "THUNHAP" ? styles.active : ""}
-                  onClick={() => handleCategoryTypeChange("THUNHAP")}
-                >
-                  Thu nhập
-                </button>
-                <button
-                  className={activeType === "CHITIEU" ? styles.active : ""}
-                  onClick={() => handleCategoryTypeChange("CHITIEU")}
-                >
-                  Chi tiêu
-                </button>
-              </div>
-            </fieldset>
+            <div className={styles.tabButtons}>
+              <button
+                className={`${styles.tabButton} ${activeType === "ALL" ? styles.active : ""}`}
+                onClick={() => handleCategoryTypeChange("ALL")}
+              >
+                Tất cả
+              </button>
+              <button
+                className={`${styles.tabButton} ${activeType === "THUNHAP" ? styles.active : ""}`}
+                onClick={() => handleCategoryTypeChange("THUNHAP")}
+              >
+                Thu nhập
+              </button>
+              <button
+                className={`${styles.tabButton} ${activeType === "CHITIEU" ? styles.active : ""}`}
+                onClick={() => handleCategoryTypeChange("CHITIEU")}
+              >
+                Chi tiêu
+              </button>
+            </div>
           }
         >
           <div className={styles.contentRow}>

@@ -1,10 +1,10 @@
 // src/api/goalService.js
 
-import axiosInstance from "./axiosConfig";
+import axiosInstance from "./axiosConfig"; // Sử dụng instance đã cấu hình
 
-// Hàm lấy tất cả mục tiêu, hỗ trợ lọc, sắp xếp, phân trang
-export const getGoals = (params) => {
-  return axiosInstance.get("/goals", { params });
+// Hàm lấy tất cả mục tiêu
+export const getGoals = () => {
+  return axiosInstance.get("/goals");
 };
 
 // Hàm xóa một mục tiêu theo ID
@@ -27,17 +27,7 @@ export const addFundsToGoal = (goalId, fundsData) => {
   return axiosInstance.post(`/goals/${goalId}/add-funds`, fundsData);
 };
 
-// Hàm ghim / bỏ ghim một mục tiêu
-export const togglePinGoal = (goalId) => {
-  return axiosInstance.patch(`/goals/${goalId}/pin`);
-};
-
-// Hàm lưu trữ / bỏ lưu trữ một mục tiêu
-export const toggleArchiveGoal = (goalId) => {
-  return axiosInstance.patch(`/goals/${goalId}/archive`);
-};
-
-// Hàm lấy danh sách tài khoản
+// ✅ HÀM MỚI: Lấy danh sách tài khoản
 export const getAccounts = () => {
   return axiosInstance.get("/accounts");
 };
