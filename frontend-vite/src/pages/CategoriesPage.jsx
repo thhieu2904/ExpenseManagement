@@ -271,116 +271,122 @@ const CategoriesPage = () => {
       <Header userName={userName} userAvatar={userAvatar} />
       <Navbar />
       <main className={styles.pageContainer}>
-        <HeaderCard
-          className={styles.categoryPageHeader}
-          gridIcon={<FontAwesomeIcon icon={faChartPie} />}
-          gridTitle={`${getGreeting()}, ${userName}!`}
-          gridSubtitle="Tổng quan thu chi theo nhóm"
-          gridStats={
-            <CategoryStatsWidget
-              categoryStats={categoryStats}
-              activeFilter={activeType}
-              onFilterChange={handleCategoryTypeChange}
-            />
-          }
-          gridInfo={
-            <>
-              <div className="smartContext">
-                <span className="contextText">{getCategorySmartContext()}</span>
-                <span className={headerStyles.moodEmoji}>
-                  {getCategoryMoodEmoji()}
-                </span>
-              </div>
-              <span className={headerStyles.miniStats}>{getFullDate()}</span>
-            </>
-          }
-          gridAction={
-            <Button
-              onClick={handleOpenAddModal}
-              icon={<FontAwesomeIcon icon={faPlus} />}
-              variant="primary"
-              className={styles.addButton}
-            >
-              Thêm danh mục
-            </Button>
-          }
-        />
-        <PageContentContainer
-          title="Phân tích danh mục"
-          titleIcon={faChartPie}
-          customLayout={true}
-          className={styles.analyticsSection}
-          dateProps={{
-            period,
-            currentDate,
-            onDateChange: handleDateChange,
-            onPeriodChange: handlePeriodChange,
-          }}
-          headerExtra={
-            <fieldset className={styles.typeFilterFieldset}>
-              <legend className={styles.typeFilterLegend}>Loại danh mục</legend>
-              <div className={styles.typeFilterButtons}>
-                <button
-                  className={activeType === "ALL" ? styles.active : ""}
-                  onClick={() => handleCategoryTypeChange("ALL")}
-                >
-                  Tất cả
-                </button>
-                <button
-                  className={activeType === "THUNHAP" ? styles.active : ""}
-                  onClick={() => handleCategoryTypeChange("THUNHAP")}
-                >
-                  Thu nhập
-                </button>
-                <button
-                  className={activeType === "CHITIEU" ? styles.active : ""}
-                  onClick={() => handleCategoryTypeChange("CHITIEU")}
-                >
-                  Chi tiêu
-                </button>
-              </div>
-            </fieldset>
-          }
-        >
-          <div className={styles.contentRow}>
-            <div className={styles.chartContainer}>
-              <CategoryAnalysisChart
-                data={chartData}
-                total={chartTotal}
-                loading={isLoading}
-                error={error}
-                categoryType={activeType}
-                period={period}
-                currentDate={currentDate}
-                onPeriodChange={handlePeriodChange}
-                onDateChange={handleDateChange}
-                onActiveCategoryChange={handleSelectCategory}
+        <div className={styles.contentContainer}>
+          <HeaderCard
+            className={styles.categoryPageHeader}
+            gridIcon={<FontAwesomeIcon icon={faChartPie} />}
+            gridTitle={`${getGreeting()}, ${userName}!`}
+            gridSubtitle="Tổng quan thu chi theo nhóm"
+            gridStats={
+              <CategoryStatsWidget
+                categoryStats={categoryStats}
+                activeFilter={activeType}
+                onFilterChange={handleCategoryTypeChange}
               />
-            </div>
+            }
+            gridInfo={
+              <>
+                <div className="smartContext">
+                  <span className="contextText">
+                    {getCategorySmartContext()}
+                  </span>
+                  <span className={headerStyles.moodEmoji}>
+                    {getCategoryMoodEmoji()}
+                  </span>
+                </div>
+                <span className={headerStyles.miniStats}>{getFullDate()}</span>
+              </>
+            }
+            gridAction={
+              <Button
+                onClick={handleOpenAddModal}
+                icon={<FontAwesomeIcon icon={faPlus} />}
+                variant="primary"
+                className={styles.addButton}
+              >
+                Thêm danh mục
+              </Button>
+            }
+          />
+          <PageContentContainer
+            title="Phân tích danh mục"
+            titleIcon={faChartPie}
+            customLayout={true}
+            className={styles.analyticsSection}
+            dateProps={{
+              period,
+              currentDate,
+              onDateChange: handleDateChange,
+              onPeriodChange: handlePeriodChange,
+            }}
+            headerExtra={
+              <fieldset className={styles.typeFilterFieldset}>
+                <legend className={styles.typeFilterLegend}>
+                  Loại danh mục
+                </legend>
+                <div className={styles.typeFilterButtons}>
+                  <button
+                    className={activeType === "ALL" ? styles.active : ""}
+                    onClick={() => handleCategoryTypeChange("ALL")}
+                  >
+                    Tất cả
+                  </button>
+                  <button
+                    className={activeType === "THUNHAP" ? styles.active : ""}
+                    onClick={() => handleCategoryTypeChange("THUNHAP")}
+                  >
+                    Thu nhập
+                  </button>
+                  <button
+                    className={activeType === "CHITIEU" ? styles.active : ""}
+                    onClick={() => handleCategoryTypeChange("CHITIEU")}
+                  >
+                    Chi tiêu
+                  </button>
+                </div>
+              </fieldset>
+            }
+          >
+            <div className={styles.contentRow}>
+              <div className={styles.chartContainer}>
+                <CategoryAnalysisChart
+                  data={chartData}
+                  total={chartTotal}
+                  loading={isLoading}
+                  error={error}
+                  categoryType={activeType}
+                  period={period}
+                  currentDate={currentDate}
+                  onPeriodChange={handlePeriodChange}
+                  onDateChange={handleDateChange}
+                  onActiveCategoryChange={handleSelectCategory}
+                />
+              </div>
 
-            <div className={styles.listContainer}>
-              <CategoryList
-                onEditCategory={handleOpenEditModal}
-                onDeleteSuccess={fetchData}
-                categories={listData}
-                isLoading={isLoading}
-                error={error}
-                activeCategory={activeCategory}
-                onSelectCategory={handleSelectCategory}
-                chartData={chartData}
-              />
+              <div className={styles.listContainer}>
+                <CategoryList
+                  onEditCategory={handleOpenEditModal}
+                  onDeleteSuccess={fetchData}
+                  categories={listData}
+                  isLoading={isLoading}
+                  error={error}
+                  activeCategory={activeCategory}
+                  onSelectCategory={handleSelectCategory}
+                  chartData={chartData}
+                />
+              </div>
             </div>
-          </div>
-        </PageContentContainer>
+          </PageContentContainer>
 
-        <AddEditCategoryModal
-          isOpen={isModalOpen}
-          mode={editingCategory ? "edit" : "add"}
-          initialData={editingCategory}
-          categoryType={activeType}
-          onClose={handleCloseModal}
-          onSubmit={handleFormSubmit}
-        />
+          <AddEditCategoryModal
+            isOpen={isModalOpen}
+            mode={editingCategory ? "edit" : "add"}
+            initialData={editingCategory}
+            categoryType={activeType}
+            onClose={handleCloseModal}
+            onSubmit={handleFormSubmit}
+          />
+        </div>
       </main>
       <Footer />
     </div>

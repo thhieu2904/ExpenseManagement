@@ -25,14 +25,15 @@ function calcChange(curr, prev) {
   // Tính toán bình thường khi cả hai tháng đều có giá trị
   const diff = curr - prev;
   const percent = Math.round((diff / prev) * 100);
-  
+
   if (percent === 0) {
     return { percent: 0, desc: "Không thay đổi so với tháng trước" };
   }
-  
-  const desc = percent > 0
-    ? `Tăng ${percent}% so với tháng trước`
-    : `Giảm ${Math.abs(percent)}% so với tháng trước`;
+
+  const desc =
+    percent > 0
+      ? `Tăng ${percent}% so với tháng trước`
+      : `Giảm ${Math.abs(percent)}% so với tháng trước`;
 
   return { percent, desc };
 }
@@ -381,16 +382,23 @@ exports.getMonthlyTransactionsForCalendar = async (req, res) => {
   try {
     const userId = new mongoose.Types.ObjectId(req.user.id);
     const year = parseInt(req.query.year, 10);
-    const month = parseInt(req.query.month, 10);
+    const month = req.query.month ? parseInt(req.query.month, 10) : null;
 
-    if (!year || !month) {
-      return res
-        .status(400)
-        .json({ message: "Thiếu thông tin năm hoặc tháng." });
+    if (!year) {
+      return res.status(400).json({ message: "Thiếu thông tin năm." });
     }
 
-    const startDate = new Date(Date.UTC(year, month - 1, 1));
-    const endDate = new Date(Date.UTC(year, month, 0, 23, 59, 59));
+    let startDate, endDate;
+
+    if (month) {
+      // Lọc theo tháng cụ thể
+      startDate = new Date(Date.UTC(year, month - 1, 1));
+      endDate = new Date(Date.UTC(year, month, 0, 23, 59, 59));
+    } else {
+      // Lọc theo cả năm
+      startDate = new Date(Date.UTC(year, 0, 1));
+      endDate = new Date(Date.UTC(year, 11, 31, 23, 59, 59));
+    }
 
     const transactions = await Transaction.aggregate([
       {

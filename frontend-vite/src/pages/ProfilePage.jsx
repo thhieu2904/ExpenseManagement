@@ -494,258 +494,267 @@ const ProfilePage = () => {
       <Navbar />
 
       <main className={styles.pageWrapper}>
-        {/* Header Card */}
-        <HeaderCard
-          className={styles.profilePageHeader}
-          gridIcon={<FontAwesomeIcon icon={faUserCog} />}
-          gridTitle={`${getGreeting()}, ${user?.fullname || "Bạn"}!`}
-          gridSubtitle="Quản lý thông tin cá nhân"
-          gridStats={
-            <ProfileStatsWidget
-              user={user}
-              activeTab={activeTab}
-              isLoading={!user.username}
-            />
-          }
-          gridInfo={
-            <>
-              <div className="smartContext">
-                <span className="contextText">{getSmartContext()}</span>
-                <span className="moodEmoji">{getMoodEmoji()}</span>
-              </div>
-              <span className="miniStats">{getFullDate()}</span>
-            </>
-          }
-        />
+        <div className={styles.contentContainer}>
+          {/* Header Card */}
+          <HeaderCard
+            className={styles.profilePageHeader}
+            gridIcon={<FontAwesomeIcon icon={faUserCog} />}
+            gridTitle={`${getGreeting()}, ${user?.fullname || "Bạn"}!`}
+            gridSubtitle="Quản lý thông tin cá nhân"
+            gridStats={
+              <ProfileStatsWidget
+                user={user}
+                activeTab={activeTab}
+                isLoading={!user.username}
+              />
+            }
+            gridInfo={
+              <>
+                <div className="smartContext">
+                  <span className="contextText">{getSmartContext()}</span>
+                  <span className="moodEmoji">{getMoodEmoji()}</span>
+                </div>
+                <span className="miniStats">{getFullDate()}</span>
+              </>
+            }
+          />
 
-        {/* Main Content */}
-        <PageContentContainer
-          title="Quản Lý Tài Khoản"
-          titleIcon={activeTab === "info" ? faUser : faLock}
-          titleIconColor="#3f51b5"
-          showDateFilter={false}
-          headerExtra={
-            <TabFilter
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              tabs={tabs}
-            />
-          }
-        >
-          {activeTab === "info" ? (
-            <div className={styles.contentGrid}>
-              <div className={styles.profileCard}>
-                <h3 className={styles.cardTitle}>
-                  <FontAwesomeIcon icon={faUser} /> Thông tin cá nhân
-                </h3>
-                <ProfileInfo
-                  user={user}
-                  fullname={fullname}
-                  setFullname={setFullname}
-                  message={profileMessage}
-                  isSubmitting={isProfileSubmitting}
-                  handleUpdateProfile={handleUpdateProfile}
-                  handleAvatarChange={handleAvatarChange}
-                  fileInputRef={fileInputRef}
-                  email={email}
-                  setEmail={setEmail}
-                />
-              </div>
+          {/* Main Content */}
+          <PageContentContainer
+            title="Quản Lý Tài Khoản"
+            titleIcon={activeTab === "info" ? faUser : faLock}
+            titleIconColor="#3f51b5"
+            showDateFilter={false}
+            headerExtra={
+              <TabFilter
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                tabs={tabs}
+              />
+            }
+          >
+            {activeTab === "info" ? (
+              <div className={styles.contentGrid}>
+                <div className={styles.profileCard}>
+                  <h3 className={styles.cardTitle}>
+                    <FontAwesomeIcon icon={faUser} /> Thông tin cá nhân
+                  </h3>
+                  <ProfileInfo
+                    user={user}
+                    fullname={fullname}
+                    setFullname={setFullname}
+                    message={profileMessage}
+                    isSubmitting={isProfileSubmitting}
+                    handleUpdateProfile={handleUpdateProfile}
+                    handleAvatarChange={handleAvatarChange}
+                    fileInputRef={fileInputRef}
+                    email={email}
+                    setEmail={setEmail}
+                  />
+                </div>
 
-              <div className={styles.settingsCard}>
-                <h3 className={styles.cardTitle}>
-                  <FontAwesomeIcon icon={faUserCog} /> Cài đặt
-                </h3>
-                {/* SỬ DỤNG CẤU TRÚC MỚI */}
-                <div className={styles.settingsContent}>
-                  {/* Item 1: Dark Mode */}
-                  <div className={styles.settingsItem}>
-                    Chế độ tối (Dark Mode)
-                    <label className={styles.toggleSwitch}>
-                      <input
-                        type="checkbox"
-                        className={styles.toggleInput}
-                        checked={darkMode}
-                        onChange={() => setDarkMode((v) => !v)}
-                      />
-                      <span className={styles.toggleSlider}></span>
-                    </label>
-                  </div>
-
-                  {/* Item 2: Reminder */}
-                  <div className={styles.settingsItem}>
-                    Nhắc nhở chi tiêu
-                    <label className={styles.toggleSwitch}>
-                      <input
-                        type="checkbox"
-                        className={styles.toggleInput}
-                        checked={reminder}
-                        onChange={() => setReminder((v) => !v)}
-                      />
-                      <span className={styles.toggleSlider}></span>
-                    </label>
-                  </div>
-
-                  {/* Item 3: Data Section - Áp dụng class mới */}
-                  <div className={styles.dataSection}>
-                    <label>Xuất/nhập dữ liệu</label>
-                    <div className={styles.dataButtons}>
-                      <button
-                        className={styles.exportBtn}
-                        onClick={handleExportData}
-                      >
-                        Xuất Dữ Liệu (.json)
-                      </button>
-                      <input
-                        type="file"
-                        accept="application/json"
-                        style={{ display: "none" }}
-                        ref={fileImportRef}
-                        onChange={handleImportFileChange}
-                      />
-                      <button
-                        className={styles.exportBtn}
-                        style={{ background: "#1a4fa3" }}
-                        onClick={() => fileImportRef.current?.click()}
-                      >
-                        Chọn File Để Nhập
-                      </button>
+                <div className={styles.settingsCard}>
+                  <h3 className={styles.cardTitle}>
+                    <FontAwesomeIcon icon={faUserCog} /> Cài đặt
+                  </h3>
+                  {/* SỬ DỤNG CẤU TRÚC MỚI */}
+                  <div className={styles.settingsContent}>
+                    {/* Item 1: Dark Mode */}
+                    <div className={styles.settingsItem}>
+                      Chế độ tối (Dark Mode)
+                      <label className={styles.toggleSwitch}>
+                        <input
+                          type="checkbox"
+                          className={styles.toggleInput}
+                          checked={darkMode}
+                          onChange={() => setDarkMode((v) => !v)}
+                        />
+                        <span className={styles.toggleSlider}></span>
+                      </label>
                     </div>
-                    {importedData && (
-                      <div className={styles.importStatus}>
-                        <p>
-                          Đã chọn file:{" "}
-                          <strong>
-                            {fileImportRef.current?.files[0]?.name}
-                          </strong>
-                          . Sẵn sàng để nhập.
-                        </p>
+
+                    {/* Item 2: Reminder */}
+                    <div className={styles.settingsItem}>
+                      Nhắc nhở chi tiêu
+                      <label className={styles.toggleSwitch}>
+                        <input
+                          type="checkbox"
+                          className={styles.toggleInput}
+                          checked={reminder}
+                          onChange={() => setReminder((v) => !v)}
+                        />
+                        <span className={styles.toggleSlider}></span>
+                      </label>
+                    </div>
+
+                    {/* Item 3: Data Section - Áp dụng class mới */}
+                    <div className={styles.dataSection}>
+                      <label>Xuất/nhập dữ liệu</label>
+                      <div className={styles.dataButtons}>
                         <button
                           className={styles.exportBtn}
-                          style={{ background: "#22c55e", width: "100%" }}
-                          onClick={handleImportData}
-                          disabled={isImporting}
+                          onClick={handleExportData}
                         >
-                          {isImporting
-                            ? "Đang xử lý..."
-                            : "Bắt đầu Nhập Dữ Liệu"}
+                          Xuất Dữ Liệu (.json)
+                        </button>
+                        <input
+                          type="file"
+                          accept="application/json"
+                          style={{ display: "none" }}
+                          ref={fileImportRef}
+                          onChange={handleImportFileChange}
+                        />
+                        <button
+                          className={styles.exportBtn}
+                          style={{ background: "#1a4fa3" }}
+                          onClick={() => fileImportRef.current?.click()}
+                        >
+                          Chọn File Để Nhập
                         </button>
                       </div>
+                      {importedData && (
+                        <div className={styles.importStatus}>
+                          <p>
+                            Đã chọn file:{" "}
+                            <strong>
+                              {fileImportRef.current?.files[0]?.name}
+                            </strong>
+                            . Sẵn sàng để nhập.
+                          </p>
+                          <button
+                            className={styles.exportBtn}
+                            style={{ background: "#22c55e", width: "100%" }}
+                            onClick={handleImportData}
+                            disabled={isImporting}
+                          >
+                            {isImporting
+                              ? "Đang xử lý..."
+                              : "Bắt đầu Nhập Dữ Liệu"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Logout Button Container - Áp dụng class mới */}
+                    <div className={styles.logoutContainer}>
+                      <button
+                        className={styles.logoutBtn}
+                        onClick={handleLogout}
+                      >
+                        Đăng xuất
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.contentGrid}>
+                <div className={styles.profileCard}>
+                  <h3 className={styles.cardTitle}>
+                    <FontAwesomeIcon icon={faLock} /> Đổi mật khẩu
+                  </h3>
+                  <form
+                    onSubmit={handlePasswordSubmit}
+                    className={styles.passwordForm}
+                  >
+                    {securityMessage.text && (
+                      <div
+                        className={`${styles.message} ${styles[securityMessage.type]}`}
+                      >
+                        {securityMessage.text}
+                      </div>
+                    )}
+                    <div className={styles.formGroup}>
+                      <label>Mật khẩu cũ</label>
+                      <input
+                        type="password"
+                        name="oldPassword"
+                        value={passwords.oldPassword}
+                        onChange={handlePasswordChange}
+                        required
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Mật khẩu mới</label>
+                      <input
+                        type="password"
+                        name="newPassword"
+                        value={passwords.newPassword}
+                        onChange={handlePasswordChange}
+                        required
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Xác nhận mật khẩu mới</label>
+                      <input
+                        type="password"
+                        name="confirmPassword"
+                        value={passwords.confirmPassword}
+                        onChange={handlePasswordChange}
+                        required
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isSecuritySubmitting}
+                      className={styles.saveButton}
+                    >
+                      {isSecuritySubmitting ? "Đang lưu..." : "Lưu mật khẩu"}
+                    </button>
+                  </form>
+                </div>
+
+                <div className={styles.profileCard}>
+                  <h3 className={styles.cardTitle}>
+                    <FontAwesomeIcon icon={faHistory} /> Lịch sử đăng nhập
+                  </h3>
+                  <div className={styles.historyContainer}>
+                    {loginHistory.length === 0 ? (
+                      <p className={styles.noData}>
+                        Chưa có dữ liệu đăng nhập.
+                      </p>
+                    ) : (
+                      <ul className={styles.historyList}>
+                        {loginHistory.map((entry) => (
+                          <li key={entry._id} className={styles.historyItem}>
+                            <div className={styles.historyInfo}>
+                              <strong>
+                                {entry.userAgent.substring(0, 40)}...
+                              </strong>
+                              <span>IP: {entry.ipAddress}</span>
+                            </div>
+                            <span className={styles.historyTime}>
+                              {new Date(entry.timestamp).toLocaleString(
+                                "vi-VN"
+                              )}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
                     )}
                   </div>
 
-                  {/* Logout Button Container - Áp dụng class mới */}
-                  <div className={styles.logoutContainer}>
-                    <button className={styles.logoutBtn} onClick={handleLogout}>
-                      Đăng xuất
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className={styles.contentGrid}>
-              <div className={styles.profileCard}>
-                <h3 className={styles.cardTitle}>
-                  <FontAwesomeIcon icon={faLock} /> Đổi mật khẩu
-                </h3>
-                <form
-                  onSubmit={handlePasswordSubmit}
-                  className={styles.passwordForm}
-                >
-                  {securityMessage.text && (
-                    <div
-                      className={`${styles.message} ${styles[securityMessage.type]}`}
-                    >
-                      {securityMessage.text}
+                  {/* Danger Zone */}
+                  <div className={styles.dangerZone}>
+                    <h4 className={styles.dangerTitle}>Vùng nguy hiểm</h4>
+                    <div className={styles.dangerContent}>
+                      <div>
+                        <strong>Xóa tài khoản này</strong>
+                        <p>Xóa vĩnh viễn tài khoản và toàn bộ dữ liệu.</p>
+                      </div>
+                      <button
+                        onClick={() => setIsConfirmOpen(true)}
+                        className={styles.dangerButton}
+                      >
+                        Xóa tài khoản
+                      </button>
                     </div>
-                  )}
-                  <div className={styles.formGroup}>
-                    <label>Mật khẩu cũ</label>
-                    <input
-                      type="password"
-                      name="oldPassword"
-                      value={passwords.oldPassword}
-                      onChange={handlePasswordChange}
-                      required
-                    />
-                  </div>
-                  <div className={styles.formGroup}>
-                    <label>Mật khẩu mới</label>
-                    <input
-                      type="password"
-                      name="newPassword"
-                      value={passwords.newPassword}
-                      onChange={handlePasswordChange}
-                      required
-                    />
-                  </div>
-                  <div className={styles.formGroup}>
-                    <label>Xác nhận mật khẩu mới</label>
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      value={passwords.confirmPassword}
-                      onChange={handlePasswordChange}
-                      required
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={isSecuritySubmitting}
-                    className={styles.saveButton}
-                  >
-                    {isSecuritySubmitting ? "Đang lưu..." : "Lưu mật khẩu"}
-                  </button>
-                </form>
-              </div>
-
-              <div className={styles.profileCard}>
-                <h3 className={styles.cardTitle}>
-                  <FontAwesomeIcon icon={faHistory} /> Lịch sử đăng nhập
-                </h3>
-                <div className={styles.historyContainer}>
-                  {loginHistory.length === 0 ? (
-                    <p className={styles.noData}>Chưa có dữ liệu đăng nhập.</p>
-                  ) : (
-                    <ul className={styles.historyList}>
-                      {loginHistory.map((entry) => (
-                        <li key={entry._id} className={styles.historyItem}>
-                          <div className={styles.historyInfo}>
-                            <strong>
-                              {entry.userAgent.substring(0, 40)}...
-                            </strong>
-                            <span>IP: {entry.ipAddress}</span>
-                          </div>
-                          <span className={styles.historyTime}>
-                            {new Date(entry.timestamp).toLocaleString("vi-VN")}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                {/* Danger Zone */}
-                <div className={styles.dangerZone}>
-                  <h4 className={styles.dangerTitle}>Vùng nguy hiểm</h4>
-                  <div className={styles.dangerContent}>
-                    <div>
-                      <strong>Xóa tài khoản này</strong>
-                      <p>Xóa vĩnh viễn tài khoản và toàn bộ dữ liệu.</p>
-                    </div>
-                    <button
-                      onClick={() => setIsConfirmOpen(true)}
-                      className={styles.dangerButton}
-                    >
-                      Xóa tài khoản
-                    </button>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </PageContentContainer>
+            )}
+          </PageContentContainer>
+        </div>
       </main>
 
       <Footer />

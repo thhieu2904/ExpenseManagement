@@ -278,63 +278,65 @@ const AccountPage = () => {
       />
       <Navbar />
       <main className={styles.pageWrapper}>
-        {/* Header với layout 2x2 grid */}
-        <HeaderCard
-          className={styles.accountPageHeader}
-          gridIcon={<FontAwesomeIcon icon={faHandHoldingDollar} />}
-          gridTitle={`${getGreeting()}, ${userProfile?.fullname || "Bạn"}!`}
-          gridSubtitle="Quản lý nguồn tiền thông minh"
-          gridStats={<StatisticsSection />}
-          gridInfo={
-            <>
-              <div className="smartContext">
-                <span className="contextText">{getSmartContext()}</span>
-                <span className="moodEmoji">{getMoodEmoji()}</span>
-              </div>
-              <span className={headerStyles.miniStats}>{getFullDate()}</span>
-            </>
-          }
-          gridAction={
-            <Button
-              onClick={handleOpenAddModal}
-              icon={<FontAwesomeIcon icon={faPlus} />}
-              variant="primary"
-              className={styles.addButton}
-            >
-              Thêm Nguồn Tiền
-            </Button>
-          }
-        />
+        <div className={styles.contentContainer}>
+          {/* Header với layout 2x2 grid */}
+          <HeaderCard
+            className={styles.accountPageHeader}
+            gridIcon={<FontAwesomeIcon icon={faHandHoldingDollar} />}
+            gridTitle={`${getGreeting()}, ${userProfile?.fullname || "Bạn"}!`}
+            gridSubtitle="Quản lý nguồn tiền thông minh"
+            gridStats={<StatisticsSection />}
+            gridInfo={
+              <>
+                <div className="smartContext">
+                  <span className="contextText">{getSmartContext()}</span>
+                  <span className="moodEmoji">{getMoodEmoji()}</span>
+                </div>
+                <span className={headerStyles.miniStats}>{getFullDate()}</span>
+              </>
+            }
+            gridAction={
+              <Button
+                onClick={handleOpenAddModal}
+                icon={<FontAwesomeIcon icon={faPlus} />}
+                variant="primary"
+                className={styles.addButton}
+              >
+                Thêm Nguồn Tiền
+              </Button>
+            }
+          />
 
-        <PageContentContainer
-          title="Bảng Điều Khiển Tài Chính"
-          titleIcon={faChartPie}
-          titleIconColor="#3f51b5"
-          dateProps={{
-            period,
-            currentDate,
-            onDateChange: handleDateChange,
-            onPeriodChange: handlePeriodChange,
-          }}
-        >
-          <TotalBalanceDisplay
-            accounts={accounts}
-            isLoading={isLoading}
-            highlightedAccountId={highlightedAccountId}
-            onHoverAccount={setHighlightedAccountId}
-          />
-          <AccountList
-            accounts={accounts}
-            totalBalance={totalBalance}
-            isLoading={isLoading}
-            error={apiError}
-            onEditRequest={handleOpenEditModal}
-            onDeleteAccount={handleDeleteAccount}
-            highlightedAccountId={highlightedAccountId}
-            onHoverAccount={setHighlightedAccountId}
-            transactionCounts={transactionCounts}
-          />
-        </PageContentContainer>
+          <PageContentContainer
+            title="Bảng Điều Khiển Tài Chính"
+            titleIcon={faChartPie}
+            titleIconColor="#3f51b5"
+            dateProps={{
+              period,
+              currentDate,
+              onDateChange: handleDateChange,
+              onPeriodChange: handlePeriodChange,
+            }}
+          >
+            <TotalBalanceDisplay
+              accounts={accounts}
+              isLoading={isLoading}
+              highlightedAccountId={highlightedAccountId}
+              onHoverAccount={setHighlightedAccountId}
+            />
+            <AccountList
+              accounts={accounts}
+              totalBalance={totalBalance}
+              isLoading={isLoading}
+              error={apiError}
+              onEditRequest={handleOpenEditModal}
+              onDeleteAccount={handleDeleteAccount}
+              highlightedAccountId={highlightedAccountId}
+              onHoverAccount={setHighlightedAccountId}
+              transactionCounts={transactionCounts}
+            />
+          </PageContentContainer>
+        </div>
       </main>
       {isModalOpen && (
         <AddEditAccountModal

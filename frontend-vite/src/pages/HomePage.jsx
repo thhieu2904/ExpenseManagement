@@ -8,8 +8,16 @@ import StatsOverview from "../components/StatsOverview/StatsOverview";
 import DetailedAnalyticsSection from "../components/DetailedAnalyticsSection/DetailedAnalyticsSection";
 import RecentTransactions from "../components/RecentTransactions/RecentTransactions";
 import Footer from "../components/Footer/Footer";
+import HeaderCard from "../components/Common/HeaderCard";
+import Button from "../components/Common/Button";
+import AddEditTransactionModal from "../components/Transactions/AddEditTransactionModal";
 import { getStatsOverview } from "../api/homePageService";
 import { getTransactions, deleteTransaction } from "../api/transactionsService";
+import { getProfile } from "../api/profileService";
+import { getGreeting, getFullDate } from "../utils/timeHelpers";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus, faHome } from "@fortawesome/free-solid-svg-icons";
+import styles from "../styles/HomePage.module.css";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -56,12 +64,6 @@ const HomePage = () => {
       try {
         const response = await getTransactions(page, ITEMS_PER_PAGE, filters);
         const { data, totalPages, currentPage, totalCount } = response.data;
-        console.log("HomePage: Transactions fetched:", {
-          data,
-          totalPages,
-          currentPage,
-          totalCount,
-        });
         if (data) {
           setTransactions((prev) =>
             shouldRefresh ? data : [...prev, ...data]
@@ -93,15 +95,32 @@ const HomePage = () => {
 
   // --- Initial Data Load ---
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUserData(JSON.parse(storedUser));
+    const loadUserData = async () => {
+      try {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          setUserData(JSON.parse(storedUser));
+        } else {
+          // Fallback: fetch from API if not in localStorage
+          const profile = await getProfile();
+          setUserData({
+            name: profile.data.fullname,
+            avatarUrl: profile.data.avatar,
+          });
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải thông tin người dùng:", error);
+        // Use fallback data
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) setUserData(JSON.parse(storedUser));
+      }
+    };
 
-    console.log("HomePage: Initial data load");
+    loadUserData();
     refreshStatsAndTransactions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ✅ SỬA: Effect 2: Tải lại giao dịch KHI BỘ LỌC THAY ĐỔI
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
@@ -123,15 +142,8 @@ const HomePage = () => {
   }, []);
 
   const handleCategoryClickFromTransaction = useCallback(
-    (categoryId, categoryName) => {
-      console.log(
-        "HomePage: handleCategoryClickFromTransaction called with:",
-        categoryId,
-        categoryName
-      );
-      // Navigate đến Categories page với query param để highlight slice
+    (categoryId) => {
       navigate(`/categories?highlight=${categoryId}`);
-      console.log("HomePage: Navigated to /categories?highlight=" + categoryId);
     },
     [navigate]
   );
@@ -181,40 +193,118 @@ const HomePage = () => {
     setTransactionToDelete(null);
   };
 
+  // Helper functions cho HeaderCard
+  const getSmartContext = () => {
+    if (isLoading.stats) return "Đang tải dữ liệu tài chính...";
+
+    if (!statsData) {
+      return "Hãy bắt đầu quản lý tài chính của bạn.";
+    }
+
+    const income = statsData.income?.amount || 0;
+    const expense = statsData.expense?.amount || 0;
+    const balance = income - expense;
+
+    if (balance > 0) {
+      return "Tình hình tài chính tích cực! Tiếp tục duy trì thói quen tốt.";
+    } else if (balance < 0) {
+      return "Cần chú ý chi tiêu. Hãy xem lại ngân sách của bạn.";
+    } else {
+      return "Tài chính cân bằng. Rất tốt!";
+    }
+  };
+
+  const getMoodEmoji = () => {
+    if (isLoading.stats || !statsData) return "📊";
+
+    const income = statsData.income?.amount || 0;
+    const expense = statsData.expense?.amount || 0;
+    const balance = income - expense;
+
+    if (balance > 0) return "💚";
+    if (balance < 0) return "💔";
+    return "💙";
+  };
+
   return (
-    <div>
+    <div
+      style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+    >
       <Header userName={userData.name} userAvatar={userData.avatarUrl} />
       <Navbar />
-      <main style={{ padding: "20px" }}>
-        <StatsOverview stats={statsData} loading={isLoading.stats} />
 
-        <DetailedAnalyticsSection
-          onCategorySelect={handleCategorySelectFromAnalytics}
-        />
+      <main className={styles.pageWrapper}>
+        <div className={styles.contentContainer}>
+          {/* Header Card */}
+          <HeaderCard
+            gridIcon={<FontAwesomeIcon icon={faHome} />}
+            gridTitle={`${getGreeting()}, ${userData.name || "Bạn"}!`}
+            gridSubtitle="Tổng quan tài chính cá nhân"
+            gridStats={
+              <StatsOverview stats={statsData} loading={isLoading.stats} />
+            }
+            gridInfo={
+              <div className={styles.headerInfo}>
+                <div className={styles.contextRow}>
+                  <span className={styles.contextText}>
+                    {getSmartContext()}
+                  </span>
+                  <span className={styles.moodEmoji}>{getMoodEmoji()}</span>
+                </div>
+                <span className={styles.miniStats}>{getFullDate()}</span>
+              </div>
+            }
+            gridAction={
+              <Button
+                onClick={handleAddRequest}
+                icon={<FontAwesomeIcon icon={faPlus} />}
+                variant="primary"
+              >
+                Thêm Giao Dịch
+              </Button>
+            }
+          />
+          <div className={styles.mainContent}>
+            {/* Main Content */}
+            <DetailedAnalyticsSection
+              onCategorySelect={handleCategorySelectFromAnalytics}
+            />
 
-        <RecentTransactions
-          transactions={transactions}
-          isLoading={isLoading.transactions}
-          error={error}
-          hasMore={pagination.hasMore}
-          totalCount={pagination.totalCount}
-          currentPage={pagination.currentPage}
-          itemsPerPage={ITEMS_PER_PAGE}
-          onLoadMore={handleLoadMore}
-          onEditRequest={handleEditRequest}
-          onDeleteRequest={handleDeleteRequest}
-          onConfirmDelete={handleConfirmDelete}
-          onSubmitSuccess={handleSubmitSuccess}
-          onCloseModal={closeModal}
-          onCloseConfirm={closeConfirm}
-          onAddRequest={handleAddRequest}
-          onCategoryClick={handleCategoryClickFromTransaction}
-          isModalOpen={isModalOpen}
-          isConfirmOpen={isConfirmOpen}
-          editingTransaction={editingTransaction}
-        />
+            <RecentTransactions
+              transactions={transactions}
+              isLoading={isLoading.transactions}
+              error={error}
+              hasMore={pagination.hasMore}
+              totalCount={pagination.totalCount}
+              currentPage={pagination.currentPage}
+              itemsPerPage={ITEMS_PER_PAGE}
+              onLoadMore={handleLoadMore}
+              onEditRequest={handleEditRequest}
+              onDeleteRequest={handleDeleteRequest}
+              onConfirmDelete={handleConfirmDelete}
+              onSubmitSuccess={handleSubmitSuccess}
+              onCloseModal={closeModal}
+              onCloseConfirm={closeConfirm}
+              onAddRequest={handleAddRequest}
+              onCategoryClick={handleCategoryClickFromTransaction}
+              isModalOpen={isModalOpen}
+              isConfirmOpen={isConfirmOpen}
+              editingTransaction={editingTransaction}
+            />
+          </div>
+        </div>
       </main>
+
       <Footer />
+
+      {/* Modal thêm/sửa giao dịch */}
+      <AddEditTransactionModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSubmitSuccess={handleSubmitSuccess}
+        mode={editingTransaction ? "edit" : "add"}
+        editingTransaction={editingTransaction}
+      />
     </div>
   );
 };

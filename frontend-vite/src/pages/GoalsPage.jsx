@@ -215,65 +215,67 @@ export default function GoalsPage() {
       <Header userName={userName} userAvatar={userAvatar} />
       <Navbar />
       <main className={styles.pageWrapper}>
-        <HeaderCard
-          className={styles.goalsPageHeader}
-          gridIcon={<FontAwesomeIcon icon={faBullseye} />}
-          gridTitle={`${getGreeting()}, ${userName}!`}
-          gridSubtitle="Hãy chinh phục các mục tiêu tài chính của bạn"
-          gridStats={<NextGoalWidget goal={nextGoal} isLoading={isLoading} />}
-          gridInfo={
-            <>
-              <div className="smartContext">
-                <span className="contextText">{getSmartContext()}</span>
+        <div className={styles.contentContainer}>
+          <HeaderCard
+            className={styles.goalsPageHeader}
+            gridIcon={<FontAwesomeIcon icon={faBullseye} />}
+            gridTitle={`${getGreeting()}, ${userName}!`}
+            gridSubtitle="Hãy chinh phục các mục tiêu tài chính của bạn"
+            gridStats={<NextGoalWidget goal={nextGoal} isLoading={isLoading} />}
+            gridInfo={
+              <>
+                <div className="smartContext">
+                  <span className="contextText">{getSmartContext()}</span>
+                </div>
+                <span className={headerStyles.miniStats}>{getFullDate()}</span>
+              </>
+            }
+            gridAction={
+              <Button
+                onClick={handleOpenAddModal}
+                icon={<FontAwesomeIcon icon={faPlus} />}
+                variant="primary"
+                loading={false}
+              >
+                Tạo mục tiêu mới
+              </Button>
+            }
+          />
+          <PageContentContainer
+            title="Mục tiêu tài chính"
+            titleIcon={faBullseye}
+            titleIconColor="#4f46e5"
+            headerExtra={
+              <GoalControls
+                filterValue={goalFilter}
+                onFilterChange={setGoalFilter}
+                sortType={sortType}
+                sortDirection={sortDirection}
+                onSortTypeChange={setSortType}
+                onSortDirectionChange={setSortDirection}
+              />
+            }
+          >
+            {isLoading && (
+              <div className={styles.loading}>Đang tải dữ liệu...</div>
+            )}
+            {error && (
+              <div className={styles.error}>
+                {"Đã có lỗi xảy ra: " + error.message}
               </div>
-              <span className={headerStyles.miniStats}>{getFullDate()}</span>
-            </>
-          }
-          gridAction={
-            <Button
-              onClick={handleOpenAddModal}
-              icon={<FontAwesomeIcon icon={faPlus} />}
-              variant="primary"
-              className={styles.addButton}
-            >
-              Tạo mục tiêu mới
-            </Button>
-          }
-        />
-        <PageContentContainer
-          title="Mục tiêu tài chính"
-          titleIcon={faBullseye}
-          titleIconColor="#4f46e5"
-          headerExtra={
-            <GoalControls
-              filterValue={goalFilter}
-              onFilterChange={setGoalFilter}
-              sortType={sortType}
-              sortDirection={sortDirection}
-              onSortTypeChange={setSortType}
-              onSortDirectionChange={setSortDirection}
-            />
-          }
-        >
-          {isLoading && (
-            <div className={styles.loading}>Đang tải dữ liệu...</div>
-          )}
-          {error && (
-            <div className={styles.error}>
-              {"Đã có lỗi xảy ra: " + error.message}
-            </div>
-          )}
-          {!isLoading && !error && (
-            <GoalsList
-              goals={filteredGoals}
-              onEdit={handleOpenEditModal}
-              onDelete={handleRequestDelete}
-              onAddFunds={handleOpenAddFundsModal}
-              onToggleArchive={handleToggleArchive}
-              onTogglePin={handleTogglePin}
-            />
-          )}
-        </PageContentContainer>
+            )}
+            {!isLoading && !error && (
+              <GoalsList
+                goals={filteredGoals}
+                onEdit={handleOpenEditModal}
+                onDelete={handleRequestDelete}
+                onAddFunds={handleOpenAddFundsModal}
+                onToggleArchive={handleToggleArchive}
+                onTogglePin={handleTogglePin}
+              />
+            )}
+          </PageContentContainer>
+        </div>
       </main>
 
       {isModalOpen && (

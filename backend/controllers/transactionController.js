@@ -65,6 +65,8 @@ exports.getAllTransactions = async (req, res) => {
       // ✅ BỔ SUNG THAM SỐ LỌC THEO KHOẢNG NGÀY
       startDate,
       endDate,
+      dateFrom, // ✅ Thêm dateFrom
+      dateTo, // ✅ Thêm dateTo
     } = req.query;
 
     const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
@@ -72,12 +74,56 @@ exports.getAllTransactions = async (req, res) => {
     // --- Xây dựng bộ lọc (match criteria) ---
     const matchCriteria = { userId };
 
+    // ✅ Lấy thêm tham số year và month từ query
+    const { year, month } = req.query;
+
     // 1. ✅ LOGIC LỌC THỜI GIAN ĐƯỢC ƯU TIÊN
-    if (startDate && endDate) {
-      // Ưu tiên lọc theo khoảng ngày nếu được cung cấp
+    if (dateFrom && dateTo) {
+      // Ưu tiên cao nhất: lọc theo dateFrom/dateTo (từ click dayCell)
+      // Tạo Date object cho local timezone (giống cách người dùng nhập)
+      const startOfDay = new Date(dateFrom);
+      const endOfDay = new Date(dateTo);
+      endOfDay.setHours(23, 59, 59, 999); // Set to end of day
+
+      console.log(`🔍 Filter by dateFrom/dateTo: ${dateFrom} to ${dateTo}`);
+      console.log(`🔍 Actual date range: ${startOfDay} to ${endOfDay}`);
+      console.log(
+        `🔍 ISO strings: ${startOfDay.toISOString()} to ${endOfDay.toISOString()}`
+      );
+
+      matchCriteria.date = {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      };
+    } else if (startDate && endDate) {
+      // Ưu tiên thứ 2: lọc theo khoảng ngày (tuần)
       matchCriteria.date = {
         $gte: new Date(startDate),
         $lte: new Date(endDate),
+      };
+    } else if (year && month) {
+      // Lọc theo tháng/năm cụ thể
+      const startOfMonth = new Date(parseInt(year), parseInt(month) - 1, 1);
+      const endOfMonth = new Date(
+        parseInt(year),
+        parseInt(month),
+        0,
+        23,
+        59,
+        59,
+        999
+      );
+      matchCriteria.date = {
+        $gte: startOfMonth,
+        $lte: endOfMonth,
+      };
+    } else if (year) {
+      // Lọc theo năm
+      const startOfYear = new Date(parseInt(year), 0, 1);
+      const endOfYear = new Date(parseInt(year), 11, 31, 23, 59, 59, 999);
+      matchCriteria.date = {
+        $gte: startOfYear,
+        $lte: endOfYear,
       };
     }
 
@@ -102,8 +148,30 @@ exports.getAllTransactions = async (req, res) => {
     }
 
     // --- Thực hiện truy vấn ---
+    console.log(
+      `🔍 Final matchCriteria:`,
+      JSON.stringify(matchCriteria, null, 2)
+    );
+    console.log(`🔍 Query params:`, {
+      dateFrom,
+      dateTo,
+      startDate,
+      endDate,
+      year,
+      month,
+      type,
+      categoryId,
+      accountId,
+    });
+
     const totalTransactions = await Transaction.countDocuments(matchCriteria);
     const totalPages = Math.ceil(totalTransactions / parseInt(limit, 10));
+
+    // ✅ Tính tổng số giao dịch theo loại cho toàn bộ chu kỳ (không bị giới hạn phân trang)
+    const [incomeCount, expenseCount] = await Promise.all([
+      Transaction.countDocuments({ ...matchCriteria, type: "THUNHAP" }),
+      Transaction.countDocuments({ ...matchCriteria, type: "CHITIEU" }),
+    ]);
 
     const transactions = await Transaction.find(matchCriteria)
       .populate({ path: "accountId", select: "name type" })
@@ -111,6 +179,13 @@ exports.getAllTransactions = async (req, res) => {
       .sort({ date: -1, createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit, 10));
+
+    console.log(
+      `🔍 Found ${totalTransactions} total transactions, returning ${transactions.length} transactions`
+    );
+    if (transactions.length > 0) {
+      console.log(`🔍 Sample transaction date:`, transactions[0].date);
+    }
 
     // Format lại dữ liệu trả về (giữ nguyên)
     const formattedTransactions = transactions.map((t) => ({
@@ -130,6 +205,8 @@ exports.getAllTransactions = async (req, res) => {
       currentPage: parseInt(page, 10),
       totalPages: totalPages,
       totalCount: totalTransactions,
+      incomeCount: incomeCount, // ✅ Tổng số giao dịch thu nhập của chu kỳ
+      expenseCount: expenseCount, // ✅ Tổng số giao dịch chi tiêu của chu kỳ
     });
   } catch (err) {
     console.error("Lỗi khi lấy danh sách giao dịch:", err);

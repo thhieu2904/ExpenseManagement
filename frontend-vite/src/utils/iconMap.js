@@ -2,6 +2,7 @@
 import {
   faUtensils,
   faShoppingCart,
+  faShoppingBag,
   faCar,
   faHome,
   faFileInvoiceDollar,
@@ -16,6 +17,7 @@ import {
   faGraduationCap,
   faPaw,
   faPlane,
+  faPlaneDeparture,
   faTrain,
   faHospital,
   faFilm,
@@ -37,6 +39,8 @@ import {
   faStore,
   faTree,
   faSeedling,
+  faChartLine,
+  faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 
 export const iconMap = {
@@ -45,6 +49,7 @@ export const iconMap = {
   "fa-gift": faGift, // Quà tặng, Thưởng
   "fa-hand-holding-usd": faHandHoldingUsd, // Thu nhập khác, Đầu tư
   "fa-piggy-bank": faPiggyBank, // Tiết kiệm
+  "fa-chart-line": faChartLine, // Đầu tư
 
   // Chi tiêu - Ăn uống
   "fa-utensils": faUtensils, // Ăn uống, Nhà hàng
@@ -56,6 +61,7 @@ export const iconMap = {
   "fa-bus": faBus, // Phương tiện công cộng
   "fa-train": faTrain, // Tàu hỏa
   "fa-plane": faPlane, // Máy bay, Du lịch
+  "fa-plane-departure": faPlaneDeparture, // Du lịch
 
   // Chi tiêu - Nhà cửa
   "fa-home": faHome, // Nhà cửa, Tiền thuê
@@ -67,6 +73,7 @@ export const iconMap = {
   // Chi tiêu - Cá nhân & Mua sắm
   "fa-tshirt": faTshirt, // Quần áo
   "fa-store": faStore, // Mua sắm chung
+  "fa-shopping-bag": faShoppingBag, // Mua sắm
   "fa-mobile-alt": faMobileAlt, // Điện thoại, Cước điện thoại
 
   // Chi tiêu - Sức khỏe & Giáo dục
@@ -74,6 +81,9 @@ export const iconMap = {
   "fa-hospital": faHospital, // Bệnh viện, Khám bệnh
   "fa-book": faBook, // Sách vở
   "fa-graduation-cap": faGraduationCap, // Giáo dục, Học phí
+
+  // Chi tiêu - Gia đình & Khác
+  "fa-users": faUsers, // Gia đình
 
   // Chi tiêu - Giải trí & Khác
   "fa-film": faFilm, // Giải trí, Xem phim

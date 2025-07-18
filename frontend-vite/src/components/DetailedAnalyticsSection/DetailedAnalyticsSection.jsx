@@ -97,13 +97,23 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
               categoryId: activeCategoryId,
             };
           } else if (period === "month") {
-            trendParams = { period: "day", year, month, categoryId: activeCategoryId };
+            trendParams = {
+              period: "day",
+              year,
+              month,
+              categoryId: activeCategoryId,
+            };
           } else if (period === "year") {
-            trendParams = { period: "month", year, categoryId: activeCategoryId };
+            trendParams = {
+              period: "month",
+              year,
+              categoryId: activeCategoryId,
+            };
           }
 
-          const categoryTrendRes = await statisticsService.getTrendData(trendParams);
-          
+          const categoryTrendRes =
+            await statisticsService.getTrendData(trendParams);
+
           // Kết hợp dữ liệu: giữ thu nhập từ baseTrendData, chi tiêu từ categoryTrendRes
           const combinedData = baseTrendData.map((baseItem) => {
             const categoryItem = categoryTrendRes?.find(
@@ -115,7 +125,7 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
               income: baseItem.income, // Giữ nguyên thu nhập
             };
           });
-          
+
           setTrendData(combinedData);
         }
       } catch (err) {
@@ -155,7 +165,7 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
 
     // Lấy id từ sliceData (_id hoặc id)
     const categoryId = sliceData._id || sliceData.id;
-    
+
     // Nếu click vào slice đã được chọn, thì reset
     if (categoryId === activeCategoryId) {
       setActiveCategoryId(null);
@@ -188,24 +198,32 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
   return (
     <div className={styles.analyticsContainer}>
       <div className={styles.header}>
-        {/* Cấp trung (H2): Title của section lớn với icon */}
-        <h2 className={styles.analyticsTitle}>
-          <FontAwesomeIcon icon={faChartArea} className={styles.titleIcon} />
-          {getDynamicTitle()}
-        </h2>
-      </div>
+        {/* Nhóm Title và Period Info */}
+        <div className={styles.titleGroup}>
+          <h2 className={styles.analyticsTitle}>
+            <FontAwesomeIcon icon={faChartArea} className={styles.titleIcon} />
+            {getDynamicTitle()}
+          </h2>
+          <div className={styles.periodInfo}>
+            <span className={styles.periodLabel}>
+              Đang xem:{" "}
+              {period === "week"
+                ? "Tuần"
+                : period === "month"
+                  ? "Tháng"
+                  : "Năm"}
+            </span>
+          </div>
+        </div>
 
-      <div className={styles.sectionHeader}>
-        <DateRangeNavigator
-          period={period}
-          currentDate={currentDate}
-          onPeriodChange={handlePeriodChange}
-          onDateChange={handleDateChange}
-        />
-        <div className={styles.periodInfo}>
-          <span className={styles.periodLabel}>
-            Đang xem: {period === "week" ? "Tuần" : period === "month" ? "Tháng" : "Năm"}
-          </span>
+        {/* Nhóm Filter Controls */}
+        <div className={styles.filterGroup}>
+          <DateRangeNavigator
+            period={period}
+            currentDate={currentDate}
+            onPeriodChange={handlePeriodChange}
+            onDateChange={handleDateChange}
+          />
         </div>
       </div>
 
@@ -213,17 +231,17 @@ const DetailedAnalyticsSection = ({ onCategorySelect }) => {
         <div className={styles.trendChartContainer}>
           {/* Cấp thấp nhất (H3): Title của component biểu đồ con */}
           <h3 className={styles.chartTitle}>
-            {activeCategoryName 
+            {activeCategoryName
               ? `Xu hướng thu nhập và chi tiêu - ${activeCategoryName}`
-              : "Xu hướng thu nhập và chi tiêu theo ngày"
-            }
+              : "Xu hướng thu nhập và chi tiêu theo ngày"}
           </h3>
           {activeCategoryName && (
             <div className={styles.categoryNote}>
               <p className={styles.noteText}>
-                <strong>Ghi chú:</strong> Đường thu nhập (nét đứt) hiển thị tổng thu nhập chung, 
-                đường chi tiêu (nét liền) hiển thị chi tiêu riêng cho danh mục "{activeCategoryName}" 
-                (Tổng: {activeCategoryTotal.toLocaleString("vi-VN")} ₫).
+                <strong>Ghi chú:</strong> Đường thu nhập (nét đứt) hiển thị tổng
+                thu nhập chung, đường chi tiêu (nét liền) hiển thị chi tiêu
+                riêng cho danh mục "{activeCategoryName}" (Tổng:{" "}
+                {activeCategoryTotal.toLocaleString("vi-VN")} ₫).
               </p>
             </div>
           )}

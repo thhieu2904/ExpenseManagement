@@ -43,11 +43,10 @@
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
-  min-height: 120px;
 }
 
 .statCard::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -58,11 +57,11 @@
 }
 
 .incomeCard::before {
-  background: linear-gradient(90deg, #4CAF50, #66BB6A);
+  background: linear-gradient(90deg, #4caf50, #66bb6a);
 }
 
 .expenseCard::before {
-  background: linear-gradient(90deg, #f44336, #EF5350);
+  background: linear-gradient(90deg, #f44336, #ef5350);
 }
 
 .cashFlowCard::before {
@@ -126,7 +125,7 @@
 }
 
 .incomeCard .cardIcon {
-  color: #4CAF50;
+  color: #4caf50;
 }
 
 .expenseCard .cardIcon {
@@ -251,41 +250,247 @@
   border-color: rgba(63, 81, 181, 0.15);
 }
 
-/* Responsive Design */
-@media (max-width: 992px) {
-  .statsCards {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-md);
+/* Widget Container - Thống kê tổng quát */
+.widgetContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e0e7ef;
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(63, 81, 181, 0.04);
+  min-width: 320px;
+  height: 90px;
+  width: 100%;
+  margin: 0;
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  height: 100%;
+  padding: 0.4rem;
+}
+
+.statCard:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+}
+
+.iconIncome,
+.iconExpense,
+.iconCashflow {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-size: 0.95rem;
+}
+
+.iconIncome {
+  background: linear-gradient(135deg, #4caf50, #66bb6a);
+  color: #fff;
+}
+
+.iconExpense {
+  background: linear-gradient(135deg, #f44336, #ef5350);
+  color: #fff;
+}
+
+.iconCashflow {
+  background: linear-gradient(135deg, #3f51b5, #5c6bc0);
+  color: #fff;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.label {
+  font-size: 0.6rem;
+  color: #6c757d;
+  font-weight: 500;
+  margin-bottom: 0.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.amountIncome,
+.amountExpense,
+.amountCashflow {
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 0.05rem;
+}
+
+.amountIncome {
+  color: #2e7d32;
+}
+
+.amountExpense {
+  color: #d32f2f;
+}
+
+.amountCashflow {
+  color: #1976d2;
+}
+
+.comparison {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  font-size: 0.55rem;
+  font-weight: 500;
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  width: fit-content;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.trendIcon {
+  font-size: 0.45rem;
+  flex-shrink: 0;
+}
+
+/* Trend Classes */
+.positive {
+  color: #16a085;
+  background: linear-gradient(
+    135deg,
+    rgba(22, 160, 133, 0.08),
+    rgba(22, 160, 133, 0.12)
+  );
+  border-color: rgba(22, 160, 133, 0.2);
+}
+
+.negative {
+  color: #e74c3c;
+  background: linear-gradient(
+    135deg,
+    rgba(231, 76, 60, 0.08),
+    rgba(231, 76, 60, 0.12)
+  );
+  border-color: rgba(231, 76, 60, 0.2);
+}
+
+.neutral {
+  color: #7f8c8d;
+  background: linear-gradient(
+    135deg,
+    rgba(127, 140, 141, 0.08),
+    rgba(127, 140, 141, 0.12)
+  );
+  border-color: rgba(127, 140, 141, 0.2);
+}
+
+.comparison:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.divider {
+  width: 1px;
+  align-self: stretch;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    #e0e7ef 20%,
+    #e0e7ef 80%,
+    transparent
+  );
+  flex-shrink: 0;
+  margin: 0.15rem 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .widgetContainer {
+    flex-direction: column;
+    min-width: 280px;
+    padding: 0.75rem;
+    gap: 0.5rem;
+    height: auto;
+    min-height: 200px;
+  }
+
+  .statCard {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 0.75rem;
+    border-radius: 8px;
+    height: auto;
+    min-height: 50px;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    align-self: center;
+    margin: 0;
+    background: linear-gradient(
+      to right,
+      transparent,
+      #e0e7ef 20%,
+      #e0e7ef 80%,
+      transparent
+    );
   }
 }
 
-@media (max-width: 768px) {
-  .statsOverviewContainer {
-    grid-template-columns: 1fr;
-    grid-template-areas: 
-      "title"
-      "cards"
-      "action";
-    gap: var(--spacing-md);
+@media (max-width: 576px) {
+  .widgetContainer {
+    min-width: 180px;
+    padding: 0.35rem;
+    gap: 0.35rem;
   }
-  
-  .actionSection {
-    justify-self: center;
+
+  .iconIncome,
+  .iconExpense,
+  .iconCashflow {
+    width: 22px;
+    height: 22px;
+    font-size: 0.85rem;
   }
-  
-  .statsCards {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-md);
+
+  .label {
+    font-size: 0.6rem;
   }
-  
-  .statCard {
-    padding: var(--spacing-md);
-    min-height: unset;
+
+  .amountIncome,
+  .amountExpense,
+  .amountCashflow {
+    font-size: 0.8rem;
   }
-  
-  .cardAmount {
-    font-size: 1.5rem;
+
+  .comparison {
+    font-size: 0.45rem;
+    padding: 0.1rem 0.2rem;
+    border-radius: 6px;
   }
+
+  .trendIcon {
+    font-size: 0.4rem;
+  }
+}
+
+.cardAmount {
+  font-size: 1.5rem;
 }
 
 @media (max-width: 768px) and (min-width: 577px) {
@@ -300,36 +505,56 @@
   .statsOverviewContainer {
     gap: var(--spacing-sm);
   }
-  
+
   .title {
     font-size: var(--font-size-xl);
   }
-  
+
   .statCard {
     padding: var(--spacing-sm);
     gap: var(--spacing-xs);
   }
-  
+
   .cardIconWrapper {
     width: 40px;
     height: 40px;
     margin-right: var(--spacing-sm);
   }
-  
+
   .cardIcon {
     font-size: 1rem;
   }
-  
+
   .cardAmount {
     font-size: 1.2rem;
   }
-  
+
   .cardChange {
     font-size: 0.7rem;
   }
-  
+
   .cardTitle {
     /* Responsive: Giảm kích thước tương ứng với --title-font-size-h3 trong mobile */
     font-size: var(--title-font-size-h3);
+  }
+
+  .widgetContainer {
+    min-width: 280px;
+    padding: 0.75rem;
+  }
+
+  .topRow {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    align-self: center;
+  }
+
+  .statCard {
+    justify-content: center;
   }
 }

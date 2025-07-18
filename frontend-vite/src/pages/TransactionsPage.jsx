@@ -1,10 +1,15 @@
-// Mở và THAY THẾ TOÀN BỘ file: frontend-vite/src/pages/TransactionsPage.jsx
+// frontend-vite/src/pages/TransactionsPage.jsx
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { startOfWeek, endOfWeek } from "date-fns";
+import { startOfWeek, endOfWeek, format } from "date-fns";
 import styles from "../styles/TransactionsPage.module.css";
-import { faFilter } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPlus,
+  faExchangeAlt,
+  faCalendarAlt,
+  faSearch,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 // Services
@@ -12,18 +17,24 @@ import axiosInstance from "../api/axiosConfig";
 import { deleteTransaction } from "../api/transactionsService";
 import { getCategories } from "../api/categoriesService";
 import { getAccounts } from "../api/accountsService";
+import { getProfile } from "../api/profileService";
 
 // Components
 import Header from "../components/Header/Header";
+import Button from "../components/Common/Button";
 import Navbar from "../components/Navbar/Navbar";
 import Footer from "../components/Footer/Footer";
-import StatsOverview from "../components/StatsOverview/StatsOverview";
-import DateRangeNavigator from "../components/Common/DateRangeNavigator";
+import HeaderCard from "../components/Common/HeaderCard";
+import PageContentContainer from "../components/Common/PageContentContainer";
 import TransactionCalendar from "../components/Transactions/TransactionCalendar";
 import TransactionFilterPanel from "../components/Transactions/TransactionFilterPanel";
 import TransactionList from "../components/Transactions/TransactionList";
 import AddEditTransactionModal from "../components/Transactions/AddEditTransactionModal";
 import ConfirmDialog from "../components/Common/ConfirmDialog";
+import TransactionStatsWidget from "../components/Common/TransactionStatsWidget";
+
+// Utils
+import { getGreeting, getFullDate } from "../utils/timeHelpers";
 
 const TransactionsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -47,6 +58,12 @@ const TransactionsPage = () => {
   const [calendarData, setCalendarData] = useState({});
   const [categoryList, setCategoryList] = useState([]);
   const [accountList, setAccountList] = useState([]);
+  const [userProfile, setUserProfile] = useState(null);
+  const [transactionStats, setTransactionStats] = useState({
+    totalCount: 0,
+    incomeCount: 0,
+    expenseCount: 0,
+  });
 
   // State quản lý
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -68,12 +85,14 @@ const TransactionsPage = () => {
     const fetchFilterData = async () => {
       setIsLoading((prev) => ({ ...prev, filters: true }));
       try {
-        const [catRes, accRes] = await Promise.all([
+        const [catRes, accRes, profileRes] = await Promise.all([
           getCategories(),
           getAccounts({}),
+          getProfile().catch(() => null),
         ]);
         setCategoryList(catRes || []);
         setAccountList(accRes || []);
+        setUserProfile(profileRes?.data || null);
         setInitialDataLoaded(true);
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu cho bộ lọc:", error);
@@ -95,6 +114,15 @@ const TransactionsPage = () => {
 
       const getRequestParams = (currentFilters) => {
         let params = { page, limit: 10, ...currentFilters };
+
+        // ✅ Ưu tiên dateFrom/dateTo nếu có (từ click dayCell)
+        if (currentFilters.dateFrom && currentFilters.dateTo) {
+          // Không thêm year/month/week params nếu đã có dateFrom/dateTo
+          // Để API lọc chính xác theo ngày
+          return params;
+        }
+
+        // Nếu không có dateFrom/dateTo, dùng logic period như cũ
         if (period === "week") {
           params.startDate = startOfWeek(currentDate, {
             weekStartsOn: 1,
@@ -117,9 +145,19 @@ const TransactionsPage = () => {
           year: currentDate.getFullYear(),
           month: currentDate.getMonth() + 1,
         };
+
+        // ✅ Calendar params phụ thuộc vào period
+        const calendarParams =
+          period === "year"
+            ? { year: currentDate.getFullYear() } // Chỉ truyền year cho cả năm
+            : {
+                year: currentDate.getFullYear(),
+                month: currentDate.getMonth() + 1,
+              }; // Truyền year + month cho week/month
+
         const [statsRes, calendarRes, transactionsRes] = await Promise.all([
           axiosInstance.get("/statistics/overview", { params: overviewParams }),
-          axiosInstance.get("/statistics/calendar", { params: overviewParams }),
+          axiosInstance.get("/statistics/calendar", { params: calendarParams }),
           axiosInstance.get("/transactions", {
             params: getRequestParams(activeFilters),
           }),
@@ -130,6 +168,13 @@ const TransactionsPage = () => {
         setPagination({
           currentPage: transactionsRes.data.currentPage,
           totalPages: transactionsRes.data.totalPages,
+        });
+
+        // ✅ Sử dụng stats từ backend thay vì tự tính toán
+        setTransactionStats({
+          totalCount: transactionsRes.data.totalCount || 0,
+          incomeCount: transactionsRes.data.incomeCount || 0,
+          expenseCount: transactionsRes.data.expenseCount || 0,
         });
       } catch (err) {
         setError("Không thể tải danh sách giao dịch.");
@@ -151,43 +196,47 @@ const TransactionsPage = () => {
   useEffect(() => {
     const shouldFocus = searchParams.get("focus");
     const source = searchParams.get("source");
-    
+
     if (shouldFocus === "filter" && source === "analytics") {
       // Scroll to and focus on filter panel
       setTimeout(() => {
-        const filterPanel = document.querySelector('[data-filter-panel]');
+        const filterPanel = document.querySelector("[data-filter-panel]");
         if (filterPanel) {
-          filterPanel.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
+          filterPanel.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
           });
           // Optionally highlight the filter panel briefly
-          filterPanel.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.5)';
+          filterPanel.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.5)";
           setTimeout(() => {
-            filterPanel.style.boxShadow = '';
+            filterPanel.style.boxShadow = "";
           }, 2000);
         }
       }, 100);
     } else if (shouldFocus === "true") {
       // Focus từ categories page - scroll to filter panel
       setTimeout(() => {
-        const filterPanel = document.querySelector('[data-filter-panel]');
+        const filterPanel = document.querySelector("[data-filter-panel]");
         if (filterPanel) {
-          filterPanel.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
+          filterPanel.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
           });
           // Highlight briefly để user biết đã filter
-          filterPanel.style.boxShadow = '0 0 0 3px rgba(63, 81, 181, 0.5)';
+          filterPanel.style.boxShadow = "0 0 0 3px rgba(63, 81, 181, 0.5)";
           setTimeout(() => {
-            filterPanel.style.boxShadow = '';
+            filterPanel.style.boxShadow = "";
           }, 2000);
         }
       }, 100);
     }
-    
+
     // Clean up URL params
-    if (searchParams.get("categoryId") || searchParams.get("accountId") || shouldFocus) {
+    if (
+      searchParams.get("categoryId") ||
+      searchParams.get("accountId") ||
+      shouldFocus
+    ) {
       const newParams = {};
       setSearchParams(newParams, { replace: true });
     }
@@ -220,6 +269,10 @@ const TransactionsPage = () => {
     setEditingTransaction(transaction);
     setIsModalOpen(true);
   };
+  const handleAddRequest = () => {
+    setEditingTransaction(null);
+    setIsModalOpen(true);
+  };
   const handleDeleteRequest = (transactionId) => {
     setTransactionToDelete(transactionId);
     setIsConfirmOpen(true);
@@ -243,44 +296,146 @@ const TransactionsPage = () => {
     fetchPageData(pagination.currentPage);
   };
 
+  // ✅ Handler cho click vào dayCell
+  const handleDayClick = (selectedDate) => {
+    const formattedDate = format(selectedDate, "yyyy-MM-dd");
+
+    // Cập nhật filter để lọc theo ngày được chọn
+    const newFilters = {
+      ...tempFilters,
+      dateFrom: formattedDate,
+      dateTo: formattedDate,
+    };
+
+    setTempFilters(newFilters);
+    setActiveFilters(newFilters);
+    handlePageChange(1);
+
+    // Focus vào TransactionList sau một chút để đảm bảo data đã load
+    setTimeout(() => {
+      const listSection = document.querySelector("[data-transaction-list]");
+      if (listSection) {
+        listSection.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+        // Highlight briefly
+        listSection.style.boxShadow = "0 0 0 3px rgba(63, 81, 181, 0.5)";
+        setTimeout(() => {
+          listSection.style.boxShadow = "";
+        }, 2000);
+      }
+    }, 300);
+  };
+
+  // === Helper functions cho header ===
+  const getTransactionSmartContext = () => {
+    const totalTransactions = transactions.length;
+    if (totalTransactions === 0) {
+      return "Chưa có giao dịch nào trong khoảng thời gian này";
+    }
+    return `Đã có ${totalTransactions} giao dịch trong ${period === "week" ? "tuần" : period === "month" ? "tháng" : "năm"} này`;
+  };
+
+  const getTransactionMoodEmoji = () => {
+    if (!statsData) return "📊";
+    const { totalIncome = 0, totalExpense = 0 } = statsData;
+    const balance = totalIncome - totalExpense;
+
+    if (balance > 0) return "💰";
+    if (balance < 0) return "💸";
+    return "⚖️";
+  };
+
   return (
-    <div>
-      <Header />
+    <div
+      style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+    >
+      <Header
+        userName={userProfile?.fullname}
+        userAvatar={userProfile?.avatar}
+      />
       <Navbar />
       <main className={styles.pageWrapper}>
-        <div className={styles.overviewSection}>
-          <StatsOverview stats={statsData} loading={isLoading.page} />
-        </div>
-        <div className={styles.mainContent}>
-          <div className={styles.contentCard}>
-            <div className={styles.cardHeader}>
-              <h3 className={styles.cardTitle}>Lịch Giao Dịch</h3>
-              <DateRangeNavigator
+        <div className={styles.contentContainer}>
+          {/* Header Card */}
+          <HeaderCard
+            className={styles.transactionPageHeader}
+            gridIcon={<FontAwesomeIcon icon={faExchangeAlt} />}
+            gridTitle={`${getGreeting()}, ${userProfile?.fullname || "Bạn"}!`}
+            gridSubtitle="Quản lý giao dịch thông minh"
+            gridStats={
+              <div className={styles.widgetSection}>
+                <TransactionStatsWidget
+                  totalCount={transactionStats.totalCount}
+                  incomeCount={transactionStats.incomeCount}
+                  expenseCount={transactionStats.expenseCount}
+                  period={period}
+                  isLoading={isLoading.page}
+                />
+              </div>
+            }
+            gridInfo={
+              <>
+                <div className="smartContext">
+                  <span className="contextText">
+                    {getTransactionSmartContext()}
+                  </span>
+                  <span className="moodEmoji">{getTransactionMoodEmoji()}</span>
+                </div>
+                <span className="miniStats">{getFullDate()}</span>
+              </>
+            }
+            gridAction={
+              <Button
+                onClick={handleAddRequest}
+                icon={<FontAwesomeIcon icon={faPlus} />}
+                variant="primary"
+              >
+                Thêm Giao Dịch
+              </Button>
+            }
+          />
+
+          {/* Main Content */}
+          <PageContentContainer
+            title="Quản Lý Giao Dịch"
+            titleIcon={faCalendarAlt}
+            titleIconColor="#3f51b5"
+            dateProps={{
+              period,
+              currentDate,
+              onDateChange: handleDateChange,
+              onPeriodChange: handlePeriodChange,
+            }}
+            customLayout={true}
+          >
+            {/* Transaction Calendar */}
+            <div className={styles.calendarSection}>
+              <TransactionCalendar
+                calendarData={calendarData}
                 currentDate={currentDate}
-                onDateChange={handleDateChange}
                 period={period}
-                onPeriodChange={handlePeriodChange}
+                onDayClick={handleDayClick}
               />
             </div>
-            <TransactionCalendar
-              calendarData={calendarData}
-              currentDate={currentDate}
-            />
-          </div>
 
-          <div className={styles.contentCard}>
-            <fieldset
-              className={styles.filterFieldset}
-              disabled={isLoading.filters}
-              data-filter-panel
-            >
-              <legend className={styles.fieldsetLegend}>
-                <FontAwesomeIcon
-                  icon={faFilter}
-                  className={styles.legendIcon}
-                />
-                Bộ lọc giao dịch
-              </legend>
+            {/* Transaction Stats Widget */}
+
+            {/* Filter Panel */}
+            <div className={styles.filterSection} data-filter-panel>
+              <div className={styles.sectionHeader}>
+                <div className={styles.sectionTitle}>
+                  <FontAwesomeIcon
+                    icon={faSearch}
+                    className={styles.sectionIcon}
+                  />
+                  <h3>Bộ Lọc Giao Dịch</h3>
+                </div>
+                <span className={styles.sectionSubtitle}>
+                  Lọc và tìm kiếm giao dịch theo tiêu chí mong muốn
+                </span>
+              </div>
               <TransactionFilterPanel
                 filters={tempFilters}
                 onFilterFieldChange={handleFilterFieldChange}
@@ -288,9 +443,12 @@ const TransactionsPage = () => {
                 onResetFilters={handleResetFilters}
                 categories={categoryList}
                 accounts={accountList}
+                isLoading={isLoading.filters}
               />
-            </fieldset>
-            <div className={styles.listSection}>
+            </div>
+
+            {/* Transaction List */}
+            <div className={styles.listSection} data-transaction-list>
               <TransactionList
                 transactions={transactions}
                 pagination={pagination}
@@ -301,7 +459,7 @@ const TransactionsPage = () => {
                 onDeleteRequest={handleDeleteRequest}
               />
             </div>
-          </div>
+          </PageContentContainer>
         </div>
       </main>
 

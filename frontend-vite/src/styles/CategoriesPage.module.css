@@ -2,7 +2,18 @@
 
 /* Container bao bọc toàn bộ trang, tạo khoảng đệm */
 .pageContainer {
-  padding: 20px;
+  width: 100%;
+  padding: var(--page-gap) 0; /* Chỉ có padding top/bottom */
+  background-color: var(--page-background);
+  min-height: calc(100vh - 140px);
+}
+
+.contentContainer {
+  width: 100%;
+  padding: 0 var(--page-padding);
+  display: flex;
+  flex-direction: column;
+  gap: var(--page-gap);
 }
 
 /* Container cho toàn bộ khu vực phân tích (khối trắng lớn) */
@@ -24,6 +35,20 @@
   gap: 24px;
   align-items: stretch;
   min-height: 500px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .contentRow {
+    flex-direction: column;
+    gap: 16px;
+    min-height: auto;
+  }
+
+  .chartContainer,
+  .listContainer {
+    min-width: auto;
+  }
 }
 
 /* Cột chứa biểu đồ - 4/10 chiều ngang (bên trái) */

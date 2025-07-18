@@ -1,9 +1,11 @@
-/* src/styles/AccountPage.module.css */
+/* src/styles/HomePage.module.css */
+
 .pageWrapper {
   width: 100%;
   padding: var(--page-gap) 0; /* Chỉ có padding top/bottom */
   background-color: var(--page-background);
   min-height: calc(100vh - 140px);
+  flex: 1;
 }
 
 .contentContainer {
@@ -17,35 +19,38 @@
 .mainContent {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 2rem;
 }
 
-@media (min-width: 992px) {
-  .mainContent {
-    flex-direction: row;
-    align-items: flex-start;
-  }
+.headerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.leftColumn {
-  flex: 1;
-  min-width: 280px;
+.contextRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.rightColumn {
-  flex: 2.5;
-  min-width: 0; /* Quan trọng để flexbox hoạt động đúng */
+.contextText {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.moodEmoji {
+  font-size: 1.2rem;
+}
+
+.miniStats {
+  font-size: 0.8rem;
+  color: #6c757d;
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
   .mainContent {
-    flex-direction: column;
     gap: 16px;
-  }
-
-  .leftColumn,
-  .rightColumn {
-    min-width: auto;
   }
 }
