@@ -14,6 +14,7 @@ const ProfileInfo = ({
   fileInputRef,
   email,
   setEmail,
+  getAvatarUrl,
 }) => {
   const [editField, setEditField] = useState("");
   const emailInputRef = useRef();
@@ -35,11 +36,7 @@ const ProfileInfo = ({
     <div className={styles.container}>
       <div className={styles.avatarSection}>
         <img
-          src={
-            user.avatar
-              ? `http://localhost:5000${user.avatar}`
-              : "/default-avatar.png"
-          }
+          src={getAvatarUrl(user.avatar)}
           alt="Avatar"
           className={styles.avatar}
         />
@@ -50,14 +47,23 @@ const ProfileInfo = ({
           style={{ display: "none" }}
           accept="image/*"
         />
-        <button onClick={() => fileInputRef.current.click()} className={styles.changeAvatarBtn}>
+        <button
+          onClick={() => fileInputRef.current.click()}
+          className={styles.changeAvatarBtn}
+        >
           Đổi ảnh đại diện
         </button>
       </div>
 
-      <form onSubmit={handleUpdateProfile} className={styles.formSection} style={{ minHeight: '100%' }}>
+      <form
+        onSubmit={handleUpdateProfile}
+        className={styles.formSection}
+        style={{ minHeight: "100%" }}
+      >
         {message.text && (
-          <div className={`${styles.message} ${styles[message.type]}`}>{message.text}</div>
+          <div className={`${styles.message} ${styles[message.type]}`}>
+            {message.text}
+          </div>
         )}
         <div className={styles.formGroup}>
           <label>Tên tài khoản</label>
@@ -69,7 +75,7 @@ const ProfileInfo = ({
             <input
               type="email"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               disabled={editField !== "email"}
               ref={emailInputRef}
               onBlur={handleBlur}
@@ -87,7 +93,7 @@ const ProfileInfo = ({
             <input
               type="text"
               value={fullname}
-              onChange={e => setFullname(e.target.value)}
+              onChange={(e) => setFullname(e.target.value)}
               disabled={editField !== "fullname"}
               ref={fullnameInputRef}
               onBlur={handleBlur}
@@ -99,7 +105,11 @@ const ProfileInfo = ({
             />
           </div>
         </div>
-        <button type="submit" disabled={isSubmitting} className={styles.saveButton}>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className={styles.saveButton}
+        >
           {isSubmitting ? "Đang lưu..." : "Lưu thay đổi"}
         </button>
       </form>

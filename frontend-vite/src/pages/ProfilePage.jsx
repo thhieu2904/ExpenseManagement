@@ -29,25 +29,19 @@ import {
   changePassword,
   getLoginHistory,
   deleteAccount as deleteAccountApi,
+  getAvatarUrl,
+  clearUserData,
 } from "../api/profileService";
 import { getAccounts, addAccount } from "../api/accountsService";
-import { getTransactions } from "../api/transactionsService"; // Chỉ cần getTransactions
+import { getTransactions, addTransaction } from "../api/transactionsService"; // Thêm addTransaction
 import { getCategories, addCategory } from "../api/categoriesService";
 import { getGoals, createGoal } from "../api/goalService";
-import axiosInstance from "../api/axiosConfig"; // Import axiosInstance để tạo transaction
 
 // Utils
 import { getGreeting, getFullDate } from "../utils/timeHelpers";
 
 // Styles
 import styles from "../styles/ProfilePage.module.css";
-
-const clearUserData = async () => {
-  await axiosInstance.delete("/accounts/all");
-  await axiosInstance.delete("/categories/all");
-  await axiosInstance.delete("/transactions/all");
-  await axiosInstance.delete("/goals/all");
-};
 
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("info");
@@ -549,7 +543,7 @@ const ProfilePage = () => {
             newTranData.accountId
           ) {
             console.log("Creating transaction:", newTranData);
-            await axiosInstance.post("/transactions", newTranData);
+            await addTransaction(newTranData);
           } else {
             console.warn("Bỏ qua giao dịch do thiếu thông tin:", {
               original: tran,
@@ -686,6 +680,7 @@ const ProfilePage = () => {
                     fileInputRef={fileInputRef}
                     email={email}
                     setEmail={setEmail}
+                    getAvatarUrl={getAvatarUrl}
                   />
                 </div>
 

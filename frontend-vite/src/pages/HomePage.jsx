@@ -32,6 +32,9 @@ const HomePage = () => {
     totalCount: 0,
   });
 
+  // State để accumulate transactions cho load more
+  const [accumulatedTransactions, setAccumulatedTransactions] = useState([]);
+
   // Modals state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
@@ -76,11 +79,20 @@ const HomePage = () => {
     userProfile = null,
   } = pageData || {};
 
-  const transactions = transactionsData.data || [];
-
-  // Update pagination when transactionsData changes
+  // Update pagination and accumulate transactions when transactionsData changes
   useEffect(() => {
-    if (transactionsData) {
+    if (transactionsData && transactionsData.data) {
+      // Nếu là trang đầu tiên, reset accumulated data với data mới
+      if (transactionsData.currentPage === 1) {
+        setAccumulatedTransactions(transactionsData.data);
+      } else {
+        // Nếu là load more, append vào accumulated data
+        setAccumulatedTransactions((prev) => [
+          ...prev,
+          ...transactionsData.data,
+        ]);
+      }
+
       setPagination({
         currentPage: transactionsData.currentPage || 1,
         hasMore: transactionsData.currentPage < transactionsData.totalPages,
@@ -89,19 +101,29 @@ const HomePage = () => {
     }
   }, [transactionsData]);
 
+  // Reset pagination khi filters thay đổi (nhưng không reset accumulatedTransactions)
+  useEffect(() => {
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
+  }, [transactionFilters]);
+
   // --- API Abstraction ---
   const refreshStatsAndTransactions = useCallback(async () => {
+    // Reset accumulated data và refresh lại
+    setAccumulatedTransactions([]);
+    setPagination((prev) => ({ ...prev, currentPage: 1, hasMore: true }));
     // Refresh sẽ được xử lý bởi React Query
     await queryClient.invalidateQueries({ queryKey: ["homePage"] });
   }, [queryClient]);
 
   // --- Handlers ---
-  const handleLoadMore = () => {
+  const handleLoadMore = useCallback(() => {
     if (!isLoading && pagination.hasMore) {
-      // Logic load more sẽ cần refactor để sử dụng React Query
-      console.log("Load more functionality needs refactoring for React Query");
+      setPagination((prev) => ({
+        ...prev,
+        currentPage: prev.currentPage + 1,
+      }));
     }
-  };
+  }, [isLoading, pagination.hasMore]);
 
   const handleCategorySelectFromAnalytics = useCallback((categoryId) => {
     const newFilters = categoryId ? { categoryId } : {};
@@ -243,7 +265,7 @@ const HomePage = () => {
             />
 
             <RecentTransactions
-              transactions={transactions}
+              transactions={accumulatedTransactions}
               isLoading={isLoading}
               error={error?.message || ""}
               hasMore={pagination.hasMore}
@@ -275,7 +297,7 @@ const HomePage = () => {
         onClose={closeModal}
         onSubmitSuccess={handleSubmitSuccess}
         mode={editingTransaction ? "edit" : "add"}
-        editingTransaction={editingTransaction}
+        initialData={editingTransaction}
       />
     </div>
   );

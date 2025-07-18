@@ -28,6 +28,12 @@ const getCategoryData = async (params) => {
   return response.data;
 };
 
+// Hàm lấy dữ liệu calendar (for TransactionsPage)
+const getCalendarData = async (params) => {
+  const response = await axiosInstance.get("/statistics/calendar", { params });
+  return response.data;
+};
+
 // Hàm lấy danh sách giao dịch trong kỳ
 const getTransactionsInPeriod = async (params) => {
   const response = await axiosInstance.get("/transactions", { params });
@@ -44,6 +50,7 @@ const statisticsService = {
   getSummaryStats,
   getTrendData,
   getCategoryData,
+  getCalendarData,
   getTransactionsInPeriod,
   deleteTransaction,
   getOverviewStats,

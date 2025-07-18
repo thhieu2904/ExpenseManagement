@@ -13,11 +13,11 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 // Services
-import axiosInstance from "../api/axiosConfig";
-import { deleteTransaction } from "../api/transactionsService";
+import { getTransactions, deleteTransaction } from "../api/transactionsService";
 import { getCategories } from "../api/categoriesService";
 import { getAccounts } from "../api/accountsService";
 import { getProfile } from "../api/profileService";
+import statisticsService from "../api/statisticsService";
 
 // Components
 import Header from "../components/Header/Header";
@@ -35,6 +35,8 @@ import TransactionStatsWidget from "../components/Common/TransactionStatsWidget"
 
 // Utils
 import { getGreeting, getFullDate } from "../utils/timeHelpers";
+
+const ITEMS_PER_PAGE = 20; // Define items per page constant
 
 const TransactionsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -156,14 +158,16 @@ const TransactionsPage = () => {
               }; // Truyền year + month cho week/month
 
         const [statsRes, calendarRes, transactionsRes] = await Promise.all([
-          axiosInstance.get("/statistics/overview", { params: overviewParams }),
-          axiosInstance.get("/statistics/calendar", { params: calendarParams }),
-          axiosInstance.get("/transactions", {
-            params: getRequestParams(activeFilters),
-          }),
+          statisticsService.getOverviewStats(overviewParams),
+          statisticsService.getCalendarData(calendarParams),
+          getTransactions(
+            pagination.currentPage,
+            ITEMS_PER_PAGE,
+            getRequestParams(activeFilters)
+          ),
         ]);
-        setStatsData(statsRes.data);
-        setCalendarData(calendarRes.data);
+        setStatsData(statsRes);
+        setCalendarData(calendarRes);
         setTransactions(transactionsRes.data.data);
         setPagination({
           currentPage: transactionsRes.data.currentPage,
@@ -183,8 +187,14 @@ const TransactionsPage = () => {
         setIsLoading((prev) => ({ ...prev, page: false }));
       }
     },
-    [initialDataLoaded, currentDate, period, activeFilters]
-  ); // Chỉ phụ thuộc vào activeFilters
+    [
+      initialDataLoaded,
+      currentDate,
+      period,
+      activeFilters,
+      pagination.currentPage,
+    ]
+  );
 
   useEffect(() => {
     if (initialDataLoaded) {

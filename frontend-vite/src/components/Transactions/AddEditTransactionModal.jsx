@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import axios from "axios";
 import styles from "./AddEditTransactionModal.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -11,10 +10,15 @@ import {
   faTimes,
   faWallet,
   faEdit,
-  faIcons,
 } from "@fortawesome/free-solid-svg-icons";
 import IconSelector from "../Common/IconSelector";
 import { getIconObject } from "../../utils/iconMap";
+import { getCategories } from "../../api/categoriesService";
+import { getAccounts } from "../../api/accountsService";
+import {
+  addTransaction,
+  updateTransaction,
+} from "../../api/transactionsService";
 
 // Hàm tiện ích để chuyển đổi Date object thành chuỗi 'YYYY-MM-DD'
 const formatDateForInput = (date) => {
@@ -79,7 +83,7 @@ const AddEditTransactionModal = ({
       case "accountId":
         if (!value) return "Vui lòng chọn tài khoản";
         return null;
-      case "date":
+      case "date": {
         if (!value) return "Vui lòng chọn ngày";
         const selectedDate = new Date(value);
         const today = new Date();
@@ -88,6 +92,7 @@ const AddEditTransactionModal = ({
         if (selectedDate > futureLimit)
           return "Ngày không được quá 30 ngày trong tương lai";
         return null;
+      }
       default:
         return null;
     }
@@ -131,6 +136,8 @@ const AddEditTransactionModal = ({
 
   // Auto-complete for description based on category
   const getDescriptionSuggestions = () => {
+    if (!Array.isArray(filteredCategories)) return [];
+
     const selectedCategory = filteredCategories.find(
       (cat) => cat._id === categoryId
     );
@@ -229,20 +236,27 @@ const AddEditTransactionModal = ({
     const fetchDataAndPopulateForm = async () => {
       setIsLoading(true);
       setError("");
-      const token = localStorage.getItem("token");
 
       try {
         const [categoriesRes, accountsRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/categories", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get("http://localhost:5000/api/accounts", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
+          getCategories(),
+          getAccounts({}), // Pass empty object instead of undefined
         ]);
 
-        const allCategories = categoriesRes.data;
-        const allAccounts = accountsRes.data;
+        // Defensive handling of API responses
+        // API services already return .data, so we don't need .data again
+        const allCategories = Array.isArray(categoriesRes)
+          ? categoriesRes
+          : Array.isArray(categoriesRes?.data)
+            ? categoriesRes.data
+            : [];
+
+        const allAccounts = Array.isArray(accountsRes)
+          ? accountsRes
+          : Array.isArray(accountsRes?.data)
+            ? accountsRes.data
+            : [];
+
         setCategories(allCategories);
         setAccounts(allAccounts);
 
@@ -263,9 +277,9 @@ const AddEditTransactionModal = ({
           setAccountId(accountIdToSet);
 
           // Lọc và gán categoryId
-          const catsForType = allCategories.filter(
-            (c) => c.type === initialType
-          );
+          const catsForType = Array.isArray(allCategories)
+            ? allCategories.filter((c) => c.type === initialType)
+            : [];
           setFilteredCategories(catsForType);
           const categoryIdToSet =
             initialData.category?.id || initialData.category?._id || "";
@@ -277,9 +291,9 @@ const AddEditTransactionModal = ({
           setType(initialType);
 
           // Lọc danh mục theo loại mặc định
-          const initialCats = allCategories.filter(
-            (c) => c.type === initialType
-          );
+          const initialCats = Array.isArray(allCategories)
+            ? allCategories.filter((c) => c.type === initialType)
+            : [];
           setFilteredCategories(initialCats);
 
           // Reset các trường
@@ -290,13 +304,13 @@ const AddEditTransactionModal = ({
 
           // ✅ THAY ĐỔI QUAN TRỌNG: Gán giá trị mặc định cho state
           // Sau khi có dữ liệu, lấy ID của mục đầu tiên và gán vào state
-          if (initialCats.length > 0) {
+          if (Array.isArray(initialCats) && initialCats.length > 0) {
             setCategoryId(initialCats[0]._id);
           } else {
             setCategoryId(""); // Nếu không có danh mục nào thì set rỗng
           }
 
-          if (allAccounts.length > 0) {
+          if (Array.isArray(allAccounts) && allAccounts.length > 0) {
             // Lưu ý: API accounts của bạn trả về `id` chứ không phải `_id`
             setAccountId(allAccounts[0].id);
           } else {
@@ -317,7 +331,7 @@ const AddEditTransactionModal = ({
 
   // Cập nhật danh sách danh mục khi loại giao dịch thay đổi
   useEffect(() => {
-    if (categories.length > 0) {
+    if (Array.isArray(categories) && categories.length > 0) {
       const filtered = categories.filter((cat) => cat.type === type);
       setFilteredCategories(filtered);
 
@@ -359,18 +373,14 @@ const AddEditTransactionModal = ({
       date,
     };
 
-    const token = localStorage.getItem("token");
     const isEditMode = mode === "edit";
 
-    const url = isEditMode
-      ? `http://localhost:5000/api/transactions/${initialData.id}`
-      : "http://localhost:5000/api/transactions";
-    const httpMethod = isEditMode ? "put" : "post";
-
     try {
-      await axios[httpMethod](url, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      if (isEditMode) {
+        await updateTransaction(initialData.id, payload);
+      } else {
+        await addTransaction(payload);
+      }
 
       // Success feedback
       setTimeout(() => {
@@ -604,14 +614,19 @@ const AddEditTransactionModal = ({
                 onBlur={() => handleFieldBlur("categoryId")}
                 className={`${styles.formInput} ${getFieldErrorClass("categoryId")}`}
                 required
-                disabled={isLoading || filteredCategories.length === 0}
+                disabled={
+                  isLoading ||
+                  !Array.isArray(filteredCategories) ||
+                  filteredCategories.length === 0
+                }
               >
                 <option value="">-- Chọn danh mục --</option>
-                {filteredCategories.map((cat) => (
-                  <option key={cat._id} value={cat._id}>
-                    {cat.name}
-                  </option>
-                ))}
+                {Array.isArray(filteredCategories) &&
+                  filteredCategories.map((cat) => (
+                    <option key={cat._id} value={cat._id}>
+                      {cat.name}
+                    </option>
+                  ))}
               </select>
               {renderFieldError("categoryId")}
             </div>
@@ -627,14 +642,17 @@ const AddEditTransactionModal = ({
                 onBlur={() => handleFieldBlur("accountId")}
                 className={`${styles.formInput} ${getFieldErrorClass("accountId")}`}
                 required
-                disabled={isLoading || accounts.length === 0}
+                disabled={
+                  isLoading || !Array.isArray(accounts) || accounts.length === 0
+                }
               >
                 <option value="">-- Chọn tài khoản --</option>
-                {accounts.map((acc) => (
-                  <option key={acc.id} value={acc.id}>
-                    {acc.name}
-                  </option>
-                ))}
+                {Array.isArray(accounts) &&
+                  accounts.map((acc) => (
+                    <option key={acc.id} value={acc.id}>
+                      {acc.name}
+                    </option>
+                  ))}
               </select>
               {renderFieldError("accountId")}
             </div>

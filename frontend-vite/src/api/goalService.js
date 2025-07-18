@@ -36,8 +36,3 @@ export const togglePinGoal = (goalId) => {
 export const toggleArchiveGoal = (goalId) => {
   return axiosInstance.patch(`/goals/${goalId}/archive`);
 };
-
-// Hàm lấy danh sách tài khoản
-export const getAccounts = () => {
-  return axiosInstance.get("/accounts");
-};

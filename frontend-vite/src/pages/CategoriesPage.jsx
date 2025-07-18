@@ -7,6 +7,7 @@ import {
   getCategories,
   addCategory,
   updateCategory,
+  deleteCategory,
 } from "../api/categoriesService";
 import { getProfile } from "../api/profileService";
 import { faChartPie } from "@fortawesome/free-solid-svg-icons";
@@ -206,6 +207,16 @@ const CategoriesPage = () => {
     }
   };
 
+  const handleDeleteCategory = async (categoryId) => {
+    try {
+      await deleteCategory(categoryId);
+      fetchData(); // Refresh data after delete
+    } catch (error) {
+      console.error("Lỗi khi xóa danh mục:", error);
+      throw error; // Re-throw để CategoryList có thể handle error display
+    }
+  };
+
   // Data processing
   const { listData, chartData, chartTotal } = useMemo(() => {
     const filteredList =
@@ -383,6 +394,7 @@ const CategoriesPage = () => {
               <div className={styles.listContainer}>
                 <CategoryList
                   onEditCategory={handleOpenEditModal}
+                  onDeleteCategory={handleDeleteCategory}
                   onDeleteSuccess={fetchData}
                   categories={listData}
                   isLoading={isLoading}

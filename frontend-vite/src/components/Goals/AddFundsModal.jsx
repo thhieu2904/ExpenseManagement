@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { getAccounts, addFundsToGoal } from "../../api/goalService";
+import { addFundsToGoal } from "../../api/goalService";
+import { getAccounts } from "../../api/accountsService";
 import styles from "./AddFundsModal.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
@@ -38,8 +39,8 @@ export default function AddFundsModal({
 
   const { data: accountsData = [], isLoading: isLoadingAccounts } = useQuery({
     queryKey: ["accounts"],
-    queryFn: getAccounts,
-    select: (res) => res.data,
+    queryFn: () => getAccounts({}),
+    select: (data) => data || [],
     enabled: isOpen,
   });
 
@@ -61,7 +62,7 @@ export default function AddFundsModal({
     } else {
       setAccountId(null);
     }
-  }, [isOpen, accountsData]);
+  }, [isOpen, accountsData, accountId]);
 
   useEffect(() => {
     const insufficientFundsError =
@@ -118,14 +119,16 @@ export default function AddFundsModal({
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <div className={styles.modalHeaderIcon}>
-            🏦
-          </div>
+          <div className={styles.modalHeaderIcon}>🏦</div>
           <div className={styles.modalHeaderContent}>
             <h2 className={styles.modalTitle}>Nạp tiền cho mục tiêu</h2>
             <p className={styles.modalSubtitle}>"{goalData.name}"</p>
           </div>
-          <button onClick={onClose} className={styles.closeButton} aria-label="Đóng modal">
+          <button
+            onClick={onClose}
+            className={styles.closeButton}
+            aria-label="Đóng modal"
+          >
             ×
           </button>
         </div>
@@ -165,33 +168,36 @@ export default function AddFundsModal({
               styles={{
                 control: (base, state) => ({
                   ...base,
-                  border: `2px solid ${state.isFocused ? '#667eea' : '#e5e7eb'}`,
-                  borderRadius: '0.75rem',
-                  padding: '0.375rem 0.5rem',
-                  boxShadow: state.isFocused ? '0 0 0 4px rgba(102, 126, 234, 0.1)' : 'none',
-                  '&:hover': { 
-                    borderColor: state.isFocused ? '#667eea' : '#d1d5db',
-                    transform: state.isFocused ? 'none' : 'translateY(-1px)',
+                  border: `2px solid ${state.isFocused ? "#667eea" : "#e5e7eb"}`,
+                  borderRadius: "0.75rem",
+                  padding: "0.375rem 0.5rem",
+                  boxShadow: state.isFocused
+                    ? "0 0 0 4px rgba(102, 126, 234, 0.1)"
+                    : "none",
+                  "&:hover": {
+                    borderColor: state.isFocused ? "#667eea" : "#d1d5db",
+                    transform: state.isFocused ? "none" : "translateY(-1px)",
                   },
-                  transition: 'all 0.3s ease',
-                  background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                  transition: "all 0.3s ease",
+                  background:
+                    "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)",
                 }),
                 singleValue: (base) => ({
                   ...base,
-                  display: 'flex',
-                  alignItems: 'center',
-                  fontWeight: '500',
+                  display: "flex",
+                  alignItems: "center",
+                  fontWeight: "500",
                 }),
                 menu: (base) => ({
                   ...base,
-                  borderRadius: '0.75rem',
-                  border: '1px solid #e5e7eb',
-                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
-                  overflow: 'hidden',
+                  borderRadius: "0.75rem",
+                  border: "1px solid #e5e7eb",
+                  boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15)",
+                  overflow: "hidden",
                 }),
                 menuList: (base) => ({
                   ...base,
-                  padding: '0.5rem',
+                  padding: "0.5rem",
                 }),
               }}
               // ✅ BƯỚC SỬA LỖI: PHỤC HỒI LẠI ĐẦY ĐỦ NỘI DUNG CHO `getOptionLabel`
@@ -234,7 +240,9 @@ export default function AddFundsModal({
               {addFundsMutation.isPending ? (
                 <FontAwesomeIcon icon={faSpinner} spin />
               ) : (
-                <>Xác nhận <span className={styles.keyboardHint}>Enter</span></>
+                <>
+                  Xác nhận <span className={styles.keyboardHint}>Enter</span>
+                </>
               )}
             </button>
           </div>

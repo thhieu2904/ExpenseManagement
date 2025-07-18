@@ -32,3 +32,13 @@ export const deleteTransaction = (transactionId) => {
 export const addTransaction = (transactionData) => {
   return axiosInstance.post(API_URL, transactionData);
 };
+
+/**
+ * Cập nhật một giao dịch.
+ * @param {string} transactionId - ID của giao dịch cần cập nhật.
+ * @param {object} transactionData - Dữ liệu giao dịch mới.
+ * @returns {Promise<object>} - Dữ liệu trả về từ API.
+ */
+export const updateTransaction = (transactionId, transactionData) => {
+  return axiosInstance.put(`${API_URL}/${transactionId}`, transactionData);
+};

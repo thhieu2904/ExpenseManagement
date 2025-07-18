@@ -1,4 +1,3 @@
-// src/components/Categories/CategoryList.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./CategoryList.module.css";
@@ -7,7 +6,6 @@ import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { getIconObject } from "../../utils/iconMap";
 import ConfirmDialog from "../Common/ConfirmDialog";
 import Badge from "../Common/Badge";
-import { deleteCategory } from "../../api/categoriesService"; // ✅ THAY ĐỔI: Dùng service
 
 // Hàm định dạng tiền tệ (Không đổi)
 const formatCurrency = (amount) => {
@@ -80,6 +78,7 @@ const CategoryList = ({
   isLoading,
   error,
   onEditCategory,
+  onDeleteCategory, // Function để delete category từ parent
   onDeleteSuccess,
   activeCategory,
   onSelectCategory,
@@ -115,10 +114,10 @@ const CategoryList = ({
   };
 
   const handleConfirmDelete = async () => {
-    if (!categoryToDelete) return;
+    if (!categoryToDelete || !onDeleteCategory) return;
     try {
-      // ✅ THAY ĐỔI: Gọi hàm xóa từ service
-      await deleteCategory(categoryToDelete.id);
+      // ✅ THAY ĐỔI: Gọi hàm xóa từ parent component
+      await onDeleteCategory(categoryToDelete.id);
 
       if (onDeleteSuccess) {
         onDeleteSuccess();
@@ -145,7 +144,7 @@ const CategoryList = ({
   // ✅ THÊM: Hàm xử lý click vào badge
   const handleBadgeClick = (e, category) => {
     e.stopPropagation(); // Ngăn không trigger click của row
-    
+
     // Highlight category trước khi navigate
     const chartEquivalent = chartData.find(
       (c) => c.id === (category._id || category.id)
@@ -154,7 +153,7 @@ const CategoryList = ({
       ? chartEquivalent
       : { id: category._id || category.id };
     onSelectCategory(payload);
-    
+
     // Navigate đến transactions page với category filter và focus
     navigate(
       `/transactions?categoryId=${category._id || category.id}&focus=true`
@@ -170,17 +169,17 @@ const CategoryList = ({
     const payload = chartEquivalent
       ? chartEquivalent
       : { id: category._id || category.id };
-    
+
     // Nếu category này đang được chọn, chỉ cần toggle (bỏ chọn)
     const currentActiveId = activeCategoryId;
     if (currentActiveId === (category._id || category.id)) {
       onSelectCategory(null); // Bỏ chọn
       return;
     }
-    
+
     // Nếu chưa được chọn, highlight trước
     onSelectCategory(payload);
-    
+
     // Sau đó mở dialog để hỏi có muốn xem transactions không
     setCategoryToNavigate(category);
     setIsNavigateConfirmOpen(true);
@@ -240,26 +239,33 @@ const CategoryList = ({
                   const isSelected =
                     activeCategoryId &&
                     (category._id || category.id) === activeCategoryId;
-                  
+
                   // Tìm màu sắc tương ứng từ chartData
                   const chartEntry = chartData?.find(
                     (c) => c.id === (category._id || category.id)
                   );
-                  const sliceColor = chartEntry?.color || '#3f51b5';
-                  
+                  const sliceColor = chartEntry?.color || "#3f51b5";
+
                   // Tạo màu tối hơn cho hover
                   const hexToRgb = (hex) => {
-                    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                    return result ? {
-                      r: parseInt(result[1], 16),
-                      g: parseInt(result[2], 16),
-                      b: parseInt(result[3], 16)
-                    } : null;
+                    const result =
+                      /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                    return result
+                      ? {
+                          r: parseInt(result[1], 16),
+                          g: parseInt(result[2], 16),
+                          b: parseInt(result[3], 16),
+                        }
+                      : null;
                   };
-                  
+
                   const rgb = hexToRgb(sliceColor);
-                  const sliceColorLight = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)` : 'rgba(63, 81, 181, 0.3)';
-                  const sliceColorDark = rgb ? `rgba(${Math.max(0, rgb.r - 30)}, ${Math.max(0, rgb.g - 30)}, ${Math.max(0, rgb.b - 30)}, 1)` : '#32408f';
+                  const sliceColorLight = rgb
+                    ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`
+                    : "rgba(63, 81, 181, 0.3)";
+                  const sliceColorDark = rgb
+                    ? `rgba(${Math.max(0, rgb.r - 30)}, ${Math.max(0, rgb.g - 30)}, ${Math.max(0, rgb.b - 30)}, 1)`
+                    : "#32408f";
 
                   return (
                     <tr
@@ -272,11 +278,15 @@ const CategoryList = ({
                       onClick={() => handleCategoryClick(category)}
                       role="button"
                       aria-selected={isSelected}
-                      style={isSelected ? {
-                        '--slice-color': sliceColor,
-                        '--slice-color-light': sliceColorLight,
-                        '--slice-color-dark': sliceColorDark,
-                      } : {}}
+                      style={
+                        isSelected
+                          ? {
+                              "--slice-color": sliceColor,
+                              "--slice-color-light": sliceColorLight,
+                              "--slice-color-dark": sliceColorDark,
+                            }
+                          : {}
+                      }
                     >
                       <td>
                         <FontAwesomeIcon
@@ -297,7 +307,7 @@ const CategoryList = ({
                         {formatCurrency(category.totalAmount)}
                       </td>
                       <td className={styles.transactionCount}>
-                        <Badge 
+                        <Badge
                           variant="default"
                           size="small"
                           className={`${styles.transactionBadge} ${isSelected ? styles.selectedBadge : ""}`}

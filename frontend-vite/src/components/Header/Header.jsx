@@ -5,6 +5,7 @@ import logoSrc from "../../assets/login/logo2.png";
 import avatar1 from "../../assets/avatars/cat1.png";
 import avatar2 from "../../assets/avatars/cat2.png";
 import avatar3 from "../../assets/avatars/cat3.png";
+import { getAvatarUrl } from "../../api/profileService";
 
 const animalAvatars = [avatar1, avatar2, avatar3];
 
@@ -49,7 +50,7 @@ const Header = () => {
 
   // Sửa logic để avatar có thể là đường dẫn từ server
   const finalAvatar = userInfo.avatar
-    ? `http://localhost:5000${userInfo.avatar}`
+    ? getAvatarUrl(userInfo.avatar)
     : fallbackAvatar;
 
   return (
