@@ -7,10 +7,18 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+
+# Build output
 dist
 dist-ssr
+build
+
+# Environment variables
 *.local
+.env
+.env.*
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +30,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Coverage directory
+coverage/
+
+# Cache directories
+.cache/
+.parcel-cache/
+
+# Temp files
+tmp/
+temp/
+
+# Optional cache
+.eslintcache
+.npm

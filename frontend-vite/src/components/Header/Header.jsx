@@ -6,13 +6,18 @@ import avatar1 from "../../assets/avatars/cat1.png";
 import avatar2 from "../../assets/avatars/cat2.png";
 import avatar3 from "../../assets/avatars/cat3.png";
 import { getAvatarUrl } from "../../api/profileService";
+import { getUnreadNotificationCount } from "../../api/notificationService";
+import NotificationDropdown from "./NotificationDropdown";
 
 const animalAvatars = [avatar1, avatar2, avatar3];
 
 const Header = () => {
   const [userInfo, setUserInfo] = useState({ fullname: "User", avatar: "" });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const dropdownRef = useRef(null);
+  const notificationRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,9 +30,18 @@ const Header = () => {
       }
     }
 
+    // Load notification count
+    loadNotificationCount();
+
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
+      }
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      ) {
+        setIsNotificationOpen(false);
       }
     };
 
@@ -36,6 +50,22 @@ const Header = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const loadNotificationCount = async () => {
+    try {
+      const count = await getUnreadNotificationCount();
+      setNotificationCount(count);
+    } catch (error) {
+      console.error("Error loading notification count:", error);
+    }
+  };
+
+  // Reload notification count when notification dropdown is closed
+  useEffect(() => {
+    if (!isNotificationOpen) {
+      loadNotificationCount();
+    }
+  }, [isNotificationOpen]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -59,8 +89,33 @@ const Header = () => {
         <img src={logoSrc} alt="Logo" className={styles.logo} />
       </div>
       <div className={styles.userSection}>
-        <div className={styles.notificationIcon}>
-          {/* ... SVG chuông thông báo ... */}
+        <div className={styles.notificationContainer} ref={notificationRef}>
+          <div
+            className={styles.notificationIcon}
+            onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 2C13.1 2 14 2.9 14 4V4.29C16.89 5.15 19 7.83 19 11V16L21 18V19H3V18L5 16V11C5 7.83 7.11 5.15 10 4.29V4C10 2.9 10.9 2 12 2ZM12 22C13.11 22 14 21.11 14 20H10C10 21.11 10.89 22 12 22Z"
+                fill="currentColor"
+              />
+            </svg>
+            {notificationCount > 0 && (
+              <span className={styles.notificationBadge}>
+                {notificationCount > 99 ? "99+" : notificationCount}
+              </span>
+            )}
+          </div>
+          <NotificationDropdown
+            isOpen={isNotificationOpen}
+            onClose={() => setIsNotificationOpen(false)}
+          />
         </div>
         <div
           className={styles.userInfo}
