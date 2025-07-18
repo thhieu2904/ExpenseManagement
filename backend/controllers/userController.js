@@ -23,6 +23,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
       username: user.username,
       avatar: user.avatar,
       email: user.email,
+      createdAt: user.createdAt,
     });
   } else {
     res.status(404);
@@ -96,27 +97,26 @@ const changePassword = asyncHandler(async (req, res) => {
   res.json({ message: "Đổi mật khẩu thành công." });
 });
 const getLoginHistory = asyncHandler(async (req, res) => {
-    const history = await LoginHistory.find({ userId: req.user.id })
-      .sort({ timestamp: -1 }) // Sắp xếp mới nhất lên đầu
-      .limit(10); // Giới hạn 10 bản ghi gần nhất
-    res.json(history);
-  });
-  const deleteUserAccount = asyncHandler(async (req, res) => {
-    const userId = req.user.id;
-  
-    // Xóa tất cả dữ liệu liên quan
-    await Transaction.deleteMany({ userId });
-    await Account.deleteMany({ userId });
-    await Category.deleteMany({ userId });
-    await Goal.deleteMany({ user: userId });
-    await LoginHistory.deleteMany({ userId });
-  
-    // Cuối cùng, xóa người dùng
-    await User.findByIdAndDelete(userId);
-  
-    res.json({ message: "Tài khoản và toàn bộ dữ liệu đã được xóa thành công." });
-  });
+  const history = await LoginHistory.find({ userId: req.user.id })
+    .sort({ timestamp: -1 }) // Sắp xếp mới nhất lên đầu
+    .limit(10); // Giới hạn 10 bản ghi gần nhất
+  res.json(history);
+});
+const deleteUserAccount = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
 
+  // Xóa tất cả dữ liệu liên quan
+  await Transaction.deleteMany({ userId });
+  await Account.deleteMany({ userId });
+  await Category.deleteMany({ userId });
+  await Goal.deleteMany({ user: userId });
+  await LoginHistory.deleteMany({ userId });
+
+  // Cuối cùng, xóa người dùng
+  await User.findByIdAndDelete(userId);
+
+  res.json({ message: "Tài khoản và toàn bộ dữ liệu đã được xóa thành công." });
+});
 
 module.exports = {
   getUserProfile,

@@ -556,7 +556,9 @@ const ProfilePage = () => {
                 <h3 className={styles.cardTitle}>
                   <FontAwesomeIcon icon={faUserCog} /> Cài đặt
                 </h3>
+                {/* SỬ DỤNG CẤU TRÚC MỚI */}
                 <div className={styles.settingsContent}>
+                  {/* Item 1: Dark Mode */}
                   <div className={styles.settingsItem}>
                     Chế độ tối (Dark Mode)
                     <label className={styles.toggleSwitch}>
@@ -569,6 +571,8 @@ const ProfilePage = () => {
                       <span className={styles.toggleSlider}></span>
                     </label>
                   </div>
+
+                  {/* Item 2: Reminder */}
                   <div className={styles.settingsItem}>
                     Nhắc nhở chi tiêu
                     <label className={styles.toggleSwitch}>
@@ -581,22 +585,11 @@ const ProfilePage = () => {
                       <span className={styles.toggleSlider}></span>
                     </label>
                   </div>
-                  <div
-                    className={styles.settingsItem}
-                    style={{
-                      flexDirection: "column",
-                      alignItems: "flex-start",
-                    }}
-                  >
-                    <span>Xuất/nhập dữ liệu</span>
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: 12,
-                        marginTop: "10px",
-                        flexWrap: "wrap",
-                      }}
-                    >
+
+                  {/* Item 3: Data Section - Áp dụng class mới */}
+                  <div className={styles.dataSection}>
+                    <label>Xuất/nhập dữ liệu</label>
+                    <div className={styles.dataButtons}>
                       <button
                         className={styles.exportBtn}
                         onClick={handleExportData}
@@ -619,8 +612,8 @@ const ProfilePage = () => {
                       </button>
                     </div>
                     {importedData && (
-                      <div style={{ marginTop: "15px", width: "100%" }}>
-                        <p style={{ fontSize: "0.9rem", color: "#333" }}>
+                      <div className={styles.importStatus}>
+                        <p>
                           Đã chọn file:{" "}
                           <strong>
                             {fileImportRef.current?.files[0]?.name}
@@ -640,14 +633,9 @@ const ProfilePage = () => {
                       </div>
                     )}
                   </div>
-                  <div
-                    style={{
-                      width: "100%",
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      marginTop: "auto",
-                    }}
-                  >
+
+                  {/* Logout Button Container - Áp dụng class mới */}
+                  <div className={styles.logoutContainer}>
                     <button className={styles.logoutBtn} onClick={handleLogout}>
                       Đăng xuất
                     </button>
