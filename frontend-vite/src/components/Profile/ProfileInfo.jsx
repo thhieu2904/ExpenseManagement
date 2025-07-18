@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import styles from "./ProfileInfo.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
+import { useTheme } from "../../hooks/useTheme";
 
 const ProfileInfo = ({
   user,
@@ -15,10 +16,14 @@ const ProfileInfo = ({
   email,
   setEmail,
   getAvatarUrl,
+  // Thêm props cho dark mode toggle
+  darkMode,
+  setDarkMode,
 }) => {
   const [editField, setEditField] = useState("");
   const emailInputRef = useRef();
   const fullnameInputRef = useRef();
+  const { toggleTheme, isDarkMode } = useTheme();
 
   // Khi bấm icon sửa, focus vào input
   const handleEdit = (field) => {
@@ -31,6 +36,15 @@ const ProfileInfo = ({
 
   // Khi blur input, tắt chế độ edit
   const handleBlur = () => setEditField("");
+
+  // Handle dark mode toggle
+  const handleDarkModeToggle = () => {
+    toggleTheme();
+    // Sync với parent component nếu cần
+    if (setDarkMode) {
+      setDarkMode(!isDarkMode);
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -105,6 +119,23 @@ const ProfileInfo = ({
             />
           </div>
         </div>
+
+        {/* Dark Mode Toggle */}
+        <div className={styles.formGroup}>
+          <label>Chế độ tối (Dark Mode)</label>
+          <div className={styles.toggleContainer}>
+            <label className={styles.toggleSwitch}>
+              <input
+                type="checkbox"
+                className={styles.toggleInput}
+                checked={isDarkMode}
+                onChange={handleDarkModeToggle}
+              />
+              <span className={styles.toggleSlider}></span>
+            </label>
+          </div>
+        </div>
+
         <button
           type="submit"
           disabled={isSubmitting}

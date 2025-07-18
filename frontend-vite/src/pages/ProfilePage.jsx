@@ -21,6 +21,9 @@ import ProfileInfo from "../components/Profile/ProfileInfo";
 import SecuritySettings from "../components/Profile/SecuritySettings";
 import ConfirmDialog from "../components/Common/ConfirmDialog";
 
+// Hooks
+import { useTheme } from "../hooks/useTheme";
+
 // API Services
 import {
   getProfile,
@@ -89,7 +92,7 @@ const ProfilePage = () => {
   const [dialogError, setDialogError] = useState("");
 
   // Settings State
-  const [darkMode, setDarkMode] = useState(false);
+  const { isDarkMode, toggleTheme } = useTheme(); // Sử dụng theme context
   const [reminder, setReminder] = useState(false);
 
   // Import/Export State
@@ -681,6 +684,9 @@ const ProfilePage = () => {
                     email={email}
                     setEmail={setEmail}
                     getAvatarUrl={getAvatarUrl}
+                    // Truyền props cho dark mode (optional, component sẽ tự lấy từ context)
+                    darkMode={isDarkMode}
+                    setDarkMode={toggleTheme}
                   />
                 </div>
 
@@ -705,8 +711,8 @@ const ProfilePage = () => {
                         <input
                           type="checkbox"
                           className={styles.toggleInput}
-                          checked={darkMode}
-                          onChange={() => setDarkMode((v) => !v)}
+                          checked={isDarkMode}
+                          onChange={toggleTheme}
                         />
                         <span className={styles.toggleSlider}></span>
                       </label>

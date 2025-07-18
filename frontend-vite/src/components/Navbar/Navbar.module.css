@@ -1,5 +1,5 @@
 .navbarContainer {
-  background-color: #3f51b5; /* Màu xanh dương chính */
+  background-color: var(--color-primary); /* Màu xanh dương chính */
   padding: 12px 0; /* Chỉ padding trên/dưới, để nội dung tự căn giữa */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); /* Bóng đổ nhẹ */
   display: flex;
@@ -24,7 +24,7 @@
 }
 
 .navLink {
-  color: #ffffff; /* Màu chữ trắng */
+  color: var(--color-background); /* Màu chữ trắng */
   text-decoration: none; /* Bỏ gạch chân */
   padding: 10px 18px; /* Padding cân đối hơn */
   border-radius: 6px; /* Bo tròn nhiều hơn để đẹp hơn */
@@ -42,16 +42,16 @@
 
 .navLink:hover {
   background-color: rgba(255, 255, 255, 0.15); /* Nền hover rõ hơn */
-  color: #ffffff; /* Giữ màu trắng */
+  color: var(--color-background); /* Giữ màu trắng */
   transform: translateY(-1px); /* Hiệu ứng nâng nhẹ */
 }
 
 .navLink.active {
   background-color: rgba(255, 255, 255, 0.25); /* Nền active nổi bật hơn */
   font-weight: 600; /* Đậm vừa phải */
-  color: #ffffff;
+  color: var(--color-background);
   transform: translateY(-1px); /* Hiệu ứng nâng nhẹ */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Thêm bóng cho mục active */
+  box-shadow: var(--shadow-base); /* Thêm bóng cho mục active */
 }
 
 /* Responsive Design */

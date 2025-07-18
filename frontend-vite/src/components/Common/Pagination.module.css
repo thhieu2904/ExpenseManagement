@@ -17,7 +17,7 @@
 
 .pageButton,
 .navButton {
-  background-color: #fff;
+  background-color: var(--color-background);
   border: 1px solid #dee2e6;
   color: #495057;
   padding: 8px 14px;
@@ -41,19 +41,19 @@
 }
 
 .pageButton.active {
-  background-color: #3f51b5;
+  background-color: var(--color-primary);
   color: white;
-  border-color: #3f51b5;
+  border-color: var(--color-primary);
   font-weight: 700;
 }
 
 .navButton:disabled {
   color: #ced4da;
   cursor: not-allowed;
-  background-color: #f8f9fa;
+  background-color: var(--color-surface-secondary);
 }
 
 .ellipsis {
   padding: 8px;
-  color: #6c757d;
+  color: var(--color-text-secondary);
 }

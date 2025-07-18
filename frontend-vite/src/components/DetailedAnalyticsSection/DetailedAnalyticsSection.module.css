@@ -64,7 +64,7 @@
 
 .periodLabel {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   background: rgba(99, 102, 241, 0.1);
   padding: 6px 12px;
   border-radius: 20px;

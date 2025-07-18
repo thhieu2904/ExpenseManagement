@@ -30,7 +30,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  background: #f8f9fa;
+  background: var(--color-surface-secondary);
   border-bottom: 1px solid #e1e5e9;
 }
 
@@ -103,7 +103,7 @@
 }
 
 .notificationItem:hover {
-  background: #f8f9fa;
+  background: var(--color-surface-secondary);
 }
 
 .notificationItem.high {
@@ -183,7 +183,7 @@
 
 .footer {
   padding: 12px 20px;
-  background: #f8f9fa;
+  background: var(--color-surface-secondary);
   border-top: 1px solid #e1e5e9;
 }
 

@@ -1,7 +1,7 @@
 .filterButtonGroup {
   display: flex;
   gap: 8px;
-  background: #f3f4f6;
+  background: var(--color-border-light);
   border-radius: 8px;
   padding: 4px 8px;
   align-items: center;
@@ -14,7 +14,7 @@
   padding: 6px 16px;
   border-radius: 6px;
   font-size: 1rem;
-  color: #374151;
+  color: var(--color-text-primary);
   font-family: inherit;
   cursor: pointer;
   transition:
@@ -29,7 +29,7 @@
 .filterButtonGroup .active,
 .filterButtonGroup button.active {
   background: #6366f1;
-  color: #fff;
+  color: var(--color-background);
   font-weight: 600;
 }
 

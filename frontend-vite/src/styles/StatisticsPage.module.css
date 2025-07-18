@@ -65,7 +65,7 @@
 
 .contextText {
   font-size: 0.9rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   font-weight: 500;
 }
 
@@ -88,7 +88,7 @@
   display: flex;
   align-items: center;
   padding: 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: linear-gradient(135deg, var(--color-background) 0%, var(--color-surface-secondary) 100%);
   border-radius: 16px;
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.05),
@@ -121,7 +121,7 @@
 
 .cardTitle {
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin: 0;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -137,7 +137,7 @@
 
 .cardDescription {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--color-gray-400);
   margin: 4px 0 0 0;
   font-weight: 400;
   line-height: 1.3;
@@ -182,7 +182,7 @@
   padding: 4px 8px;
   border-radius: 6px;
   background: rgba(107, 114, 128, 0.1);
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 /* Màu sắc cho các loại card */
@@ -191,7 +191,7 @@
 }
 
 .expense::before {
-  background: linear-gradient(90deg, #ef4444, #f87171);
+  background: linear-gradient(90deg, var(--color-error-primary), #f87171);
 }
 
 .cashFlow::before {
@@ -218,7 +218,7 @@
 }
 
 .expense .cardIcon {
-  color: #ef4444;
+  color: var(--color-error-primary);
 }
 
 .cashFlow .cardIcon {
@@ -230,7 +230,7 @@
 }
 
 .expense .cardAmount {
-  color: #ef4444;
+  color: var(--color-error-primary);
 }
 
 .cashFlow .cardAmount {
@@ -255,7 +255,7 @@
   display: flex;
   align-items: center;
   padding: 24px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: linear-gradient(135deg, var(--color-background) 0%, var(--color-surface-secondary) 100%);
   border-radius: 20px;
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.08),
@@ -277,7 +277,7 @@
 
 /* Analysis Section - Phần phân tích chính */
 .analysisSection {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: linear-gradient(135deg, var(--color-background) 0%, var(--color-surface-secondary) 100%);
   border-radius: 16px;
   padding: 0;
   box-shadow:
@@ -290,8 +290,8 @@
 /* Tabs */
 .tabs {
   display: flex;
-  border-bottom: 2px solid #e5e7eb;
-  background: #f9fafb;
+  border-bottom: 2px solid var(--color-border);
+  background: var(--color-surface-secondary);
   margin: 0;
   padding: 0 24px;
 }
@@ -303,7 +303,7 @@
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   position: relative;
   bottom: -2px;
   transition: all 0.2s ease;
@@ -313,7 +313,7 @@
 }
 
 .tabs button:hover {
-  color: #374151;
+  color: var(--color-text-primary);
   background: rgba(59, 130, 246, 0.05);
 }
 
@@ -336,7 +336,7 @@
 .sectionTitle {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-text-primary);
   margin: 0 0 20px 0;
   display: flex;
   align-items: center;
@@ -356,7 +356,7 @@
   justify-content: center;
   gap: 12px;
   margin-bottom: 32px;
-  background: #f3f4f6;
+  background: var(--color-border-light);
   padding: 4px;
   border-radius: 12px;
 }
@@ -370,7 +370,7 @@
   font-weight: 600;
   font-size: 0.9rem;
   transition: all 0.2s ease;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .subTabs .activeSubTab {
@@ -380,8 +380,8 @@
 }
 
 .subTabs button:hover:not(.activeSubTab) {
-  background: #e5e7eb;
-  color: #374151;
+  background: var(--color-border);
+  color: var(--color-text-primary);
 }
 
 /* Structure Layout */
@@ -413,10 +413,10 @@
 
 .trendChartContainer,
 .categoryChartContainer {
-  background: #ffffff;
+  background: var(--color-background);
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
 }
 
 /* Loading and Error States */
@@ -425,7 +425,7 @@
   align-items: center;
   justify-content: center;
   height: 200px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   font-size: 1rem;
   font-style: italic;
 }

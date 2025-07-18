@@ -42,7 +42,7 @@
 .tabButtons {
   display: flex;
   gap: 10px;
-  background-color: #ffffff;
+  background-color: var(--color-background);
   padding: 6px;
   border-radius: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);

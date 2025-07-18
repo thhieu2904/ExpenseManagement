@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: #f3f4f6;
+  background-color: var(--color-border-light);
   border-radius: 8px;
   padding: 0 12px; /* Bỏ padding trên dưới vì react-select đã có chiều cao */
   transition:
@@ -12,17 +12,17 @@
 }
 
 .sortWrapper:hover {
-  background-color: #e5e7eb;
+  background-color: var(--color-border);
 }
 
 .sortWrapper:focus-within {
-  background-color: #fff;
+  background-color: var(--color-background);
   border-color: #a5b4fc;
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
 /* GIỮ LẠI: Style cho icon */
 .sortIcon {
-  color: #6b7280;
+  color: var(--color-text-secondary);
   font-size: 0.9rem;
 }

@@ -19,7 +19,7 @@ body {
   height: 100vh; /* Đảm bảo vừa khít 1 màn hình */
   column-gap: 40px;
   padding: 0 24px;
-  background: #fff7f0;
+  background: var(--color-background)7f0;
 }
 
 .register-left {
@@ -50,7 +50,7 @@ body {
 }
 
 .register-form-box {
-  background: #ffffff;
+  background: var(--color-background);
   border: 1px solid #1e90ff;
   border-radius: 12px;
   padding: 28px 24px;
@@ -92,7 +92,7 @@ body {
   justify-content: center;
   gap: 6px;
   background-color: #1e90ff;
-  color: #fff;
+  color: var(--color-background);
   border: none;
   cursor: pointer;
   transition: background-color 0.2s ease;

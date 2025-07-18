@@ -9,8 +9,8 @@
 .emptyState {
   text-align: center;
   padding: 60px 20px;
-  background-color: #fff;
-  border: 2px dashed #e5e7eb;
+  background-color: var(--color-background);
+  border: 2px dashed var(--color-border);
   border-radius: 12px;
   margin-top: 2rem;
 }
@@ -23,7 +23,7 @@
 
 .emptyState p {
   font-size: 1rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 /* Đây chỉ là style tạm thời để chúng ta thấy được dữ liệu */
