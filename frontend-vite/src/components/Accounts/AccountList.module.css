@@ -1,6 +1,6 @@
 /* src/components/Accounts/AccountList.module.css */
 .accountListContainer {
-  background-color: #ffffff;
+  background-color: var(--color-background);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   padding: 15px;
@@ -26,7 +26,7 @@
   min-height: 80px;
 }
 .accountItem:hover {
-  background-color: #f8f9fa;
+  background-color: var(--color-surface-secondary);
   box-shadow: 0 6px 24px #0002;
   transform: translateY(-2px) scale(1.01);
 }
@@ -41,8 +41,8 @@
 
 .accountIconItem {
   font-size: 1.6rem;
-  color: #3f51b5;
-  background-color: #e8eaf6;
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
   padding: 10px;
   border-radius: 50%;
   width: 24px;
@@ -62,7 +62,7 @@
 
 .accountName {
   font-size: 1.1rem;
-  color: #2c3e50;
+  color: var(--color-text-primary);
   font-weight: 600;
   white-space: normal;
   word-break: break-word;
@@ -71,7 +71,7 @@
 
 .accountSubDetail {
   font-size: 0.85rem;
-  color: #6c757d;
+  color: var(--color-text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -107,7 +107,7 @@
 
 .progressBar {
   height: 100%;
-  background-color: #3f51b5;
+  background-color: var(--color-primary);
   border-radius: 2.5px;
   transition: width 0.4s ease-out;
 }
@@ -144,7 +144,7 @@
   text-align: center;
   padding: 50px 20px;
   color: #7f8c8d;
-  background-color: #f8f9fa;
+  background-color: var(--color-surface-secondary);
   border-radius: 8px;
 }
 /* --- THÊM CÁC STYLE MỚI CHO ACCOUNT ITEM VÀO CUỐI FILE --- */
@@ -186,8 +186,8 @@
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
-  background: #3f51b5;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-background);
   font-weight: 600;
   font-size: 0.7rem;
   border-radius: 50%;
@@ -196,8 +196,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px #3f51b540, 0 1px 3px #0002;
-  border: 2px solid #fff;
+  box-shadow: 0 2px 8px var(--color-primary)40, 0 1px 3px #0002;
+  border: 2px solid var(--color-background);
   cursor: pointer;
   z-index: 3;
   transition: box-shadow 0.18s, background 0.18s;
@@ -208,7 +208,7 @@
 }
 .transactionCountLabel:hover {
   background: #283593;
-  box-shadow: 0 4px 16px #3f51b570, 0 2px 8px #0002;
+  box-shadow: 0 4px 16px var(--color-primary)70, 0 2px 8px #0002;
 }
 
 .incomeBar {
@@ -320,7 +320,7 @@
 
 .negativeBalance {
   border: 2px solid #e74c3c;
-  background: #fff0f0;
+  background: var(--color-background)0f0;
 }
 .negativeBalance .accountBalance {
   color: #e74c3c;
@@ -381,7 +381,7 @@
 }
 .filterButtonActive {
   background: linear-gradient(90deg, #4f8cff 0%, #6a5af9 100%);
-  color: #fff;
+  color: var(--color-background);
   box-shadow: 0 4px 16px #6a5af930;
 }
 
@@ -398,14 +398,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #3f51b5;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-background);
   font-size: 0.8rem;
   font-weight: 600;
   border-radius: 12px;
   padding: 2px 10px;
   margin: 0 auto 4px auto;
-  box-shadow: 0 2px 8px #3f51b540, 0 1px 3px #0002;
+  box-shadow: 0 2px 8px var(--color-primary)40, 0 1px 3px #0002;
   cursor: pointer;
   transition: box-shadow 0.18s, background 0.18s;
   min-width: 40px;
@@ -414,5 +414,5 @@
 }
 .transactionCountBox:hover {
   background: #283593;
-  box-shadow: 0 4px 16px #3f51b570, 0 2px 8px #0002;
+  box-shadow: 0 4px 16px var(--color-primary)70, 0 2px 8px #0002;
 }

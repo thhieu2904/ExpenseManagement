@@ -1,6 +1,6 @@
 .welcome-container {
   min-height: 100vh;
-  background-color: #fff8f2;
+  background-color: var(--color-background)8f2;
   background-image: url("../assets/login/background.png");
   background-size: cover;
   background-position: center;

@@ -11,7 +11,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: #f3f4f6;
+  background-color: var(--color-border-light);
   border-radius: 8px;
   border: 2px solid transparent; /* Giống react-select */
   padding: 0 10px; /* Điều chỉnh padding cho phù hợp */
@@ -23,7 +23,7 @@
   font-family: inherit;
   font-size: 1rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-text-primary);
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
@@ -31,12 +31,12 @@
 
 /* ✅ Đồng bộ hiệu ứng hover: chỉ đổi màu viền */
 .filterButton:hover {
-  border-color: #e5e7eb;
+  border-color: var(--color-border);
 }
 
 /* ✅ Đồng bộ hiệu ứng focus/active */
 .filterButton[aria-expanded="true"] {
-  background-color: #fff;
+  background-color: var(--color-background);
   border-color: #a5b4fc;
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
@@ -47,10 +47,10 @@
   top: calc(100% + 8px);
   left: 0;
   z-index: 10;
-  background: #fff;
+  background: var(--color-background);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
   padding: 8px;
   width: 100%; /* Menu sẽ có độ rộng bằng nút bấm */
   display: flex;
@@ -72,18 +72,18 @@
   cursor: pointer;
   transition: background-color 0.2s;
   font-weight: 500;
-  color: #374151;
+  color: var(--color-text-primary);
 }
 
 .dropdownItem:hover {
-  background-color: #f3f4f6;
+  background-color: var(--color-border-light);
 }
 
 .dropdownItem.activeItem {
-  color: #3f51b5;
+  color: var(--color-primary);
   font-weight: 600;
 }
 
 .checkIcon {
-  color: #3f51b5;
+  color: var(--color-primary);
 }

@@ -25,7 +25,7 @@
 }
 
 .transactionsTable th {
-  background-color: #f8f9fa;
+  background-color: var(--color-surface-secondary);
   color: #555;
   font-weight: 600;
 }
@@ -46,8 +46,8 @@
   text-align: center;
   padding: 40px 20px;
   font-size: 1rem;
-  color: #6c757d;
-  background-color: #f8f9fa;
+  color: var(--color-text-secondary);
+  background-color: var(--color-surface-secondary);
   border-radius: 8px;
 }
 

@@ -213,7 +213,7 @@
   font-size: 1.25rem;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
   margin-left: 0.5rem;
-  color: #3f51b5; /* Đổi màu emoji thành xanh cùng họ với navbar */
+  color: var(--color-primary); /* Đổi màu emoji thành xanh cùng họ với navbar */
 }
 
 .miniStats {
@@ -229,7 +229,7 @@
   content: "\1F4C5 "; /* Unicode cho icon lịch 📅 */
   font-size: 1rem;
   margin-right: 0.25rem;
-  color: #3f51b5; /* Màu xanh đồng bộ với navbar */
+  color: var(--color-primary); /* Màu xanh đồng bộ với navbar */
 }
 
 /* Subtitle nhỏ dưới tiêu đề */
@@ -242,7 +242,7 @@
 /* Greeting icon (ví dụ icon tiền, user...) */
 .greetingIcon {
   font-size: 2.5rem;
-  color: #3f51b5; /* Màu xanh dương như bạn muốn */
+  color: var(--color-primary); /* Màu xanh dương như bạn muốn */
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
   flex-shrink: 0; /* Không cho icon bị co lại */
 }

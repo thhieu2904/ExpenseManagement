@@ -4,6 +4,8 @@
   gap: 20px; /* Giảm gap từ 24px xuống 20px */
   height: 100%;
   min-height: 350px;
+  background: var(--color-surface-primary);
+  color: var(--color-text-primary);
 }
 
 .avatarSection {
@@ -12,7 +14,7 @@
   align-items: center;
   gap: 12px; /* Giảm gap từ 16px xuống 12px */
   padding-bottom: 16px; /* Giảm padding từ 20px xuống 16px */
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .avatar {
@@ -20,29 +22,29 @@
   height: 80px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #e5e7eb;
+  border: 3px solid var(--color-border);
   transition: border-color 0.2s;
 }
 
 .avatar:hover {
-  border-color: #3f51b5;
+  border-color: var(--color-primary);
 }
 
 .changeAvatarBtn {
-  background-color: #f8fafc;
-  border: 1.5px solid #e5e7eb;
+  background-color: var(--color-surface-secondary);
+  border: 1.5px solid var(--color-border);
   padding: 8px 16px;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
   font-size: 0.875rem;
-  color: #374151;
+  color: var(--color-text-primary);
   transition: all 0.2s;
 }
 
 .changeAvatarBtn:hover {
-  background-color: #3f51b5;
-  border-color: #3f51b5;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
   color: white;
 }
 .formSection {
@@ -50,6 +52,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px; /* Giảm gap từ 16px xuống 12px */
+  max-height: 100%;
 }
 
 .formGroup {
@@ -60,15 +63,17 @@
 
 .formGroup label {
   font-weight: 500;
-  color: #374151;
+  color: var(--color-text-primary);
   font-size: 0.875rem;
 }
 
 .formGroup input {
   padding: 12px 16px;
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid var(--color-border);
   border-radius: 8px;
   font-size: 1rem;
+  background-color: var(--color-input-background);
+  color: var(--color-text-primary);
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
@@ -76,18 +81,18 @@
 
 .formGroup input:focus {
   outline: none;
-  border-color: #3f51b5;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.1);
 }
 
 .formGroup input:disabled {
-  background-color: #f9fafb;
-  color: #6b7280;
+  background-color: var(--color-surface-secondary);
+  color: var(--color-text-secondary);
   cursor: not-allowed;
 }
 
 .saveButton {
-  background-color: #3f51b5;
+  background-color: var(--color-primary);
   color: white;
   border: none;
   padding: 10px 20px; /* Giảm padding từ 12px 24px */
@@ -103,11 +108,11 @@
 }
 
 .saveButton:hover:not(:disabled) {
-  background-color: #3949ab;
+  background-color: var(--color-primary-hover);
 }
 
 .saveButton:disabled {
-  background: #9ca3af;
+  background: var(--color-gray-400);
   cursor: not-allowed;
 }
 
@@ -120,15 +125,15 @@
 }
 
 .success {
-  background-color: #dcfce7;
-  color: #166534;
-  border: 1px solid #bbf7d0;
+  background-color: rgba(34, 197, 94, 0.9);
+  color: white;
+  border: 1px solid var(--color-success-secondary);
 }
 
 .error {
-  background-color: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
+  background-color: rgba(239, 68, 68, 0.9);
+  color: white;
+  border: 1px solid var(--color-error-secondary);
 }
 
 .inputWithIcon {
@@ -145,14 +150,76 @@
 .editIcon {
   position: absolute;
   right: 12px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   cursor: pointer;
   font-size: 1rem;
   transition: color 0.2s;
 }
 
 .editIcon:hover {
-  color: #3f51b5;
+  color: var(--color-primary);
+}
+
+/* Toggle Switch Styles */
+.toggleContainer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.toggleSwitch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  vertical-align: middle;
+}
+
+.toggleSwitch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggleSlider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.toggleSlider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.toggleInput:checked + .toggleSlider {
+  background-color: var(--color-primary);
+}
+
+.toggleInput:checked + .toggleSlider:before {
+  transform: translateX(20px);
+}
+
+/* Dark theme specific adjustments */
+.dark-theme .toggleSlider {
+  background-color: var(--color-gray-600);
+}
+
+.dark-theme .toggleInput:checked + .toggleSlider {
+  background-color: var(--color-accent-primary);
 }
 
 /* Responsive */

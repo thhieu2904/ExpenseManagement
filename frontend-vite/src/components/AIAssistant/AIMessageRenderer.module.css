@@ -4,7 +4,7 @@
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
   line-height: 1.6;
-  color: #374151;
+  color: var(--color-text-primary);
 }
 
 .messageLine {
@@ -26,7 +26,7 @@
   color: #1f2937;
   margin-bottom: 0.75rem;
   padding-bottom: 0.25rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-border);
 }
 
 /* Strong/Bold text */
@@ -39,9 +39,9 @@
 /* Emphasis/Italic text */
 .ai_emphasis {
   font-style: italic;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   font-weight: 500;
-  background-color: #f9fafb;
+  background-color: var(--color-surface-secondary);
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
 }
@@ -64,10 +64,10 @@
 .ai_expense {
   color: #991b1b;
   font-weight: 700;
-  background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, #fecaca 100%);
   padding: 0.25rem 0.5rem;
   border-radius: 0.5rem;
-  border: 2px solid #ef4444;
+  border: 2px solid var(--color-error-primary);
   font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", monospace;
   box-shadow: 0 1px 3px rgba(239, 68, 68, 0.2);
   display: inline-block;
@@ -107,10 +107,10 @@
 .ai_negative {
   color: #991b1b;
   font-weight: 700;
-  background: linear-gradient(135deg, #fef2f2 0%, #fca5a5 100%);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, #fca5a5 100%);
   padding: 0.25rem 0.5rem;
   border-radius: 0.5rem;
-  border: 2px solid #ef4444;
+  border: 2px solid var(--color-error-primary);
   font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", monospace;
   box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
   display: inline-block;
@@ -178,7 +178,7 @@
 .lineDivider {
   border: none;
   height: 1px;
-  background: linear-gradient(90deg, transparent, #d1d5db, transparent);
+  background: linear-gradient(90deg, transparent, var(--color-border), transparent);
   margin: 0.75rem 0;
   opacity: 0.6;
 }
@@ -187,7 +187,7 @@
 .messageLine:has-text("────") {
   display: block;
   text-align: center;
-  color: #d1d5db;
+  color: var(--color-border);
   margin: 0.75rem 0;
   font-family: monospace;
   letter-spacing: 2px;
@@ -198,7 +198,7 @@
 .dashLine {
   display: block;
   text-align: center;
-  color: #d1d5db;
+  color: var(--color-border);
   margin: 0.75rem 0;
   font-family: monospace;
   letter-spacing: 2px;

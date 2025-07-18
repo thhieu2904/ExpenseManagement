@@ -4,10 +4,10 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: linear-gradient(135deg, #ffffff, #f7f9fc);
+  background: linear-gradient(135deg, var(--color-background), #f7f9fc);
   padding: 16px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
   height: 80px; /* Đặt chiều cao cố định */
   width: 100%;
 }
@@ -57,7 +57,7 @@
 .deadline {
   font-size: 0.8rem;
   font-weight: 500;
-  color: #ef4444; /* Màu đỏ để nhấn mạnh */
+  color: var(--color-error-primary); /* Màu đỏ để nhấn mạnh */
   flex-shrink: 0;
 }
 
@@ -70,7 +70,7 @@
 .progressBar {
   flex-grow: 1;
   height: 6px;
-  background-color: #e5e7eb;
+  background-color: var(--color-border);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -102,7 +102,7 @@
 
 .targetAmount {
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .placeholder {
@@ -113,7 +113,7 @@
   text-align: center;
   font-size: 1rem;
   font-weight: 500;
-  color: #6b7280;
-  background-color: #f9fafb;
+  color: var(--color-text-secondary);
+  background-color: var(--color-surface-secondary);
   border-radius: 12px;
 }

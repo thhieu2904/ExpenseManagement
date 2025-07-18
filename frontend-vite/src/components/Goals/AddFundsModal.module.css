@@ -26,7 +26,7 @@
 }
 
 .modalContent {
-  background-color: #ffffff;
+  background-color: var(--color-background);
   padding: 0;
   border-radius: 0.75rem;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
@@ -107,7 +107,7 @@
 .modalTitle {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--color-background);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   letter-spacing: 0.025em;
   margin: 0;
@@ -131,7 +131,7 @@
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  color: #ffffff;
+  color: var(--color-background);
   cursor: pointer;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
@@ -146,7 +146,7 @@
 .form {
   padding: 2rem;
   overflow-y: auto;
-  background: #ffffff;
+  background: var(--color-background);
 }
 
 .formGroup {
@@ -157,14 +157,14 @@
   display: block;
   margin-bottom: 0.75rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-text-primary);
   font-size: 0.875rem;
   text-align: left;
   letter-spacing: 0.025em;
 }
 
 .requiredStar {
-  color: #ef4444;
+  color: var(--color-error-primary);
   font-weight: 700;
 }
 
@@ -179,7 +179,7 @@
   font-size: 1.75rem;
   font-weight: 700;
   color: #111827;
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--color-border);
   border-radius: 0.75rem;
   text-align: center;
   transition: all 0.3s ease;
@@ -192,12 +192,12 @@
   outline: 0;
   box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
   transform: translateY(-1px);
-  background: #ffffff;
+  background: var(--color-background);
 }
 
 .amountInput:disabled {
-  background-color: #f9fafb;
-  border-color: #e5e7eb;
+  background-color: var(--color-surface-secondary);
+  border-color: var(--color-border);
   cursor: not-allowed;
   opacity: 0.7;
 }
@@ -223,7 +223,7 @@
   gap: 1rem;
   padding: 1.5rem 2rem;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-border);
   flex-shrink: 0;
   border-radius: 0 0 0.75rem 0.75rem;
 }
@@ -257,20 +257,20 @@
 }
 
 .cancelButton {
-  background: #ffffff;
-  color: #6b7280;
-  border-color: #d1d5db;
+  background: var(--color-background);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
 }
 
 .cancelButton:hover:not(:disabled) {
-  background: #f9fafb;
-  border-color: #9ca3af;
-  color: #374151;
+  background: var(--color-surface-secondary);
+  border-color: var(--color-gray-400);
+  color: var(--color-text-primary);
 }
 
 .submitButton {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: #ffffff;
+  color: var(--color-background);
   border-color: transparent;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
@@ -291,12 +291,12 @@
 
 .cancelButton .keyboardHint {
   background: rgba(107, 114, 128, 0.1);
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .errorMessage {
-  color: #dc2626;
-  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  color: var(--color-error-secondary);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, #fee2e2 100%);
   border: 1px solid #fca5a5;
   padding: 1rem;
   margin-bottom: 1.5rem;
@@ -333,7 +333,7 @@
 }
 
 .customOption:hover {
-  background-color: #f3f4f6;
+  background-color: var(--color-border-light);
 }
 
 .optionName {
@@ -362,7 +362,7 @@
 
 .optionBalanceSmall {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   font-weight: 500;
 }
 

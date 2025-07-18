@@ -130,7 +130,7 @@
 
 .welcomeMessage {
   text-align: center;
-  color: #6c757d;
+  color: var(--color-text-secondary);
 }
 
 .welcomeMessage h4 {
@@ -149,7 +149,7 @@
 .sampleCommands li {
   padding: 12px 16px;
   margin: 8px 0;
-  background: #f8f9fa;
+  background: var(--color-surface-secondary);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -190,7 +190,7 @@
 }
 
 .message.assistant .messageContent {
-  background: #f8f9fa;
+  background: var(--color-surface-secondary);
   color: #495057;
   border-bottom-left-radius: 4px;
   border: 1px solid #e9ecef;
@@ -207,7 +207,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #6c757d;
+  background: var(--color-text-secondary);
   animation: typing 1.4s infinite ease-in-out;
 }
 
@@ -236,7 +236,7 @@
 .inputForm {
   padding: 20px 24px;
   border-top: 1px solid #e9ecef;
-  background: #f8f9fa;
+  background: var(--color-surface-secondary);
 }
 
 .inputContainer {
@@ -280,7 +280,7 @@
 }
 
 .speechButton {
-  background: #6c757d;
+  background: var(--color-text-secondary);
   color: white;
 }
 

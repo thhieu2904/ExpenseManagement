@@ -12,7 +12,12 @@ const register = async (req, res) => {
       return res.status(400).json({ message: "Tài khoản đã tồn tại" });
 
     const hashed = await bcrypt.hash(password, 10);
-    const newUser = await User.create({ username, fullname, password: hashed, email });
+    const newUser = await User.create({
+      username,
+      fullname,
+      password: hashed,
+      email,
+    });
 
     res.status(201).json({ message: "Đăng ký thành công", user: newUser });
   } catch (err) {
@@ -41,7 +46,7 @@ const login = async (req, res) => {
     const token = jwt.sign(
       { id: user._id, username: user.username },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "12h" }
     );
 
     res.json({

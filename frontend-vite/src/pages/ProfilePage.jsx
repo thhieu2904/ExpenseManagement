@@ -6,7 +6,6 @@ import {
   faShieldAlt,
   faUserCog,
   faLock,
-  faHistory,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Components
@@ -19,7 +18,10 @@ import ProfileStatsWidget from "../components/Common/ProfileStatsWidget";
 import TabFilter from "../components/Common/TabFilter";
 import ProfileInfo from "../components/Profile/ProfileInfo";
 import SecuritySettings from "../components/Profile/SecuritySettings";
+import Settings from "../components/Profile/Settings";
 import ConfirmDialog from "../components/Common/ConfirmDialog";
+
+// Hooks
 
 // API Services
 import {
@@ -89,13 +91,57 @@ const ProfilePage = () => {
   const [dialogError, setDialogError] = useState("");
 
   // Settings State
-  const [darkMode, setDarkMode] = useState(false);
   const [reminder, setReminder] = useState(false);
 
   // Import/Export State
   const [importedData, setImportedData] = useState(null);
   const [isImporting, setIsImporting] = useState(false);
   const fileImportRef = useRef(null);
+
+  // Load reminder setting from localStorage
+  useEffect(() => {
+    const savedReminderSetting = localStorage.getItem(
+      "spendingReminderEnabled"
+    );
+    if (savedReminderSetting !== null) {
+      setReminder(JSON.parse(savedReminderSetting));
+    } else {
+      // Check if there are detailed spending reminder settings
+      const detailedSettings = localStorage.getItem("spendingReminderSettings");
+      if (detailedSettings) {
+        try {
+          const parsedSettings = JSON.parse(detailedSettings);
+          setReminder(parsedSettings.enabled || false);
+        } catch (error) {
+          console.error("Error parsing spending reminder settings:", error);
+        }
+      }
+    }
+  }, []);
+
+  // Save reminder setting to localStorage when it changes
+  const handleReminderChange = (newValue) => {
+    setReminder(newValue);
+    localStorage.setItem("spendingReminderEnabled", JSON.stringify(newValue));
+
+    // Also update the detailed settings if they exist
+    const detailedSettings = localStorage.getItem("spendingReminderSettings");
+    if (detailedSettings) {
+      try {
+        const parsedSettings = JSON.parse(detailedSettings);
+        parsedSettings.enabled = newValue;
+        localStorage.setItem(
+          "spendingReminderSettings",
+          JSON.stringify(parsedSettings)
+        );
+      } catch (error) {
+        console.error(
+          "Error updating detailed spending reminder settings:",
+          error
+        );
+      }
+    }
+  };
 
   // --- DATA FETCHING ---
   const fetchProfileData = async () => {
@@ -665,6 +711,7 @@ const ProfilePage = () => {
           >
             {activeTab === "info" ? (
               <div className={styles.contentGrid}>
+                {/* Profile Info Card */}
                 <div className={styles.profileCard}>
                   <h3 className={styles.cardTitle}>
                     <FontAwesomeIcon icon={faUser} /> Thông tin cá nhân
@@ -684,213 +731,35 @@ const ProfilePage = () => {
                   />
                 </div>
 
-                <div className={styles.settingsCard}>
-                  <h3 className={styles.cardTitle}>
-                    <FontAwesomeIcon icon={faUserCog} /> Cài đặt
-                  </h3>
-                  {/* ✅ THÊM: Hiển thị thông báo cho cài đặt */}
-                  {settingsMessage.text && (
-                    <div
-                      className={`${styles.message} ${styles[settingsMessage.type]}`}
-                    >
-                      {settingsMessage.text}
-                    </div>
-                  )}
-                  {/* SỬ DỤNG CẤU TRÚC MỚI */}
-                  <div className={styles.settingsContent}>
-                    {/* Item 1: Dark Mode */}
-                    <div className={styles.settingsItem}>
-                      Chế độ tối (Dark Mode)
-                      <label className={styles.toggleSwitch}>
-                        <input
-                          type="checkbox"
-                          className={styles.toggleInput}
-                          checked={darkMode}
-                          onChange={() => setDarkMode((v) => !v)}
-                        />
-                        <span className={styles.toggleSlider}></span>
-                      </label>
-                    </div>
-
-                    {/* Item 2: Reminder */}
-                    <div className={styles.settingsItem}>
-                      Nhắc nhở chi tiêu
-                      <label className={styles.toggleSwitch}>
-                        <input
-                          type="checkbox"
-                          className={styles.toggleInput}
-                          checked={reminder}
-                          onChange={() => setReminder((v) => !v)}
-                        />
-                        <span className={styles.toggleSlider}></span>
-                      </label>
-                    </div>
-
-                    {/* Item 3: Data Section - Áp dụng class mới */}
-                    <div className={styles.dataSection}>
-                      <label>Xuất/nhập dữ liệu</label>
-                      <div className={styles.dataButtons}>
-                        <button
-                          className={styles.exportBtn}
-                          onClick={handleExportDataRequest}
-                        >
-                          Xuất Dữ Liệu (.json)
-                        </button>
-                        <input
-                          type="file"
-                          accept="application/json"
-                          style={{ display: "none" }}
-                          ref={fileImportRef}
-                          onChange={handleImportFileChange}
-                        />
-                        <button
-                          className={styles.exportBtn}
-                          style={{ background: "#1a4fa3" }}
-                          onClick={() => fileImportRef.current?.click()}
-                        >
-                          Chọn File Để Nhập
-                        </button>
-                      </div>
-                      {importedData && (
-                        <div className={styles.importStatus}>
-                          <p>
-                            Đã chọn file:{" "}
-                            <strong>
-                              {fileImportRef.current?.files[0]?.name}
-                            </strong>
-                            . Sẵn sàng để nhập.
-                          </p>
-                          <button
-                            className={styles.exportBtn}
-                            style={{ background: "#22c55e", width: "100%" }}
-                            onClick={handleImportDataRequest}
-                            disabled={isImporting}
-                          >
-                            {isImporting
-                              ? "Đang xử lý..."
-                              : "Bắt đầu Nhập Dữ Liệu"}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Logout Button Container - Áp dụng class mới */}
-                    <div className={styles.logoutContainer}>
-                      <button
-                        className={styles.logoutBtn}
-                        onClick={handleLogout}
-                      >
-                        Đăng xuất
-                      </button>
-                    </div>
-                  </div>
+                {/* Settings Card */}
+                <div className={styles.profileCard}>
+                  <Settings
+                    reminder={reminder}
+                    setReminder={handleReminderChange}
+                    handleExportDataRequest={handleExportDataRequest}
+                    fileImportRef={fileImportRef}
+                    handleImportFileChange={handleImportFileChange}
+                    importedData={importedData}
+                    handleImportDataRequest={handleImportDataRequest}
+                    isImporting={isImporting}
+                    handleLogout={handleLogout}
+                    message={settingsMessage}
+                  />
                 </div>
               </div>
             ) : (
-              <div className={styles.contentGrid}>
-                <div className={styles.profileCard}>
-                  <h3 className={styles.cardTitle}>
-                    <FontAwesomeIcon icon={faLock} /> Đổi mật khẩu
-                  </h3>
-                  <form
-                    onSubmit={handlePasswordSubmit}
-                    className={styles.passwordForm}
-                  >
-                    {securityMessage.text && (
-                      <div
-                        className={`${styles.message} ${styles[securityMessage.type]}`}
-                      >
-                        {securityMessage.text}
-                      </div>
-                    )}
-                    <div className={styles.formGroup}>
-                      <label>Mật khẩu cũ</label>
-                      <input
-                        type="password"
-                        name="oldPassword"
-                        value={passwords.oldPassword}
-                        onChange={handlePasswordChange}
-                        required
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label>Mật khẩu mới</label>
-                      <input
-                        type="password"
-                        name="newPassword"
-                        value={passwords.newPassword}
-                        onChange={handlePasswordChange}
-                        required
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label>Xác nhận mật khẩu mới</label>
-                      <input
-                        type="password"
-                        name="confirmPassword"
-                        value={passwords.confirmPassword}
-                        onChange={handlePasswordChange}
-                        required
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={isSecuritySubmitting}
-                      className={styles.saveButton}
-                    >
-                      {isSecuritySubmitting ? "Đang lưu..." : "Lưu mật khẩu"}
-                    </button>
-                  </form>
-                </div>
-
-                <div className={styles.profileCard}>
-                  <h3 className={styles.cardTitle}>
-                    <FontAwesomeIcon icon={faHistory} /> Lịch sử đăng nhập
-                  </h3>
-                  <div className={styles.historyContainer}>
-                    {loginHistory.length === 0 ? (
-                      <p className={styles.noData}>
-                        Chưa có dữ liệu đăng nhập.
-                      </p>
-                    ) : (
-                      <ul className={styles.historyList}>
-                        {loginHistory.map((entry) => (
-                          <li key={entry._id} className={styles.historyItem}>
-                            <div className={styles.historyInfo}>
-                              <strong>
-                                {entry.userAgent.substring(0, 40)}...
-                              </strong>
-                              <span>IP: {entry.ipAddress}</span>
-                            </div>
-                            <span className={styles.historyTime}>
-                              {new Date(entry.timestamp).toLocaleString(
-                                "vi-VN"
-                              )}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-
-                  {/* Danger Zone */}
-                  <div className={styles.dangerZone}>
-                    <h4 className={styles.dangerTitle}>Vùng nguy hiểm</h4>
-                    <div className={styles.dangerContent}>
-                      <div>
-                        <strong>Xóa tài khoản này</strong>
-                        <p>Xóa vĩnh viễn tài khoản và toàn bộ dữ liệu.</p>
-                      </div>
-                      <button
-                        onClick={() => setIsDeleteAccountDialogOpen(true)}
-                        className={styles.dangerButton}
-                      >
-                        Xóa tài khoản
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <SecuritySettings
+                passwords={passwords}
+                setPasswords={setPasswords}
+                message={securityMessage}
+                isSubmitting={isSecuritySubmitting}
+                loginHistory={loginHistory}
+                isConfirmOpen={isDeleteAccountDialogOpen}
+                setIsConfirmOpen={setIsDeleteAccountDialogOpen}
+                handlePasswordSubmit={handlePasswordSubmit}
+                handleChange={handlePasswordChange}
+                handleDeleteAccount={handleDeleteAccount}
+              />
             )}
           </PageContentContainer>
         </div>
@@ -941,21 +810,6 @@ const ProfilePage = () => {
         title="⚠️ CẢNH BÁO QUAN TRỌNG"
         message="Hành động này sẽ XÓA TOÀN BỘ dữ liệu hiện tại của bạn (tài khoản, giao dịch, danh mục, mục tiêu) và thay thế bằng dữ liệu từ file backup. Thao tác này KHÔNG THỂ HOÀN TÁC. Bạn có chắc chắn muốn tiếp tục không?"
         confirmText="Tôi hiểu và muốn tiếp tục"
-        isProcessing={dialogProcessing}
-        errorMessage={dialogError}
-      />
-
-      {/* Dialog xác nhận xóa tài khoản */}
-      <ConfirmDialog
-        isOpen={isDeleteAccountDialogOpen}
-        onClose={() => {
-          setIsDeleteAccountDialogOpen(false);
-          setDialogError("");
-        }}
-        onConfirm={handleDeleteAccount}
-        title="Xác nhận xóa tài khoản"
-        message="Bạn có chắc chắn muốn xóa tài khoản của mình không? Toàn bộ dữ liệu của bạn sẽ bị xóa vĩnh viễn và không thể khôi phục."
-        confirmText="Xóa tài khoản"
         isProcessing={dialogProcessing}
         errorMessage={dialogError}
       />

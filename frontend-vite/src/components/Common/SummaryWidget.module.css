@@ -28,7 +28,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--color-background);
   flex-shrink: 0; /* Không cho icon co lại */
 }
 
@@ -46,7 +46,7 @@
 
 .label {
   font-size: 0.75rem; /* THAY ĐỔI: Giảm cỡ chữ */
-  color: #6c757d;
+  color: var(--color-text-secondary);
   font-weight: 500;
 }
 
@@ -65,7 +65,7 @@
 
 .comparison {
   font-size: 0.65rem; /* THAY ĐỔI: Giảm cỡ chữ */
-  color: #6c757d;
+  color: var(--color-text-secondary);
 }
 
 /* THAY ĐỔI: Chuyển thành đường phân cách dọc */

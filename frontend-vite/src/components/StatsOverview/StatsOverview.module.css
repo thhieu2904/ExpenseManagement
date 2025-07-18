@@ -36,10 +36,10 @@
   display: flex;
   align-items: center;
   padding: var(--spacing-lg);
-  background: #ffffff;
+  background: var(--color-background);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-sm);
-  border: 1.5px solid #ececf3;
+  border: 1.5px solid var(--color-border);
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
@@ -65,15 +65,15 @@
 }
 
 .cashFlowCard::before {
-  background: linear-gradient(90deg, #3f51b5, #5c6bc0);
+  background: linear-gradient(90deg, var(--color-primary), #5c6bc0);
 }
 
 .positiveCashFlow::before {
-  background: linear-gradient(90deg, #3f51b5, #5c6bc0);
+  background: linear-gradient(90deg, var(--color-primary), #5c6bc0);
 }
 
 .negativeCashFlow::before {
-  background: linear-gradient(90deg, #3f51b5, #5c6bc0);
+  background: linear-gradient(90deg, var(--color-primary), #5c6bc0);
 }
 
 .statCard:hover {
@@ -133,15 +133,15 @@
 }
 
 .cashFlowCard .cardIcon {
-  color: #3f51b5;
+  color: var(--color-primary);
 }
 
 .positiveCashFlow .cardIcon {
-  color: #3f51b5;
+  color: var(--color-primary);
 }
 
 .negativeCashFlow .cardIcon {
-  color: #3f51b5;
+  color: var(--color-primary);
 }
 
 .statCard:hover .cardIcon {
@@ -175,7 +175,7 @@
   font-size: 0.75rem;
   color: #8e9aaf;
   font-weight: 500;
-  background: #f8f9fa;
+  background: var(--color-surface-secondary);
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
 }
@@ -198,15 +198,15 @@
 }
 
 .cashFlowCard .cardAmount {
-  color: #3f51b5;
+  color: var(--color-primary);
 }
 
 .positiveCashFlow .cardAmount {
-  color: #3f51b5;
+  color: var(--color-primary);
 }
 
 .negativeCashFlow .cardAmount {
-  color: #3f51b5;
+  color: var(--color-primary);
 }
 
 .cardChange {
@@ -226,7 +226,7 @@
 
 .cardChange:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px var(--color-hover-overlay);
 }
 
 .positiveChange {
@@ -240,12 +240,12 @@
 }
 
 .neutralChange {
-  color: #6c757d;
+  color: var(--color-text-secondary);
   background: rgba(108, 117, 125, 0.08);
 }
 
 .cashFlowNeutral {
-  color: #3f51b5;
+  color: var(--color-primary);
   background: rgba(63, 81, 181, 0.08);
   border-color: rgba(63, 81, 181, 0.15);
 }
@@ -255,8 +255,8 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  background: #fff;
-  border: 1px solid #e0e7ef;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 0.5rem 0.75rem;
   gap: 1rem; /* TĂNG: Tăng khoảng cách cho thoáng hơn */
@@ -295,23 +295,23 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 6px var(--color-hover-overlay);
   font-size: 0.95rem;
 }
 
 .iconIncome {
   background: linear-gradient(135deg, #4caf50, #66bb6a);
-  color: #fff;
+  color: var(--color-background);
 }
 
 .iconExpense {
   background: linear-gradient(135deg, #f44336, #ef5350);
-  color: #fff;
+  color: var(--color-background);
 }
 
 .iconCashflow {
-  background: linear-gradient(135deg, #3f51b5, #5c6bc0);
-  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary), #5c6bc0);
+  color: var(--color-background);
 }
 
 .details {
@@ -324,7 +324,7 @@
 
 .label {
   font-size: 0.6rem;
-  color: #6c757d;
+  color: var(--color-text-secondary);
   font-weight: 500;
   margin-bottom: 0.05rem;
   text-transform: uppercase;
@@ -406,7 +406,7 @@
 
 .comparison:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px var(--color-hover-overlay);
 }
 
 .divider {
@@ -415,8 +415,8 @@
   background: linear-gradient(
     to bottom,
     transparent,
-    #e0e7ef 20%,
-    #e0e7ef 80%,
+    var(--color-border) 20%,
+    var(--color-border) 80%,
     transparent
   );
   flex-shrink: 0;
@@ -451,8 +451,8 @@
     background: linear-gradient(
       to right,
       transparent,
-      #e0e7ef 20%,
-      #e0e7ef 80%,
+      var(--color-border) 20%,
+      var(--color-border) 80%,
       transparent
     );
   }

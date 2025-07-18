@@ -31,13 +31,13 @@
 }
 
 .tabButton.active {
-  background: #3f51b5;
+  background: var(--color-primary);
   color: white;
   box-shadow: 0 1px 3px rgba(63, 81, 181, 0.3);
 }
 
 .tabButton.active:hover {
-  background: #3949ab;
+  background: var(--color-primary-hover);
 }
 
 .tabIcon {

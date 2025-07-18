@@ -35,8 +35,8 @@
 }
 
 .filterButtons button.active {
-  background-color: #ffffff;
-  color: #3f51b5;
+  background-color: var(--color-background);
+  color: var(--color-primary);
   font-weight: 600;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -45,7 +45,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  background-color: #f8f9fa;
+  background-color: var(--color-surface-secondary);
   border: 1px solid #dee2e6;
   border-radius: 6px;
 }
@@ -54,7 +54,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #6c757d;
+  color: var(--color-text-secondary);
   padding: 7px 12px;
   border-radius: 4px;
   transition: background-color 0.2s, color 0.2s;
@@ -86,7 +86,7 @@
   padding: 7px 30px 7px 5px; /* Đồng bộ padding dọc và giảm nhẹ */
   font-size: 0.95rem;
   font-weight: 600;
-  color: #3f51b5;
+  color: var(--color-primary);
   line-height: inherit;
   text-align: center;
   min-width: 120px;
@@ -127,7 +127,7 @@
 .dateRangeLegend {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #3f51b5; /* Khôi phục màu xanh */
+  color: var(--color-primary); /* Khôi phục màu xanh */
   padding: 3px 10px;
   margin-left: 1rem;
 }

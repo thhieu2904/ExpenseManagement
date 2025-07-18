@@ -35,7 +35,7 @@
 
 .contextText {
   font-size: 0.9rem;
-  color: #6c757d;
+  color: var(--color-text-secondary);
 }
 
 .moodEmoji {
@@ -44,7 +44,7 @@
 
 .miniStats {
   font-size: 0.8rem;
-  color: #6c757d;
+  color: var(--color-text-secondary);
 }
 /* Wrapper cho StatsOverview để control width dễ dàng */
 .statsOverviewWrapper {

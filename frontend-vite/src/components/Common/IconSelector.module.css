@@ -43,7 +43,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 24px 24px 16px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
@@ -58,7 +58,7 @@
   background: none;
   border: none;
   font-size: 1.25rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   cursor: pointer;
   padding: 8px;
   border-radius: 6px;
@@ -69,8 +69,8 @@
 }
 
 .closeButton:hover {
-  background-color: #f3f4f6;
-  color: #374151;
+  background-color: var(--color-border-light);
+  color: var(--color-text-primary);
 }
 
 .searchContainer {
@@ -87,7 +87,7 @@
 .searchIcon {
   position: absolute;
   left: 12px;
-  color: #9ca3af;
+  color: var(--color-gray-400);
   font-size: 0.875rem;
   z-index: 1;
 }
@@ -95,7 +95,7 @@
 .searchInput {
   width: 100%;
   padding: 12px 12px 12px 36px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 0.875rem;
   outline: none;
@@ -108,7 +108,7 @@
 }
 
 .searchInput::placeholder {
-  color: #9ca3af;
+  color: var(--color-gray-400);
 }
 
 .iconGrid {
@@ -127,7 +127,7 @@
   align-items: center;
   justify-content: center;
   padding: 16px 8px;
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   background: white;
   cursor: pointer;
@@ -151,7 +151,7 @@
 
 .icon {
   font-size: 1.5rem;
-  color: #374151;
+  color: var(--color-text-primary);
   margin-bottom: 8px;
 }
 
@@ -161,7 +161,7 @@
 
 .iconName {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   font-weight: 500;
   line-height: 1.2;
   word-break: break-word;
@@ -175,7 +175,7 @@
 .noResults {
   padding: 40px 24px;
   text-align: center;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .noResults p {
