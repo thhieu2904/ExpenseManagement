@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./NotificationDropdown.module.css";
-import { getGoalNotifications } from "../../api/notificationService";
+import { getAllNotifications } from "../../api/notificationService";
 
 const NotificationDropdown = ({ isOpen, onClose }) => {
   const [notifications, setNotifications] = useState([]);
@@ -17,7 +17,7 @@ const NotificationDropdown = ({ isOpen, onClose }) => {
   const loadNotifications = async () => {
     setLoading(true);
     try {
-      const data = await getGoalNotifications();
+      const data = await getAllNotifications();
       setNotifications(data);
     } catch (error) {
       console.error("Error loading notifications:", error);
@@ -47,6 +47,8 @@ const NotificationDropdown = ({ isOpen, onClose }) => {
         return "⚠️";
       case "goal_progress":
         return "🎯";
+      case "spending_limit":
+        return "💰";
       default:
         return "📢";
     }
@@ -55,6 +57,9 @@ const NotificationDropdown = ({ isOpen, onClose }) => {
   const handleNotificationClick = (notification) => {
     if (notification.goalId) {
       navigate("/goals");
+      onClose();
+    } else if (notification.type === "spending_limit") {
+      navigate("/transactions");
       onClose();
     }
   };

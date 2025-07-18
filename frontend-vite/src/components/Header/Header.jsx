@@ -6,7 +6,7 @@ import avatar1 from "../../assets/avatars/cat1.png";
 import avatar2 from "../../assets/avatars/cat2.png";
 import avatar3 from "../../assets/avatars/cat3.png";
 import { getAvatarUrl } from "../../api/profileService";
-import { getUnreadNotificationCount } from "../../api/notificationService";
+import { useNotifications } from "../../hooks/useNotifications";
 import NotificationDropdown from "./NotificationDropdown";
 
 const animalAvatars = [avatar1, avatar2, avatar3];
@@ -15,7 +15,7 @@ const Header = () => {
   const [userInfo, setUserInfo] = useState({ fullname: "User", avatar: "" });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(0);
+  const { unreadCount } = useNotifications();
   const dropdownRef = useRef(null);
   const notificationRef = useRef(null);
   const navigate = useNavigate();
@@ -29,9 +29,6 @@ const Header = () => {
         console.error("Lỗi đọc user:", err);
       }
     }
-
-    // Load notification count
-    loadNotificationCount();
 
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -50,22 +47,6 @@ const Header = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-  const loadNotificationCount = async () => {
-    try {
-      const count = await getUnreadNotificationCount();
-      setNotificationCount(count);
-    } catch (error) {
-      console.error("Error loading notification count:", error);
-    }
-  };
-
-  // Reload notification count when notification dropdown is closed
-  useEffect(() => {
-    if (!isNotificationOpen) {
-      loadNotificationCount();
-    }
-  }, [isNotificationOpen]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -106,9 +87,9 @@ const Header = () => {
                 fill="currentColor"
               />
             </svg>
-            {notificationCount > 0 && (
+            {unreadCount > 0 && (
               <span className={styles.notificationBadge}>
-                {notificationCount > 99 ? "99+" : notificationCount}
+                {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
           </div>

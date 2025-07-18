@@ -1,6 +1,11 @@
 // src/api/notificationService.js
 
 import axiosInstance from "./axiosConfig";
+import { generateSpendingNotifications } from "./spendingReminderService";
+import {
+  isTestModeEnabled,
+  getTestNotifications,
+} from "../utils/testNotifications";
 
 // Hàm lấy thông báo về mục tiêu sắp hết hạn
 export const getGoalNotifications = async () => {
@@ -89,10 +94,57 @@ export const getGoalNotifications = async () => {
 // Hàm lấy số lượng thông báo chưa đọc
 export const getUnreadNotificationCount = async () => {
   try {
-    const notifications = await getGoalNotifications();
-    return notifications.length;
+    // Kiểm tra test mode
+    if (isTestModeEnabled()) {
+      const testNotifications = getTestNotifications();
+      return testNotifications.length;
+    }
+
+    const goalNotifications = await getGoalNotifications();
+    const spendingNotifications = await generateSpendingNotifications();
+    const totalNotifications = [...goalNotifications, ...spendingNotifications];
+    return totalNotifications.length;
   } catch (error) {
     console.error("Error getting unread notification count:", error);
     return 0;
+  }
+};
+
+// Hàm lấy tất cả thông báo
+export const getAllNotifications = async () => {
+  try {
+    // Kiểm tra test mode
+    if (isTestModeEnabled()) {
+      const testNotifications = getTestNotifications();
+      console.log(
+        "🔔 Test mode enabled - returning test notifications:",
+        testNotifications.length
+      );
+      return testNotifications;
+    }
+
+    console.log("🔔 Loading real notifications...");
+    const goalNotifications = await getGoalNotifications();
+    const spendingNotifications = await generateSpendingNotifications();
+
+    console.log("📊 Goal notifications:", goalNotifications.length);
+    console.log("💰 Spending notifications:", spendingNotifications.length);
+
+    const allNotifications = [...goalNotifications, ...spendingNotifications];
+
+    // Sắp xếp theo độ ưu tiên và thời gian
+    const priorityOrder = { high: 3, medium: 2, low: 1 };
+    allNotifications.sort((a, b) => {
+      if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+        return priorityOrder[b.priority] - priorityOrder[a.priority];
+      }
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
+    console.log("🔔 Total notifications:", allNotifications.length);
+    return allNotifications;
+  } catch (error) {
+    console.error("Error fetching all notifications:", error);
+    return [];
   }
 };
