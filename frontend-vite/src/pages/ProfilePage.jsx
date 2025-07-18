@@ -63,6 +63,10 @@ const ProfilePage = () => {
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [profileMessage, setProfileMessage] = useState({ text: "", type: "" });
+  const [settingsMessage, setSettingsMessage] = useState({
+    text: "",
+    type: "",
+  }); // ✅ THÊM: Thông báo riêng cho cài đặt
   const [isProfileSubmitting, setIsProfileSubmitting] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -78,7 +82,16 @@ const ProfilePage = () => {
   });
   const [isSecuritySubmitting, setIsSecuritySubmitting] = useState(false);
   const [loginHistory, setLoginHistory] = useState([]);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  // Dialog States
+  const [isDeleteAccountDialogOpen, setIsDeleteAccountDialogOpen] =
+    useState(false);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [isImportWarningDialogOpen, setIsImportWarningDialogOpen] =
+    useState(false);
+  const [dialogProcessing, setDialogProcessing] = useState(false);
+  const [dialogError, setDialogError] = useState("");
 
   // Settings State
   const [darkMode, setDarkMode] = useState(false);
@@ -112,6 +125,12 @@ const ProfilePage = () => {
   useEffect(() => {
     fetchProfileData();
   }, []);
+
+  // ✅ THÊM: Clear thông báo khi chuyển tab
+  useEffect(() => {
+    setSettingsMessage({ text: "", type: "" });
+    setProfileMessage({ text: "", type: "" });
+  }, [activeTab]);
 
   // --- PROFILE INFO HANDLERS ---
   const handleUpdateProfile = async (e) => {
@@ -196,13 +215,21 @@ const ProfilePage = () => {
   };
 
   const handleDeleteAccount = async () => {
-    setIsConfirmOpen(false);
+    setDialogProcessing(true);
+    setDialogError("");
+
     try {
       await deleteAccountApi();
-      alert("Tài khoản của bạn đã được xóa.");
+      setIsDeleteAccountDialogOpen(false);
+      setProfileMessage({
+        text: "Tài khoản của bạn đã được xóa.",
+        type: "success",
+      });
       handleLogout();
     } catch {
-      alert("Không thể xóa tài khoản. Vui lòng thử lại.");
+      setDialogError("Không thể xóa tài khoản. Vui lòng thử lại.");
+    } finally {
+      setDialogProcessing(false);
     }
   };
 
@@ -213,7 +240,19 @@ const ProfilePage = () => {
   };
 
   // --- IMPORT/EXPORT HANDLERS ---
-  const handleExportData = async () => {
+  const handleExportDataRequest = () => {
+    setIsExportDialogOpen(true);
+    setDialogError("");
+    setSettingsMessage({ text: "", type: "" }); // Clear thông báo cũ
+  };
+
+  const handleExportDataConfirm = async () => {
+    setDialogProcessing(true);
+    setDialogError("");
+
+    console.clear(); // ✅ Clear console để dễ debug
+    console.log("=== Starting Export Process ===");
+
     try {
       const [
         accountsRes,
@@ -228,8 +267,12 @@ const ProfilePage = () => {
         getProfile(),
         getLoginHistory(),
         getCategories(),
-        getGoals(),
+        getGoals({ limit: 9999, page: 1 }), // ✅ SỬA: Lấy tất cả goals với limit cao
       ]);
+
+      // ✅ THÊM: Debug log để kiểm tra structure
+      console.log("Goals API response:", goalsRes);
+      console.log("Goals data:", goalsRes.data);
 
       const exportData = {
         profile: profileRes.data || {},
@@ -239,9 +282,19 @@ const ProfilePage = () => {
             ? transactionsRes.data.data
             : [],
         categories: categories || [],
-        goals: goalsRes.data || [],
+        // ✅ SỬA: Xử lý nhiều trường hợp response structure cho goals
+        goals: goalsRes.data?.data || goalsRes.data || goalsRes || [],
         loginHistory: loginHistoryRes.data || [],
       };
+
+      // ✅ THÊM: Debug log exported data structure
+      console.log("Exported data structure:", {
+        profileKeys: Object.keys(exportData.profile),
+        accountsCount: exportData.accounts.length,
+        categoriesCount: exportData.categories.length,
+        goalsCount: exportData.goals.length,
+        transactionsCount: exportData.transactions.length,
+      });
 
       const json = JSON.stringify(exportData, null, 2);
       const blob = new Blob([json], { type: "application/json" });
@@ -251,53 +304,93 @@ const ProfilePage = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      setIsExportDialogOpen(false);
+      setSettingsMessage({
+        text: "Xuất dữ liệu thành công!",
+        type: "success",
+      });
     } catch (error) {
-      alert(
+      setDialogError(
         "Không thể xuất dữ liệu. " +
           (error.response?.data?.message || error.message)
       );
+    } finally {
+      setDialogProcessing(false);
     }
   };
 
   const handleImportFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    setSettingsMessage({ text: "", type: "" }); // Clear thông báo cũ
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
         const json = JSON.parse(event.target.result);
         setImportedData(json);
-        alert("Đã đọc dữ liệu từ file. Nhấn nút 'Thực hiện nhập' để tiếp tục.");
+        setIsImportDialogOpen(true);
+        setDialogError("");
       } catch {
-        alert("File không hợp lệ hoặc không phải định dạng JSON!");
+        setSettingsMessage({
+          text: "File không hợp lệ hoặc không phải định dạng JSON!",
+          type: "error",
+        });
       }
     };
     reader.readAsText(file);
   };
 
-  const handleImportData = async () => {
+  const handleImportDataRequest = () => {
     if (!importedData) {
-      alert("Vui lòng chọn file dữ liệu trước!");
+      setSettingsMessage({
+        text: "Vui lòng chọn file dữ liệu trước!",
+        type: "error",
+      });
       return;
     }
+    setIsImportWarningDialogOpen(true);
+    setDialogError("");
+  };
 
-    if (
-      !window.confirm(
-        "CẢNH BÁO: Hành động này sẽ XÓA TOÀN BỘ dữ liệu hiện tại của bạn và thay thế bằng dữ liệu từ file backup. Bạn có chắc chắn muốn tiếp tục không?"
-      )
-    ) {
-      return;
-    }
-
+  const handleImportDataConfirm = async () => {
+    setDialogProcessing(true);
+    setDialogError("");
+    setIsImportWarningDialogOpen(false);
     setIsImporting(true);
-    setProfileMessage({
+
+    console.clear(); // ✅ Clear console để dễ debug
+    console.log("=== Starting Import Process ===");
+
+    setSettingsMessage({
       text: "Bắt đầu quá trình nhập dữ liệu...",
       type: "info",
     });
 
+    // ✅ THÊM: Debug log để kiểm tra imported data structure
+    console.log("Imported data structure:", {
+      hasProfile: !!importedData.profile,
+      hasAccounts: !!importedData.accounts,
+      accountsLength: Array.isArray(importedData.accounts)
+        ? importedData.accounts.length
+        : 0,
+      hasCategories: !!importedData.categories,
+      categoriesLength: Array.isArray(importedData.categories)
+        ? importedData.categories.length
+        : 0,
+      hasGoals: !!importedData.goals,
+      goalsLength: Array.isArray(importedData.goals)
+        ? importedData.goals.length
+        : 0,
+      hasTransactions: !!importedData.transactions,
+      transactionsLength: Array.isArray(importedData.transactions)
+        ? importedData.transactions.length
+        : 0,
+    });
+
     try {
       await clearUserData();
-      setProfileMessage({
+      setSettingsMessage({
         text: "Đã xóa dữ liệu cũ, đang nhập dữ liệu mới...",
         type: "info",
       });
@@ -339,11 +432,41 @@ const ProfilePage = () => {
       }
 
       const goalIdMap = {};
+      // ✅ SỬA: Xử lý nhiều format của goals data
+      let goalsToProcess = [];
       if (Array.isArray(importedData.goals)) {
-        for (const goal of importedData.goals) {
+        // Direct array format
+        goalsToProcess = importedData.goals;
+        console.log("Goals format: Direct array");
+      } else if (
+        importedData.goals &&
+        importedData.goals.data &&
+        Array.isArray(importedData.goals.data)
+      ) {
+        // API response format with pagination
+        goalsToProcess = importedData.goals.data;
+        console.log("Goals format: API response with pagination");
+      } else if (importedData.goals && typeof importedData.goals === "object") {
+        // Object format, convert to array
+        goalsToProcess = Object.values(importedData.goals);
+        console.log("Goals format: Object values");
+      }
+
+      console.log("Processing goals:", goalsToProcess); // ✅ Debug log
+      console.log("Goals count:", goalsToProcess.length);
+
+      if (goalsToProcess.length > 0) {
+        for (const goal of goalsToProcess) {
           const oldGoalId = goal._id || goal.id;
-          const { _id, id: _id2, user: _user, ...goalData } = goal;
+          const {
+            _id,
+            id: _id2,
+            user: _user,
+            userId: _userId,
+            ...goalData
+          } = goal; // ✅ Thêm userId vào destructuring
           try {
+            console.log("Creating goal with data:", goalData); // ✅ Debug log
             const response = await createGoal(goalData);
             console.log("Goal API response:", response); // Debug log
             const newGoal = response.data || response; // Xử lý cả hai trường hợp
@@ -352,8 +475,14 @@ const ProfilePage = () => {
             console.log(`Mapped goal: ${oldGoalId} -> ${newGoalId}`, newGoal);
           } catch (error) {
             console.error(`Failed to create goal:`, goal, error);
+            console.error(
+              "Goal creation error details:",
+              error.response?.data || error.message
+            );
           }
         }
+      } else {
+        console.log("No goals to import or goals array is empty"); // ✅ Debug log
       }
 
       if (Array.isArray(importedData.transactions)) {
@@ -439,21 +568,21 @@ const ProfilePage = () => {
         }
       }
 
-      setProfileMessage({
+      setSettingsMessage({
         text: "Nhập dữ liệu thành công! Vui lòng tải lại trang để xem dữ liệu mới.",
         type: "success",
       });
+      setIsImportDialogOpen(false);
       // Không cần logout nữa!
     } catch (err) {
-      setProfileMessage({
-        text:
-          "Có lỗi khi nhập dữ liệu: " +
-          (err?.response?.data?.message || err.message),
-        type: "error",
-      });
+      setDialogError(
+        "Có lỗi khi nhập dữ liệu: " +
+          (err?.response?.data?.message || err.message)
+      );
       console.error("Lỗi nhập dữ liệu:", err);
     } finally {
       setIsImporting(false);
+      setDialogProcessing(false);
     }
   };
 
@@ -557,6 +686,14 @@ const ProfilePage = () => {
                   <h3 className={styles.cardTitle}>
                     <FontAwesomeIcon icon={faUserCog} /> Cài đặt
                   </h3>
+                  {/* ✅ THÊM: Hiển thị thông báo cho cài đặt */}
+                  {settingsMessage.text && (
+                    <div
+                      className={`${styles.message} ${styles[settingsMessage.type]}`}
+                    >
+                      {settingsMessage.text}
+                    </div>
+                  )}
                   {/* SỬ DỤNG CẤU TRÚC MỚI */}
                   <div className={styles.settingsContent}>
                     {/* Item 1: Dark Mode */}
@@ -593,7 +730,7 @@ const ProfilePage = () => {
                       <div className={styles.dataButtons}>
                         <button
                           className={styles.exportBtn}
-                          onClick={handleExportData}
+                          onClick={handleExportDataRequest}
                         >
                           Xuất Dữ Liệu (.json)
                         </button>
@@ -624,7 +761,7 @@ const ProfilePage = () => {
                           <button
                             className={styles.exportBtn}
                             style={{ background: "#22c55e", width: "100%" }}
-                            onClick={handleImportData}
+                            onClick={handleImportDataRequest}
                             disabled={isImporting}
                           >
                             {isImporting
@@ -743,7 +880,7 @@ const ProfilePage = () => {
                         <p>Xóa vĩnh viễn tài khoản và toàn bộ dữ liệu.</p>
                       </div>
                       <button
-                        onClick={() => setIsConfirmOpen(true)}
+                        onClick={() => setIsDeleteAccountDialogOpen(true)}
                         className={styles.dangerButton}
                       >
                         Xóa tài khoản
@@ -759,12 +896,66 @@ const ProfilePage = () => {
 
       <Footer />
 
+      {/* Dialog xác nhận xuất dữ liệu */}
       <ConfirmDialog
-        isOpen={isConfirmOpen}
-        onClose={() => setIsConfirmOpen(false)}
+        isOpen={isExportDialogOpen}
+        onClose={() => {
+          setIsExportDialogOpen(false);
+          setDialogError("");
+        }}
+        onConfirm={handleExportDataConfirm}
+        title="Xác nhận xuất dữ liệu"
+        message="Bạn có muốn xuất toàn bộ dữ liệu của mình ra file JSON không? File sẽ bao gồm: thông tin cá nhân, tài khoản, giao dịch, danh mục, mục tiêu và lịch sử đăng nhập."
+        confirmText="Xuất dữ liệu"
+        isProcessing={dialogProcessing}
+        errorMessage={dialogError}
+      />
+
+      {/* Dialog xác nhận chọn file */}
+      <ConfirmDialog
+        isOpen={isImportDialogOpen}
+        onClose={() => {
+          setIsImportDialogOpen(false);
+          setDialogError("");
+        }}
+        onConfirm={() => {
+          setIsImportDialogOpen(false);
+          setIsImportWarningDialogOpen(true);
+        }}
+        title="File đã được đọc thành công"
+        message={`Đã đọc dữ liệu từ file "${fileImportRef.current?.files[0]?.name}". Bạn có muốn tiếp tục quá trình nhập dữ liệu không?`}
+        confirmText="Tiếp tục"
+        errorMessage={dialogError}
+      />
+
+      {/* Dialog cảnh báo trước khi nhập */}
+      <ConfirmDialog
+        isOpen={isImportWarningDialogOpen}
+        onClose={() => {
+          setIsImportWarningDialogOpen(false);
+          setDialogError("");
+        }}
+        onConfirm={handleImportDataConfirm}
+        title="⚠️ CẢNH BÁO QUAN TRỌNG"
+        message="Hành động này sẽ XÓA TOÀN BỘ dữ liệu hiện tại của bạn (tài khoản, giao dịch, danh mục, mục tiêu) và thay thế bằng dữ liệu từ file backup. Thao tác này KHÔNG THỂ HOÀN TÁC. Bạn có chắc chắn muốn tiếp tục không?"
+        confirmText="Tôi hiểu và muốn tiếp tục"
+        isProcessing={dialogProcessing}
+        errorMessage={dialogError}
+      />
+
+      {/* Dialog xác nhận xóa tài khoản */}
+      <ConfirmDialog
+        isOpen={isDeleteAccountDialogOpen}
+        onClose={() => {
+          setIsDeleteAccountDialogOpen(false);
+          setDialogError("");
+        }}
         onConfirm={handleDeleteAccount}
         title="Xác nhận xóa tài khoản"
         message="Bạn có chắc chắn muốn xóa tài khoản của mình không? Toàn bộ dữ liệu của bạn sẽ bị xóa vĩnh viễn và không thể khôi phục."
+        confirmText="Xóa tài khoản"
+        isProcessing={dialogProcessing}
+        errorMessage={dialogError}
       />
     </div>
   );

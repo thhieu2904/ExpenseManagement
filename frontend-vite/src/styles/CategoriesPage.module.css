@@ -1,7 +1,7 @@
 /* src/styles/CategoriesPage.module.css */
 
 /* Container bao bọc toàn bộ trang, tạo khoảng đệm */
-.pageContainer {
+.pageWrapper {
   width: 100%;
   padding: var(--page-gap) 0; /* Chỉ có padding top/bottom */
   background-color: var(--page-background);
@@ -21,7 +21,6 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin-top: 25px; /* Khoảng cách với header ở trên */
   padding: 25px;
   background-color: #ffffff;
   border-radius: 12px;

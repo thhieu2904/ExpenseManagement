@@ -143,16 +143,12 @@ const StatsOverview = ({ stats, loading }) => {
         comparison={stats.income?.changeDescription}
       />
 
-      <div className={styles.divider}></div>
-
       {/* Chi tiêu */}
       <StatCard
         type="expense"
         amount={stats.expense?.amount || 0}
         comparison={stats.expense?.changeDescription}
       />
-
-      <div className={styles.divider}></div>
 
       {/* Dòng tiền */}
       <StatCard

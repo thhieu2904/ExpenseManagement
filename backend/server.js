@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const path = require("path");
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, ".env") });
 const app = express();
 
 app.use(cors());
@@ -44,6 +44,8 @@ app.use("/api/statistics", statisticsRoutes);
 
 app.use("/api/goals", require("./routes/goalRoutes"));
 
+const aiRoutes = require("./routes/ai");
+app.use("/api/ai-assistant", aiRoutes);
 
 const userRoutes = require("./routes/userRoutes");
 app.use("/api/users", require("./routes/userRoutes"));

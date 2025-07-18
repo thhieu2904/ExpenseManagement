@@ -5,7 +5,6 @@
   padding: var(--page-gap) 0; /* Chỉ có padding top/bottom */
   background-color: var(--page-background);
   min-height: calc(100vh - 140px);
-  flex: 1;
 }
 
 .contentContainer {
@@ -19,7 +18,7 @@
 .mainContent {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: var(--page-gap);
 }
 
 .headerInfo {
@@ -47,10 +46,41 @@
   font-size: 0.8rem;
   color: #6c757d;
 }
+/* Wrapper cho StatsOverview để control width dễ dàng */
+.statsOverviewWrapper {
+  min-width: 650px; /* Width tối thiểu */
+  width: 100%;
+  max-width: 1400px; /* Tùy chỉnh width tối đa theo ý muốn */
+  margin: 0 auto; /* Center align */
+}
+
+/* Thêm CSS cho homePageHeader để đảm bảo styling nhất quán với các page khác */
+.homePageHeader {
+  /* Styling nhất quán với các page khác */
+}
 
 /* Responsive design */
+@media (max-width: 1200px) {
+  .statsOverviewWrapper {
+    max-width: 1000px;
+    min-width: 700px;
+  }
+}
+
+@media (max-width: 992px) {
+  .statsOverviewWrapper {
+    max-width: 800px;
+    min-width: 600px;
+  }
+}
+
 @media (max-width: 768px) {
   .mainContent {
     gap: 16px;
+  }
+
+  .statsOverviewWrapper {
+    max-width: 100%;
+    min-width: unset;
   }
 }

@@ -126,17 +126,18 @@ const CategoriesPage = () => {
       (cat) => cat.type === "CHITIEU"
     ).length;
     const usedCategories = categoriesData.filter(
-      (cat) => cat.totalAmount > 0
+      (cat) => (cat.transactionCount || 0) > 0 // ✅ THAY ĐỔI: Dùng transactionCount thay vì totalAmount
     ).length;
     // Tìm danh mục được dùng nhiều nhất
     let mostUsedCategory = null;
     let maxUsage = 0;
     categoriesData.forEach((cat) => {
-      if (cat.totalAmount > maxUsage) {
-        maxUsage = cat.totalAmount;
+      const usage = cat.transactionCount || 0; // ✅ THAY ĐỔI: Dùng transactionCount
+      if (usage > maxUsage) {
+        maxUsage = usage;
         mostUsedCategory = {
           ...cat,
-          usageCount: cat.totalAmount,
+          usageCount: cat.totalAmount, // Giữ totalAmount để hiển thị số tiền
         };
       }
     });
@@ -243,17 +244,33 @@ const CategoriesPage = () => {
         return "Chưa có nhóm thu nhập nào. Hãy thêm mới!";
       if (categoryStats.usedCategories === 0)
         return "Bạn có nhóm thu nhập, nhưng chưa có giao dịch nào.";
-      return `Có ${categoryStats.incomeCategories} nhóm thu nhập, tổng thu: ${categoryStats.mostUsedCategory ? categoryStats.mostUsedCategory.usageCount.toLocaleString() : 0} VNĐ.`;
+      const totalIncomeAmount = categoriesData
+        .filter((cat) => cat.type === "THUNHAP")
+        .reduce((sum, cat) => sum + (cat.totalAmount || 0), 0);
+      const totalIncomeTransactions = categoriesData
+        .filter((cat) => cat.type === "THUNHAP")
+        .reduce((sum, cat) => sum + (cat.transactionCount || 0), 0);
+      return `Có ${categoryStats.incomeCategories} nhóm thu nhập, ${totalIncomeTransactions} giao dịch, tổng thu: ${totalIncomeAmount.toLocaleString()} VNĐ.`;
     }
     if (activeType === "CHITIEU") {
       if (categoryStats.expenseCategories === 0)
         return "Chưa có nhóm chi tiêu nào. Hãy thêm mới!";
       if (categoryStats.usedCategories === 0)
         return "Bạn có nhóm chi tiêu, nhưng chưa có giao dịch nào.";
-      return `Có ${categoryStats.expenseCategories} nhóm chi tiêu, tổng chi: ${categoryStats.mostUsedCategory ? categoryStats.mostUsedCategory.usageCount.toLocaleString() : 0} VNĐ.`;
+      const totalExpenseAmount = categoriesData
+        .filter((cat) => cat.type === "CHITIEU")
+        .reduce((sum, cat) => sum + (cat.totalAmount || 0), 0);
+      const totalExpenseTransactions = categoriesData
+        .filter((cat) => cat.type === "CHITIEU")
+        .reduce((sum, cat) => sum + (cat.transactionCount || 0), 0);
+      return `Có ${categoryStats.expenseCategories} nhóm chi tiêu, ${totalExpenseTransactions} giao dịch, tổng chi: ${totalExpenseAmount.toLocaleString()} VNĐ.`;
     }
     // ALL
-    return `Có tổng cộng ${categoryStats.totalCategories} nhóm, đã sử dụng ${categoryStats.usedCategories} nhóm.`;
+    const totalTransactions = categoriesData.reduce(
+      (sum, cat) => sum + (cat.transactionCount || 0),
+      0
+    );
+    return `Có tổng cộng ${categoryStats.totalCategories} nhóm, ${totalTransactions} giao dịch, đã sử dụng ${categoryStats.usedCategories} nhóm.`;
   };
 
   const getCategoryMoodEmoji = () => {
@@ -270,7 +287,7 @@ const CategoriesPage = () => {
     <div>
       <Header userName={userName} userAvatar={userAvatar} />
       <Navbar />
-      <main className={styles.pageContainer}>
+      <main className={styles.pageWrapper}>
         <div className={styles.contentContainer}>
           <HeaderCard
             className={styles.categoryPageHeader}

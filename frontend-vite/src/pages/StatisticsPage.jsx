@@ -116,11 +116,7 @@ const StatisticsPage = () => {
   const fetchSummaryStats = useCallback(async () => {
     setIsLoading((prev) => ({ ...prev, summary: true }));
     try {
-      const { startDate, endDate } = getDateRangeParams();
-      const data = await statisticsService.getSummaryStats({
-        startDate,
-        endDate,
-      });
+      const data = await statisticsService.getOverviewStats();
       setSummaryStats(data);
     } catch (err) {
       console.error("Error fetching summary stats:", err);
@@ -128,7 +124,7 @@ const StatisticsPage = () => {
     } finally {
       setIsLoading((prev) => ({ ...prev, summary: false }));
     }
-  }, [getDateRangeParams]);
+  }, []);
 
   // Fetch trend and category data
   const fetchAnalyticsData = useCallback(async () => {
@@ -273,6 +269,9 @@ const StatisticsPage = () => {
 
   // Helper function to get dynamic title
   const getDynamicTitle = () => {
+    if (summaryStats?.currentMonthYear) {
+      return `Phân tích chi tiết tháng ${summaryStats.currentMonthYear}`;
+    }
     const periodText =
       period === "week" ? "tuần" : period === "month" ? "tháng" : "năm";
     const dateText =
@@ -285,26 +284,27 @@ const StatisticsPage = () => {
   };
 
   // Get trend info for summary stats
-  const getTrendInfo = (current, previous) => {
-    if (!previous || previous === 0)
+  const getTrendInfo = (statsData) => {
+    if (!statsData || statsData.percentageChange === null) {
       return {
         icon: faEquals,
         color: "#6b7280",
-        text: "Không có dữ liệu trước",
+        text: "Mới có trong tháng này",
       };
+    }
 
-    const change = ((current - previous) / previous) * 100;
+    const change = statsData.percentageChange;
     if (change > 0) {
       return {
         icon: faArrowTrendUp,
         color: "#10b981",
-        text: `+${change.toFixed(1)}%`,
+        text: `+${change}%`,
       };
     } else if (change < 0) {
       return {
         icon: faArrowTrendDown,
         color: "#ef4444",
-        text: `${change.toFixed(1)}%`,
+        text: `${change}%`,
       };
     } else {
       return { icon: faEquals, color: "#6b7280", text: "0%" };
@@ -409,20 +409,30 @@ const StatisticsPage = () => {
                             <h3 className={styles.cardTitle}>Thu nhập</h3>
                             <div className={styles.comparison}>
                               <FontAwesomeIcon
-                                icon={
-                                  getTrendInfo(summaryStats.totalIncome, 0).icon
-                                }
+                                icon={getTrendInfo(summaryStats.income).icon}
+                                style={{
+                                  color: getTrendInfo(summaryStats.income)
+                                    .color,
+                                }}
                               />
-                              <span>
-                                {getTrendInfo(summaryStats.totalIncome, 0).text}
+                              <span
+                                style={{
+                                  color: getTrendInfo(summaryStats.income)
+                                    .color,
+                                }}
+                              >
+                                {getTrendInfo(summaryStats.income).text}
                               </span>
                             </div>
                           </div>
                           <p className={styles.cardAmount}>
-                            {summaryStats.totalIncome?.toLocaleString(
+                            {summaryStats.income?.amount?.toLocaleString(
                               "vi-VN"
                             ) || "0"}{" "}
                             ₫
+                          </p>
+                          <p className={styles.cardDescription}>
+                            {summaryStats.income?.changeDescription}
                           </p>
                         </div>
                       </div>
@@ -440,24 +450,30 @@ const StatisticsPage = () => {
                             <h3 className={styles.cardTitle}>Chi tiêu</h3>
                             <div className={styles.comparison}>
                               <FontAwesomeIcon
-                                icon={
-                                  getTrendInfo(summaryStats.totalExpense, 0)
-                                    .icon
-                                }
+                                icon={getTrendInfo(summaryStats.expense).icon}
+                                style={{
+                                  color: getTrendInfo(summaryStats.expense)
+                                    .color,
+                                }}
                               />
-                              <span>
-                                {
-                                  getTrendInfo(summaryStats.totalExpense, 0)
-                                    .text
-                                }
+                              <span
+                                style={{
+                                  color: getTrendInfo(summaryStats.expense)
+                                    .color,
+                                }}
+                              >
+                                {getTrendInfo(summaryStats.expense).text}
                               </span>
                             </div>
                           </div>
                           <p className={styles.cardAmount}>
-                            {summaryStats.totalExpense?.toLocaleString(
+                            {summaryStats.expense?.amount?.toLocaleString(
                               "vi-VN"
                             ) || "0"}{" "}
                             ₫
+                          </p>
+                          <p className={styles.cardDescription}>
+                            {summaryStats.expense?.changeDescription}
                           </p>
                         </div>
                       </div>
@@ -475,19 +491,30 @@ const StatisticsPage = () => {
                             <h3 className={styles.cardTitle}>Dòng tiền ròng</h3>
                             <div className={styles.comparison}>
                               <FontAwesomeIcon
-                                icon={
-                                  getTrendInfo(summaryStats.cashFlow, 0).icon
-                                }
+                                icon={getTrendInfo(summaryStats.balance).icon}
+                                style={{
+                                  color: getTrendInfo(summaryStats.balance)
+                                    .color,
+                                }}
                               />
-                              <span>
-                                {getTrendInfo(summaryStats.cashFlow, 0).text}
+                              <span
+                                style={{
+                                  color: getTrendInfo(summaryStats.balance)
+                                    .color,
+                                }}
+                              >
+                                {getTrendInfo(summaryStats.balance).text}
                               </span>
                             </div>
                           </div>
                           <p className={styles.cardAmount}>
-                            {summaryStats.cashFlow?.toLocaleString("vi-VN") ||
-                              "0"}{" "}
+                            {summaryStats.balance?.amount?.toLocaleString(
+                              "vi-VN"
+                            ) || "0"}{" "}
                             ₫
+                          </p>
+                          <p className={styles.cardDescription}>
+                            {summaryStats.balance?.changeDescription}
                           </p>
                         </div>
                       </div>

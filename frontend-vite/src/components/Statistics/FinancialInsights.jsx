@@ -14,7 +14,6 @@ import styles from "./FinancialInsights.module.css";
 const FinancialInsights = ({
   summaryStats = {},
   categoryData = {},
-  trendData = [],
   period = "month",
 }) => {
   // Generate insights based on data
@@ -26,7 +25,9 @@ const FinancialInsights = ({
       return insights;
     }
 
-    const { totalIncome = 0, totalExpense = 0, cashFlow = 0 } = summaryStats;
+    const totalIncome = summaryStats.income?.amount || 0;
+    const totalExpense = summaryStats.expense?.amount || 0;
+    const cashFlow = summaryStats.balance?.amount || 0;
     const expenseCategories = categoryData?.expense || [];
 
     // Cash flow analysis
@@ -117,34 +118,49 @@ const FinancialInsights = ({
       }
     }
 
-    // Trend analysis
-    if (trendData.length >= 2) {
-      const lastPeriod = trendData[trendData.length - 1];
-      const previousPeriod = trendData[trendData.length - 2];
+    // Trend analysis using percentage changes from API
+    const incomeChange = summaryStats.income?.percentageChange;
+    const expenseChange = summaryStats.expense?.percentageChange;
+    const balanceChange = summaryStats.balance?.percentageChange;
 
-      const expenseChange = lastPeriod.expense - previousPeriod.expense;
-      const incomeChange = lastPeriod.income - previousPeriod.income;
+    if (incomeChange !== null && incomeChange > 20) {
+      insights.push({
+        type: "success",
+        icon: faArrowTrendUp,
+        title: "Thu nhập tăng mạnh",
+        description: `Thu nhập ${summaryStats.income?.changeDescription || "tăng so với tháng trước"}.`,
+        suggestion: "Đây là cơ hội tốt để tăng khoản tiết kiệm hoặc đầu tư.",
+      });
+    } else if (incomeChange !== null && incomeChange < -20) {
+      insights.push({
+        type: "warning",
+        icon: faExclamationTriangle,
+        title: "Thu nhập giảm",
+        description: `Thu nhập ${summaryStats.income?.changeDescription || "giảm so với tháng trước"}.`,
+        suggestion:
+          "Hãy xem xét cách tăng thu nhập hoặc giảm chi tiêu để cân bằng.",
+      });
+    }
 
-      if (expenseChange > 0 && Math.abs(expenseChange) > totalExpense * 0.1) {
-        insights.push({
-          type: "info",
-          icon: faArrowTrendUp,
-          title: "Chi tiêu tăng mạnh",
-          description: `Chi tiêu tăng ${Math.abs(expenseChange).toLocaleString("vi-VN")} ₫ so với kỳ trước.`,
-          suggestion:
-            "Hãy xem xét nguyên nhân tăng chi tiêu để điều chỉnh kịp thời.",
-        });
-      }
+    if (expenseChange !== null && expenseChange > 20) {
+      insights.push({
+        type: "warning",
+        icon: faArrowTrendUp,
+        title: "Chi tiêu tăng mạnh",
+        description: `Chi tiêu ${summaryStats.expense?.changeDescription || "tăng so với tháng trước"}.`,
+        suggestion:
+          "Hãy xem xét nguyên nhân tăng chi tiêu để điều chỉnh kịp thời.",
+      });
+    }
 
-      if (incomeChange > 0 && Math.abs(incomeChange) > totalIncome * 0.1) {
-        insights.push({
-          type: "success",
-          icon: faArrowTrendUp,
-          title: "Thu nhập tăng",
-          description: `Thu nhập tăng ${Math.abs(incomeChange).toLocaleString("vi-VN")} ₫ so với kỳ trước.`,
-          suggestion: "Đây là cơ hội tốt để tăng khoản tiết kiệm hoặc đầu tư.",
-        });
-      }
+    if (balanceChange !== null && balanceChange > 0) {
+      insights.push({
+        type: "success",
+        icon: faCheckCircle,
+        title: "Cải thiện dòng tiền",
+        description: `Dòng tiền ròng ${summaryStats.balance?.changeDescription || "được cải thiện"}.`,
+        suggestion: "Hãy tiếp tục duy trì xu hướng tích cực này.",
+      });
     }
 
     return insights.slice(0, 4); // Giới hạn 4 insights
@@ -194,7 +210,8 @@ const FinancialInsights = ({
       ];
     }
 
-    const { totalIncome = 0, totalExpense = 0 } = summaryStats;
+    const totalIncome = summaryStats.income?.amount || 0;
+    const totalExpense = summaryStats.expense?.amount || 0;
     const expenseCategories = categoryData?.expense || [];
     const incomeCategories = categoryData?.income || [];
 

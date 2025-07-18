@@ -235,13 +235,15 @@ const HomePage = () => {
 
       <main className={styles.pageWrapper}>
         <div className={styles.contentContainer}>
-          {/* Header Card */}
           <HeaderCard
+            className={styles.homePageHeader}
             gridIcon={<FontAwesomeIcon icon={faHome} />}
             gridTitle={`${getGreeting()}, ${userData.name || "Bạn"}!`}
             gridSubtitle="Tổng quan tài chính cá nhân"
             gridStats={
-              <StatsOverview stats={statsData} loading={isLoading.stats} />
+              <div className={styles.statsOverviewWrapper}>
+                <StatsOverview stats={statsData} loading={isLoading.stats} />
+              </div>
             }
             gridInfo={
               <div className={styles.headerInfo}>

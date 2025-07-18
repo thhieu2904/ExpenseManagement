@@ -10,19 +10,25 @@ import TransactionsPage from "../pages/TransactionsPage";
 import GoalsPage from "../pages/GoalsPage";
 import StatisticsPage from "../pages/StatisticsPage";
 import ProfilePage from "../pages/ProfilePage";
+import AIAssistant from "../components/AIAssistant/AIAssistant";
 export default function AppRoutes() {
   return (
-    <Routes>
-      <Route path="/" element={<Welcome />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/homepage" element={<HomePage />} />
-      <Route path="/categories" element={<CategoriesPage />} />
-      <Route path="/accounts" element={<AccountPage />} />
-      <Route path="/transactions" element={<TransactionsPage />} />
-      <Route path="/goals" element={<GoalsPage />} />
-      <Route path="/statistics" element={<StatisticsPage />} />
-      <Route path="/profile" element={<ProfilePage />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<Welcome />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/homepage" element={<HomePage />} />
+        <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/accounts" element={<AccountPage />} />
+        <Route path="/transactions" element={<TransactionsPage />} />
+        <Route path="/goals" element={<GoalsPage />} />
+        <Route path="/statistics" element={<StatisticsPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+      </Routes>
+
+      {/* AI Assistant - hiển thị trên toàn bộ trang web */}
+      <AIAssistant />
+    </>
   );
 }
