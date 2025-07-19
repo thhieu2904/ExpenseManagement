@@ -30,7 +30,7 @@
   background-color: var(--color-background);
   padding: 0;
   border-radius: 1rem;
-  box-shadow: 
+  box-shadow:
     0 20px 25px -5px rgba(0, 0, 0, 0.15),
     0 10px 10px -5px rgba(0, 0, 0, 0.1),
     0 0 0 1px rgba(255, 255, 255, 0.5);
@@ -73,13 +73,18 @@
 }
 
 .modalHeader::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
 }
 
 .modalTitle {
@@ -169,7 +174,7 @@
 .formInput:focus {
   border-color: #667eea;
   outline: 0;
-  box-shadow: 
+  box-shadow:
     0 0 0 4px rgba(102, 126, 234, 0.1),
     0 0 0 1px rgba(102, 126, 234, 0.2);
   transform: translateY(-1px);
@@ -203,7 +208,7 @@ textarea.formInput {
 .amountInput:focus {
   border-color: #667eea;
   outline: 0;
-  box-shadow: 
+  box-shadow:
     0 0 0 4px rgba(102, 126, 234, 0.1),
     0 0 0 1px rgba(102, 126, 234, 0.2);
   transform: translateY(-2px);
@@ -256,13 +261,18 @@ textarea.formInput {
 }
 
 .radioLabelText::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -291,7 +301,11 @@ textarea.formInput {
 /* Style khi được chọn */
 .radioInput:checked + .expense {
   border-color: var(--color-error-secondary);
-  background: linear-gradient(135deg, var(--color-error-secondary) 0%, #b91c1c 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-error-secondary) 0%,
+    #b91c1c 100%
+  );
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
@@ -332,13 +346,18 @@ textarea.formInput {
 }
 
 .formButton::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -359,7 +378,11 @@ textarea.formInput {
 }
 
 .submitButton {
-  background: linear-gradient(135deg, var(--color-gray-400) 0%, var(--color-text-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-gray-400) 0%,
+    var(--color-text-secondary) 100%
+  );
   color: white;
   border-color: var(--color-gray-400);
 }
@@ -465,8 +488,13 @@ textarea.formInput {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.8; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
 /* === Field Validation Styles === */
@@ -539,7 +567,9 @@ textarea.formInput {
 }
 
 .formGroup:has(#description) .formInput:focus ~ .characterCounter,
-.formGroup:has(#description) .formInput:not(:placeholder-shown) ~ .characterCounter {
+.formGroup:has(#description)
+  .formInput:not(:placeholder-shown)
+  ~ .characterCounter {
   opacity: 1;
 }
 
@@ -573,7 +603,7 @@ textarea.formInput {
     border-color: var(--color-error-secondary) !important;
     border-width: 2px !important;
   }
-  
+
   .errorText {
     color: #991b1b;
     font-weight: 600;
@@ -716,8 +746,12 @@ textarea.formInput {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* === Improved Keyboard Navigation === */
@@ -735,8 +769,13 @@ textarea.formInput {
 }
 
 @keyframes successPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 /* === Form Progress Indicator === */
@@ -766,19 +805,28 @@ textarea.formInput {
 }
 
 .progressFill::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
   animation: progressShine 2s infinite;
 }
 
 @keyframes progressShine {
-  0% { left: -100%; }
-  100% { left: 100%; }
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 .progressText {
@@ -804,7 +852,11 @@ textarea.formInput {
 }
 
 .suggestionItem:hover {
-  background: linear-gradient(135deg, var(--color-border-light) 0%, var(--color-border) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-border-light) 0%,
+    var(--color-border) 100%
+  );
   transform: translateX(4px);
 }
 
@@ -816,4 +868,118 @@ textarea.formInput {
 
 .radioLabelText:hover {
   transform: translateX(2px);
+}
+
+/* === No Data Styles === */
+.noDataContainer {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  margin: 1rem 0;
+  border: 2px dashed #cbd5e1;
+}
+
+.noDataIcon {
+  color: #f59e0b;
+  margin-bottom: 1.5rem;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+.noDataTitle {
+  color: var(--color-text);
+  font-size: 1.375rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.noDataDescription {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.noDataActions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.createDefaultsButton {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.createDefaultsButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+}
+
+.createDefaultsButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.noDataHint {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.noDataHint small {
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+/* Dark mode adjustments for no data */
+:global(.dark-mode) .noDataContainer {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border-color: #475569;
+}
+
+:global(.dark-mode) .noDataTitle {
+  color: var(--dark-text-primary);
+}
+
+:global(.dark-mode) .noDataDescription {
+  color: var(--dark-text-secondary);
+}
+
+:global(.dark-mode) .noDataHint {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+:global(.dark-mode) .noDataHint small {
+  color: var(--dark-text-secondary);
 }

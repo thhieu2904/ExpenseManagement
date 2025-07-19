@@ -8,8 +8,9 @@ const UserSchema = new mongoose.Schema(
     avatar: { type: String, default: "" }, // ✅ thêm dòng này
     email: {
       type: String,
-      required: true,
+      required: false, // ✅ Không bắt buộc email
       unique: true,
+      sparse: true, // ✅ Cho phép multiple null values
       trim: true,
       lowercase: true,
     },

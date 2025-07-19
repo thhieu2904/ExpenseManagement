@@ -440,6 +440,14 @@ class TransactionHandler {
       const { name, amount, type, categoryGuess, accountGuess, date, userId } =
         transactionData;
 
+      // Kiểm tra user có ít nhất 1 account không
+      const userAccountCount = await Account.countDocuments({ userId: userId });
+      if (userAccountCount === 0) {
+        throw new Error(
+          "Người dùng chưa có tài khoản nào. Vui lòng tạo tài khoản trước khi thêm giao dịch."
+        );
+      }
+
       // Tìm category và account phù hợp
       let categoryId = null;
       let accountId = null;
@@ -471,6 +479,10 @@ class TransactionHandler {
         const firstAccount = await Account.findOne({ userId: userId });
         if (firstAccount) {
           accountId = firstAccount._id;
+        } else {
+          throw new Error(
+            "Không tìm thấy tài khoản nào. Vui lòng tạo tài khoản trước."
+          );
         }
       }
 
@@ -479,7 +491,7 @@ class TransactionHandler {
         name,
         amount,
         type,
-        categoryId,
+        categoryId, // Có thể null nếu không tìm thấy category
         accountId,
         date: date || new Date(),
         userId: userId,

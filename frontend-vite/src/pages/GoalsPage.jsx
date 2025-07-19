@@ -57,7 +57,8 @@ export default function GoalsPage() {
     select: (response) => response.data,
   });
 
-  const goals = goalsData?.data || [];
+  // ✅ SỬA LỖI: Wrap goals trong useMemo để tránh re-render không cần thiết
+  const goals = useMemo(() => goalsData?.data || [], [goalsData]);
 
   const { data: userProfile } = useQuery({
     queryKey: ["userProfile"],
@@ -137,19 +138,16 @@ export default function GoalsPage() {
     setGoalToDelete(null);
   };
 
-  // Logic lọc và hiển thị không đổi so với phiên bản trước
+  // ✅ SỬA LỖI: Logic lọc goals được cải tiến
   const filteredGoals = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const pinnedGoals = goals.filter((g) => g.isPinned && !g.archived);
-    const unpinnedGoals = goals.filter((g) => !g.isPinned);
-
-    let displayGoals = [];
+    let filteredResults = [];
 
     switch (goalFilter) {
       case "IN_PROGRESS":
-        displayGoals = unpinnedGoals.filter(
+        filteredResults = goals.filter(
           (g) =>
             !g.archived &&
             g.currentAmount < g.targetAmount &&
@@ -157,12 +155,12 @@ export default function GoalsPage() {
         );
         break;
       case "COMPLETED":
-        displayGoals = unpinnedGoals.filter(
+        filteredResults = goals.filter(
           (g) => !g.archived && g.currentAmount >= g.targetAmount
         );
         break;
       case "OVERDUE":
-        displayGoals = unpinnedGoals.filter(
+        filteredResults = goals.filter(
           (g) =>
             !g.archived &&
             g.currentAmount < g.targetAmount &&
@@ -175,11 +173,15 @@ export default function GoalsPage() {
         return goals.filter((g) => g.archived);
       case "ALL":
       default:
-        displayGoals = unpinnedGoals.filter((g) => !g.archived);
+        filteredResults = goals.filter((g) => !g.archived);
         break;
     }
 
-    return [...pinnedGoals, ...displayGoals];
+    // Sắp xếp: Goals được ghim lên đầu, sau đó đến goals thường
+    const pinnedGoals = filteredResults.filter((g) => g.isPinned);
+    const unpinnedGoals = filteredResults.filter((g) => !g.isPinned);
+
+    return [...pinnedGoals, ...unpinnedGoals];
   }, [goals, goalFilter]);
 
   const getSmartContext = () => {

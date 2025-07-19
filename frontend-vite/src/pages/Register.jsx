@@ -17,16 +17,47 @@ export default function Register() {
     confirmPassword: "",
   });
 
+  const [errors, setErrors] = useState({});
+
+  const validateField = (name, value) => {
+    switch (name) {
+      case "username":
+        if (value.length < 3) return "Tên tài khoản phải có ít nhất 3 ký tự";
+        if (!/^[a-zA-Z0-9_]+$/.test(value))
+          return "Tên tài khoản chỉ được chứa chữ, số và dấu gạch dưới";
+        break;
+      case "fullname":
+        if (value.length < 2) return "Họ tên phải có ít nhất 2 ký tự";
+        break;
+      case "email":
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+          return "Email không hợp lệ";
+        break;
+      case "password":
+        if (value.length < 6) return "Mật khẩu phải có ít nhất 6 ký tự";
+        break;
+      case "confirmPassword":
+        if (value !== formData.password) return "Mật khẩu xác nhận không khớp";
+        break;
+    }
+    return "";
+  };
+
   const isFormValid =
     formData.username &&
     formData.fullname &&
-    formData.email &&
     formData.password &&
     formData.confirmPassword &&
-    formData.password === formData.confirmPassword;
+    formData.password === formData.confirmPassword &&
+    Object.values(errors).every((error) => !error);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    // Real-time validation
+    const error = validateField(name, value);
+    setErrors((prev) => ({ ...prev, [name]: error }));
   };
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
@@ -36,7 +67,14 @@ export default function Register() {
     e.preventDefault();
     try {
       const { username, fullname, email, password } = formData;
-      const response = await register({ username, fullname, email, password });
+      // Chỉ gửi email nếu user đã nhập
+      const payload = {
+        username,
+        fullname,
+        password,
+        ...(email && email.trim() ? { email: email.trim() } : {}),
+      };
+      const response = await register(payload);
       setIsSuccess(true);
       setMessage(
         response.data.message || "Đăng ký thành công! Đang chuyển hướng..."
@@ -44,9 +82,24 @@ export default function Register() {
       setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
       setIsSuccess(false);
-      const msg =
-        err.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại.";
-      setMessage(msg);
+      console.error("Register error:", err);
+
+      // Xử lý các loại lỗi khác nhau
+      let errorMessage = "Đăng ký thất bại. Vui lòng thử lại.";
+
+      if (err.response?.data?.message) {
+        // Lỗi từ server với message cụ thể
+        errorMessage = err.response.data.message;
+      } else if (err.response?.status === 400) {
+        errorMessage = "Thông tin đăng ký không hợp lệ.";
+      } else if (err.response?.status === 500) {
+        errorMessage = "Lỗi hệ thống. Vui lòng thử lại sau.";
+      } else if (err.code === "NETWORK_ERROR" || !err.response) {
+        errorMessage =
+          "Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.";
+      }
+
+      setMessage(errorMessage);
     }
   };
 
@@ -74,6 +127,9 @@ export default function Register() {
           onChange={handleChange}
           required
         />
+        {errors.username && (
+          <div className={styles["field-error"]}>{errors.username}</div>
+        )}
 
         <label htmlFor="fullname">Họ và tên:</label>
         <input
@@ -85,8 +141,11 @@ export default function Register() {
           onChange={handleChange}
           required
         />
+        {errors.fullname && (
+          <div className={styles["field-error"]}>{errors.fullname}</div>
+        )}
 
-        <label htmlFor="email">Email:</label>
+        <label htmlFor="email">Email (tùy chọn):</label>
         <input
           id="email"
           name="email"
@@ -94,8 +153,10 @@ export default function Register() {
           placeholder="example@email.com"
           value={formData.email}
           onChange={handleChange}
-          required
         />
+        {errors.email && (
+          <div className={styles["field-error"]}>{errors.email}</div>
+        )}
 
         <label htmlFor="password">Nhập mật khẩu:</label>
         <input
@@ -107,6 +168,9 @@ export default function Register() {
           onChange={handleChange}
           required
         />
+        {errors.password && (
+          <div className={styles["field-error"]}>{errors.password}</div>
+        )}
 
         <label htmlFor="confirmPassword">Nhập lại mật khẩu:</label>
         <input
@@ -118,6 +182,9 @@ export default function Register() {
           onChange={handleChange}
           required
         />
+        {errors.confirmPassword && (
+          <div className={styles["field-error"]}>{errors.confirmPassword}</div>
+        )}
 
         {message && (
           <div

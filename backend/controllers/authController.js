@@ -7,21 +7,98 @@ const register = async (req, res) => {
   try {
     const { username, fullname, password, email } = req.body;
 
+    // Validate required fields
+    if (!username || !fullname || !password) {
+      return res.status(400).json({
+        message: "Vui lòng điền đầy đủ thông tin bắt buộc.",
+      });
+    }
+
+    // Validate username format
+    if (username.length < 3) {
+      return res.status(400).json({
+        message: "Tên tài khoản phải có ít nhất 3 ký tự.",
+      });
+    }
+
+    // Validate password strength
+    if (password.length < 6) {
+      return res.status(400).json({
+        message: "Mật khẩu phải có ít nhất 6 ký tự.",
+      });
+    }
+
+    // Kiểm tra username đã tồn tại
     const existingUser = await User.findOne({ username });
-    if (existingUser)
-      return res.status(400).json({ message: "Tài khoản đã tồn tại" });
+    if (existingUser) {
+      return res.status(400).json({
+        message: "Tên tài khoản đã tồn tại. Vui lòng chọn tên khác.",
+      });
+    }
+
+    // Kiểm tra email đã tồn tại (nếu có email)
+    if (email && email.trim() && email.trim() !== "") {
+      const existingEmail = await User.findOne({
+        email: email.trim().toLowerCase(),
+      });
+      if (existingEmail) {
+        return res.status(400).json({
+          message: "Email đã được sử dụng. Vui lòng chọn email khác.",
+        });
+      }
+    }
 
     const hashed = await bcrypt.hash(password, 10);
     const newUser = await User.create({
-      username,
-      fullname,
+      username: username.trim(),
+      fullname: fullname.trim(),
       password: hashed,
-      email,
+      email:
+        email && email.trim() && email.trim() !== ""
+          ? email.trim().toLowerCase()
+          : null,
     });
 
-    res.status(201).json({ message: "Đăng ký thành công", user: newUser });
+    // Không trả về password trong response
+    const userResponse = {
+      id: newUser._id,
+      username: newUser.username,
+      fullname: newUser.fullname,
+      email: newUser.email,
+      createdAt: newUser.createdAt,
+    };
+
+    res.status(201).json({
+      message: "Đăng ký thành công",
+      user: userResponse,
+    });
   } catch (err) {
-    res.status(500).json({ message: "Lỗi server", error: err.message });
+    console.error("Register error:", err);
+
+    // Xử lý các lỗi MongoDB duplicate key
+    if (err.code === 11000) {
+      const field = Object.keys(err.keyPattern)[0];
+      const messages = {
+        username: "Tên tài khoản đã tồn tại. Vui lòng chọn tên khác.",
+        email: "Email đã được sử dụng. Vui lòng chọn email khác.",
+      };
+      return res.status(400).json({
+        message: messages[field] || "Dữ liệu đã tồn tại trong hệ thống.",
+      });
+    }
+
+    // Xử lý validation errors từ Mongoose
+    if (err.name === "ValidationError") {
+      const messages = Object.values(err.errors).map((e) => e.message);
+      return res.status(400).json({
+        message: messages.join(", ") || "Dữ liệu không hợp lệ.",
+      });
+    }
+
+    // Lỗi generic
+    res.status(500).json({
+      message: "Lỗi hệ thống. Vui lòng thử lại sau.",
+    });
   }
 };
 const login = async (req, res) => {

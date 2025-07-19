@@ -121,7 +121,7 @@
 
 .negativeTotal {
   color: #e74c3c;
-  background: var(--color-background)0f0;
+  background: var(--color-background) 0f0;
   border-radius: 8px;
   padding: 4px 0;
   display: inline-block;

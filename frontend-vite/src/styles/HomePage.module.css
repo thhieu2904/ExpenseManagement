@@ -46,12 +46,14 @@
   font-size: 0.8rem;
   color: var(--color-text-secondary);
 }
-/* Wrapper cho StatsOverview để control width dễ dàng */
+/* Wrapper cho StatsOverview với thiết kế mới */
 .statsOverviewWrapper {
-  min-width: 650px; /* Width tối thiểu */
+  display: flex;
+  justify-content: center;
   width: 100%;
-  max-width: 1400px; /* Tùy chỉnh width tối đa theo ý muốn */
-  margin: 0 auto; /* Center align */
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 4px 0;
 }
 
 /* Thêm CSS cho homePageHeader để đảm bảo styling nhất quán với các page khác */
@@ -63,14 +65,12 @@
 @media (max-width: 1200px) {
   .statsOverviewWrapper {
     max-width: 1000px;
-    min-width: 700px;
   }
 }
 
 @media (max-width: 992px) {
   .statsOverviewWrapper {
     max-width: 800px;
-    min-width: 600px;
   }
 }
 
@@ -81,6 +81,6 @@
 
   .statsOverviewWrapper {
     max-width: 100%;
-    min-width: unset;
+    justify-content: flex-start;
   }
 }
