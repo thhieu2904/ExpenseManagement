@@ -34,8 +34,12 @@ app.use("/api/accounts", accountRoutes);
 const transactionRoutes = require("./routes/transactions");
 app.use("/api/transactions", transactionRoutes);
 
-const { swaggerUi, swaggerSpec } = require("./swagger");
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+const { swaggerUi, swaggerSpec, swaggerUIOptions } = require("./swagger");
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, swaggerUIOptions)
+);
 
 // const statsRoutes = require("./routes/stats");
 // app.use("/api/stats", statsRoutes);

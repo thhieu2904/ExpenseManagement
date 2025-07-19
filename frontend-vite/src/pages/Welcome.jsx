@@ -14,8 +14,7 @@ export default function Welcome() {
 
       <h1 className={styles["welcome-title"]}>Chào mừng đến với EMG</h1>
       <p className={styles["welcome-desc"]}>
-        Trải nghiệm ứng dụng giúp bạn theo dõi, phân tích và giúp quản lí tài
-        chính hiệu quả
+        Trải nghiệm ứng dụng quản lý chi tiêu thông minh và tiện lợi
       </p>
 
       <div className={styles["welcome-btn-group"]}>
