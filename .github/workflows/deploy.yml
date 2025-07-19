@@ -1,5 +1,9 @@
 name: 🚀 Deploy Expense Management
 
+permissions:
+  contents: read
+  packages: write
+
 on:
   push:
     branches: [main, production]
