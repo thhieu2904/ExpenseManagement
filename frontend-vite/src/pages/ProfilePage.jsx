@@ -750,7 +750,6 @@ const ProfilePage = () => {
             ) : (
               <SecuritySettings
                 passwords={passwords}
-                setPasswords={setPasswords}
                 message={securityMessage}
                 isSubmitting={isSecuritySubmitting}
                 loginHistory={loginHistory}

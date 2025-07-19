@@ -93,7 +93,7 @@
   color: #666;
 }
 .dangerZone {
-  background-color: var(--color-background)1f2;
+  background-color: var(--color-background) 1f2;
   border: 1px solid #ffdde0;
   border-radius: 8px;
   padding: 20px;
@@ -143,14 +143,14 @@
   padding: 2rem 2rem 1.5rem 2rem;
   flex: 1 1 0;
   min-width: 320px;
-  min-height: 220px;
+  height: 500px; /* Chiều cao cố định đồng bộ với ProfileInfo */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
 }
 
 .securityCardDanger {
-  background: var(--color-background)1f2;
+  background: var(--color-background) 1f2;
   border-radius: 14px;
   border: 1.5px solid #ffdde0;
   box-shadow: 0 2px 12px rgba(255, 80, 80, 0.07);
@@ -203,9 +203,10 @@
     flex-direction: column;
     gap: 18px;
   }
-  .securityCard,
-  .securityCardDanger {
+  .securityCard {
     min-width: 0;
     width: 100%;
+    height: auto; /* Cho phép tự động điều chỉnh height trên mobile */
+    min-height: 350px; /* Đảm bảo height tối thiểu */
   }
 }

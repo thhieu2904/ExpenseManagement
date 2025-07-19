@@ -69,6 +69,7 @@ export default function Register() {
           id="username"
           name="username"
           type="text"
+          placeholder="Nhập tên tài khoản"
           value={formData.username}
           onChange={handleChange}
           required
@@ -79,6 +80,7 @@ export default function Register() {
           id="fullname"
           name="fullname"
           type="text"
+          placeholder="Nhập họ và tên đầy đủ"
           value={formData.fullname}
           onChange={handleChange}
           required
@@ -89,6 +91,7 @@ export default function Register() {
           id="email"
           name="email"
           type="email"
+          placeholder="example@email.com"
           value={formData.email}
           onChange={handleChange}
           required
@@ -99,6 +102,7 @@ export default function Register() {
           id="password"
           name="password"
           type="password"
+          placeholder="Nhập mật khẩu mạnh"
           value={formData.password}
           onChange={handleChange}
           required
@@ -109,6 +113,7 @@ export default function Register() {
           id="confirmPassword"
           name="confirmPassword"
           type="password"
+          placeholder="Nhập lại mật khẩu"
           value={formData.confirmPassword}
           onChange={handleChange}
           required
