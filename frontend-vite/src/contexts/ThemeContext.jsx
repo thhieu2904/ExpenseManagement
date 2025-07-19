@@ -9,22 +9,30 @@ const ThemeProvider = ({ children }) => {
     if (saved !== null) {
       return JSON.parse(saved);
     }
-    // Nếu không có, kiểm tra system preference
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    // Mặc định luôn là light mode, không dựa vào system preference
+    // Điều này đảm bảo giao diện luôn khởi tạo ở light mode
+    return false;
   });
+
+  // Set theme class ngay khi component mount để tránh FOUC
+  React.useLayoutEffect(() => {
+    const applyTheme = (isDark) => {
+      if (isDark) {
+        document.documentElement.classList.add("dark-theme", "dark");
+        document.documentElement.classList.remove("light-theme");
+      } else {
+        document.documentElement.classList.add("light-theme");
+        document.documentElement.classList.remove("dark-theme", "dark");
+      }
+    };
+
+    // Apply theme ngay lập tức
+    applyTheme(isDarkMode);
+  }, [isDarkMode]);
 
   useEffect(() => {
     // Lưu vào localStorage
     localStorage.setItem("darkMode", JSON.stringify(isDarkMode));
-
-    // Cập nhật class cho document root
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark-theme");
-      document.documentElement.classList.remove("light-theme");
-    } else {
-      document.documentElement.classList.add("light-theme");
-      document.documentElement.classList.remove("dark-theme");
-    }
   }, [isDarkMode]);
 
   const toggleTheme = () => {

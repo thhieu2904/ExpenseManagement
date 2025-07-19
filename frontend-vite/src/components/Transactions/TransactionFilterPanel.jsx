@@ -63,8 +63,8 @@ const TransactionFilterPanel = ({
             onChange={handleChange}
           >
             <option value="ALL">Tất cả loại</option>
-            <option value="CHITIEU">💸 Chi tiêu</option>
-            <option value="THUNHAP">💰 Thu nhập</option>
+            <option value="CHITIEU">Chi tiêu</option>
+            <option value="THUNHAP">Thu nhập</option>
           </select>
         </div>
 

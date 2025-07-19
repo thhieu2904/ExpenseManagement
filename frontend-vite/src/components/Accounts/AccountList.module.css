@@ -4,6 +4,8 @@
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   padding: 15px;
+  height: 650px;
+  overflow-y: auto;
 }
 
 .listItems {
@@ -19,7 +21,10 @@
   gap: 15px;
   padding: 22px 24px;
   border-radius: 8px;
-  transition: background-color 0.2s ease, box-shadow 0.2s, transform 0.2s;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s,
+    transform 0.2s;
   border: 1px solid #f0f2f5;
   box-shadow: 0 2px 12px #0001;
   position: relative;
@@ -124,7 +129,9 @@
   padding: 8px;
   font-size: 1rem;
   color: #95a5a6;
-  transition: all 0.2s, transform 0.15s;
+  transition:
+    all 0.2s,
+    transform 0.15s;
   border-radius: 50%;
 }
 .actionButton:hover {
@@ -196,11 +203,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px var(--color-primary)40, 0 1px 3px #0002;
+  box-shadow:
+    0 2px 8px var(--color-primary) 40,
+    0 1px 3px #0002;
   border: 2px solid var(--color-background);
   cursor: pointer;
   z-index: 3;
-  transition: box-shadow 0.18s, background 0.18s;
+  transition:
+    box-shadow 0.18s,
+    background 0.18s;
   margin-left: 2px;
   margin-right: 2px;
   padding: 0;
@@ -208,7 +219,9 @@
 }
 .transactionCountLabel:hover {
   background: #283593;
-  box-shadow: 0 4px 16px var(--color-primary)70, 0 2px 8px #0002;
+  box-shadow:
+    0 4px 16px var(--color-primary) 70,
+    0 2px 8px #0002;
 }
 
 .incomeBar {
@@ -320,7 +333,7 @@
 
 .negativeBalance {
   border: 2px solid #e74c3c;
-  background: var(--color-background)0f0;
+  background: var(--color-background) 0f0;
 }
 .negativeBalance .accountBalance {
   color: #e74c3c;
@@ -353,7 +366,10 @@
   padding: 8px;
   font-size: 1.1rem;
   color: #6a5af9;
-  transition: background 0.18s, color 0.18s, transform 0.15s;
+  transition:
+    background 0.18s,
+    color 0.18s,
+    transform 0.15s;
   cursor: pointer;
   box-shadow: 0 2px 8px #6a5af910;
 }
@@ -372,7 +388,10 @@
   font-size: 1rem;
   margin-right: 8px;
   box-shadow: 0 2px 8px #6a5af910;
-  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  transition:
+    background 0.18s,
+    color 0.18s,
+    box-shadow 0.18s;
   cursor: pointer;
 }
 .filterButton:hover {
@@ -387,7 +406,9 @@
 
 .highlight {
   border: 2.5px solid #4f8cff !important;
-  box-shadow: 0 0 12px #4f8cff33, 0 2px 8px #4f8cff22;
+  box-shadow:
+    0 0 12px #4f8cff33,
+    0 2px 8px #4f8cff22;
   background: #f0f7ff;
   transform: scale(1.02);
   transition: all 0.18s cubic-bezier(0.4, 2, 0.6, 1);
@@ -405,14 +426,20 @@
   border-radius: 12px;
   padding: 2px 10px;
   margin: 0 auto 4px auto;
-  box-shadow: 0 2px 8px var(--color-primary)40, 0 1px 3px #0002;
+  box-shadow:
+    0 2px 8px var(--color-primary) 40,
+    0 1px 3px #0002;
   cursor: pointer;
-  transition: box-shadow 0.18s, background 0.18s;
+  transition:
+    box-shadow 0.18s,
+    background 0.18s;
   min-width: 40px;
   max-width: 90%;
   text-align: center;
 }
 .transactionCountBox:hover {
   background: #283593;
-  box-shadow: 0 4px 16px var(--color-primary)70, 0 2px 8px #0002;
+  box-shadow:
+    0 4px 16px var(--color-primary) 70,
+    0 2px 8px #0002;
 }

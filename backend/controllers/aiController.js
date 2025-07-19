@@ -465,34 +465,58 @@ class AIController {
       userContext;
 
     // Tạo danh sách categories và accounts dưới dạng string với format chi tiết
-    const categoryList = categories
-      .map((c) => `"${c.name}" (${c.type})`)
-      .join(", ");
-    const accountList = accounts
-      .map(
-        (a) => `"${a.name}" (${a.type}${a.bankName ? `, ${a.bankName}` : ""})`
-      )
-      .join(", ");
+    const categoryList =
+      categories && categories.length > 0
+        ? categories.map((c) => `"${c.name}" (${c.type})`).join(", ")
+        : "";
+    const accountList =
+      accounts && accounts.length > 0
+        ? accounts
+            .map(
+              (a) =>
+                `"${a.name}" (${a.type}${a.bankName ? `, ${a.bankName}` : ""})`
+            )
+            .join(", ")
+        : "";
 
     // Tạo danh sách để AI nhận diện entities
-    const accountNames = accounts.map((a) => a.name).join(", ");
-    const bankNames = accounts
-      .filter((a) => a.bankName)
-      .map((a) => a.bankName)
-      .join(", ");
-    const categoryNames = categories.map((c) => c.name).join(", ");
+    const accountNames =
+      accounts && accounts.length > 0
+        ? accounts.map((a) => a.name).join(", ")
+        : "";
+    const bankNames =
+      accounts && accounts.length > 0
+        ? accounts
+            .filter((a) => a.bankName)
+            .map((a) => a.bankName)
+            .join(", ")
+        : "";
+    const categoryNames =
+      categories && categories.length > 0
+        ? categories.map((c) => c.name).join(", ")
+        : "";
+
+    // Xác định trạng thái của người dùng để AI hiểu context
+    const isNewUser =
+      (!categories || categories.length === 0) &&
+      (!accounts || accounts.length === 0);
+    const userStatusContext = isNewUser
+      ? "\n⚠️ LƯU Ý: Đây là người dùng mới, chưa có tài khoản và danh mục nào. Ưu tiên hướng dẫn tạo tài khoản và danh mục trước khi thực hiện giao dịch."
+      : "";
 
     return `
-SYSTEM: Bạn là AI assistant chuyên về tài chính cá nhân. Phân tích yêu cầu người dùng, xác định INTENT và trích xuất ENTITIES (thực thể) cụ thể.
+SYSTEM: Bạn là AI assistant chuyên về tài chính cá nhân. Phân tích yêu cầu người dùng, xác định INTENT và trích xuất ENTITIES (thực thể) cụ thể.${userStatusContext}
 
 ### THÔNG TIN NGƯỜI DÙNG HIỆN TẠI
 - Ngày hiện tại: ${currentDate}
 - Danh mục có sẵn: ${categoryList || "Chưa có danh mục nào"}
 - Tài khoản có sẵn: ${accountList || "Chưa có tài khoản nào"}
 - Giao dịch gần đây: ${
-      recentTransactions
-        .map((t) => `${t.name} (${t.amount.toLocaleString()}đ - ${t.type})`)
-        .join(", ") || "Chưa có giao dịch nào"
+      recentTransactions && recentTransactions.length > 0
+        ? recentTransactions
+            .map((t) => `${t.name} (${t.amount.toLocaleString()}đ - ${t.type})`)
+            .join(", ")
+        : "Chưa có giao dịch nào"
     }
 
 ### DANH SÁCH ENTITIES ĐỂ NHẬN DIỆN
@@ -543,6 +567,16 @@ SYSTEM: Bạn là AI assistant chuyên về tài chính cá nhân. Phân tích y
 - LUÔN trích xuất entities từ câu nói của user
 - Sử dụng đúng tên category/account có sẵn của user để match entities
 - Với ADD_ACCOUNT: khi user nói "tạo tài khoản", "thêm tài khoản", "mở tài khoản" => PHẢI trả về intent: "ADD_ACCOUNT"
+${
+  isNewUser
+    ? `
+### QUY TẮC ĐẶC BIỆT CHO NGƯỜI DÙNG MỚI
+- Nếu user yêu cầu thêm giao dịch mà chưa có tài khoản/danh mục => hướng dẫn tạo tài khoản và danh mục trước
+- Ưu tiên intent ADD_ACCOUNT hoặc ADD_CATEGORY khi user chưa setup cơ bản
+- Đối với transaction: accountGuess và categoryGuess có thể để null nếu chưa có
+- responseForUser phải giải thích rõ tại sao cần tạo tài khoản/danh mục trước`
+    : ""
+}
 
 ### FORMAT JSON BẮT BUỘC
 {
@@ -667,6 +701,20 @@ SYSTEM: Bạn là AI assistant chuyên về tài chính cá nhân. Phân tích y
       });
     } catch (error) {
       console.error("Error creating transaction:", error);
+
+      // Xử lý lỗi đặc biệt khi user chưa có account
+      if (
+        error.message.includes("chưa có tài khoản") ||
+        error.message.includes("Không tìm thấy tài khoản")
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: error.message,
+          code: "NO_ACCOUNT_FOUND",
+          suggestion: "Vui lòng tạo tài khoản trước khi thêm giao dịch.",
+        });
+      }
+
       res.status(500).json({
         success: false,
         message: "Có lỗi xảy ra khi tạo giao dịch",

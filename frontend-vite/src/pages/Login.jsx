@@ -19,6 +19,7 @@ export default function Login() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+  const [isUsernameFocused, setIsUsernameFocused] = useState(false);
 
   // Yeti eye tracking calculations based on yeti.js
   const calculateEyePosition = () => {
@@ -115,6 +116,14 @@ export default function Login() {
 
   const handlePasswordBlur = () => {
     setIsPasswordFocused(false);
+  };
+
+  const handleUsernameFocus = () => {
+    setIsUsernameFocused(true);
+  };
+
+  const handleUsernameBlur = () => {
+    setIsUsernameFocused(false);
   };
 
   const handleLogin = async (e) => {
@@ -554,7 +563,12 @@ export default function Login() {
           </div>
         )}
 
-        <label htmlFor="username">Tên tài khoản:</label>
+        <label
+          htmlFor="username"
+          className={isUsernameFocused ? styles.focused : ""}
+        >
+          Tên tài khoản:
+        </label>
         <input
           id="username"
           name="username"
@@ -562,10 +576,17 @@ export default function Login() {
           placeholder="Nhập tên tài khoản của bạn"
           value={formData.username}
           onChange={handleChange}
+          onFocus={handleUsernameFocus}
+          onBlur={handleUsernameBlur}
           required
         />
 
-        <label htmlFor="password">Mật khẩu:</label>
+        <label
+          htmlFor="password"
+          className={isPasswordFocused ? styles.focused : ""}
+        >
+          Mật khẩu:
+        </label>
         <input
           id="password"
           name="password"

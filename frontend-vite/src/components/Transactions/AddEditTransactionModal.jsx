@@ -12,13 +12,13 @@ import {
   faEdit,
 } from "@fortawesome/free-solid-svg-icons";
 import IconSelector from "../Common/IconSelector";
-import { getIconObject } from "../../utils/iconMap";
 import { getCategories } from "../../api/categoriesService";
 import { getAccounts } from "../../api/accountsService";
 import {
   addTransaction,
   updateTransaction,
 } from "../../api/transactionsService";
+import { createDefaultData } from "../../api/setupService";
 
 // Hàm tiện ích để chuyển đổi Date object thành chuỗi 'YYYY-MM-DD'
 const formatDateForInput = (date) => {
@@ -59,6 +59,8 @@ const AddEditTransactionModal = ({
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCreatingDefaults, setIsCreatingDefaults] = useState(false);
+  const [hasNoData, setHasNoData] = useState(false);
 
   // Smart validation state
   const [touched, setTouched] = useState({});
@@ -204,12 +206,64 @@ const AddEditTransactionModal = ({
       } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         if (isValid && !isSubmitting) {
-          handleSubmit(e);
+          const form = e.target.closest("form");
+          if (form) {
+            form.requestSubmit();
+          }
         }
       }
     },
     [onClose, isValid, isSubmitting]
   );
+
+  // Hàm tạo dữ liệu mặc định
+  const handleCreateDefaults = async () => {
+    setIsCreatingDefaults(true);
+    setError("");
+
+    try {
+      await createDefaultData();
+      // Reload data sau khi tạo thành công
+      const [categoriesRes, accountsRes] = await Promise.all([
+        getCategories(),
+        getAccounts({}),
+      ]);
+
+      const allCategories = Array.isArray(categoriesRes)
+        ? categoriesRes
+        : Array.isArray(categoriesRes?.data)
+          ? categoriesRes.data
+          : [];
+
+      const allAccounts = Array.isArray(accountsRes)
+        ? accountsRes
+        : Array.isArray(accountsRes?.data)
+          ? accountsRes.data
+          : [];
+
+      setCategories(allCategories);
+      setAccounts(allAccounts);
+
+      // Setup lại form với data mới
+      const initialType = "CHITIEU";
+      const initialCats = allCategories.filter((c) => c.type === initialType);
+      setFilteredCategories(initialCats);
+
+      if (initialCats.length > 0) {
+        setCategoryId(initialCats[0]._id);
+      }
+      if (allAccounts.length > 0) {
+        setAccountId(allAccounts[0].id);
+      }
+
+      setHasNoData(false);
+    } catch (err) {
+      setError("Không thể tạo dữ liệu mặc định. Vui lòng thử lại.");
+      console.error(err);
+    } finally {
+      setIsCreatingDefaults(false);
+    }
+  };
 
   // Focus management and keyboard listeners
   useEffect(() => {
@@ -259,6 +313,20 @@ const AddEditTransactionModal = ({
 
         setCategories(allCategories);
         setAccounts(allAccounts);
+
+        // Kiểm tra xem có dữ liệu không
+        const hasCategories =
+          Array.isArray(allCategories) && allCategories.length > 0;
+        const hasAccounts =
+          Array.isArray(allAccounts) && allAccounts.length > 0;
+        const noDataAvailable = !hasCategories || !hasAccounts;
+        setHasNoData(noDataAvailable);
+
+        // Nếu không có dữ liệu, không cần setup form
+        if (noDataAvailable) {
+          setIsLoading(false);
+          return;
+        }
 
         // --- BẮT ĐẦU PHẦN LOGIC SỬA LỖI ---
         if (mode === "edit" && initialData) {
@@ -454,8 +522,62 @@ const AddEditTransactionModal = ({
             </div>
           )}
 
+          {/* UI khi không có dữ liệu */}
+          {hasNoData && !isLoading && (
+            <div className={styles.noDataContainer}>
+              <div className={styles.noDataIcon}>
+                <FontAwesomeIcon icon={faExclamationTriangle} size="3x" />
+              </div>
+              <h3 className={styles.noDataTitle}>
+                Cần thiết lập dữ liệu ban đầu
+              </h3>
+              <p className={styles.noDataDescription}>
+                Để có thể thêm giao dịch, bạn cần có ít nhất một danh mục và một
+                tài khoản. Hãy tạo dữ liệu mặc định hoặc thêm thủ công từ trang
+                quản lý.
+              </p>
+
+              <div className={styles.noDataActions}>
+                <button
+                  type="button"
+                  onClick={handleCreateDefaults}
+                  className={`${styles.formButton} ${styles.createDefaultsButton}`}
+                  disabled={isCreatingDefaults}
+                >
+                  {isCreatingDefaults ? (
+                    <>
+                      <FontAwesomeIcon icon={faSpinner} spin />
+                      <span>Đang tạo...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FontAwesomeIcon icon={faCheckCircle} />
+                      <span>Tạo dữ liệu mặc định</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className={`${styles.formButton} ${styles.cancelButton}`}
+                >
+                  Đóng và thêm thủ công
+                </button>
+              </div>
+
+              <div className={styles.noDataHint}>
+                <small>
+                  💡 Dữ liệu mặc định sẽ tạo các danh mục phổ biến (Ăn uống, Di
+                  chuyển, Mua sắm, v.v.) và một tài khoản tiền mặt để bạn bắt
+                  đầu sử dụng ngay.
+                </small>
+              </div>
+            </div>
+          )}
+
           {/* Smart form progress indicator */}
-          {!isLoading && (
+          {!isLoading && !hasNoData && (
             <div className={styles.formProgress}>
               <div className={styles.progressBar}>
                 <div
@@ -481,267 +603,281 @@ const AddEditTransactionModal = ({
             </div>
           )}
 
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Loại giao dịch</label>
-            <div className={styles.radioGroup}>
-              <label>
-                <input
-                  className={styles.radioInput}
-                  type="radio"
-                  value="CHITIEU"
-                  checked={type === "CHITIEU"}
-                  onChange={(e) => setType(e.target.value)}
-                  disabled={isLoading}
-                />
-                <span className={`${styles.radioLabelText} ${styles.expense}`}>
-                  <FontAwesomeIcon
-                    icon={faArrowDown}
-                    className={styles.radioIcon}
-                  />
-                  Chi tiêu
-                </span>
-              </label>
-              <label>
-                <input
-                  className={styles.radioInput}
-                  type="radio"
-                  value="THUNHAP"
-                  checked={type === "THUNHAP"}
-                  onChange={(e) => setType(e.target.value)}
-                  disabled={isLoading}
-                />
-                <span className={`${styles.radioLabelText} ${styles.income}`}>
-                  <FontAwesomeIcon
-                    icon={faArrowUp}
-                    className={styles.radioIcon}
-                  />
-                  Thu nhập
-                </span>
-              </label>
-            </div>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="description" className={styles.formLabel}>
-              Tên/Mô tả giao dịch <span className={styles.requiredStar}>*</span>
-            </label>
-            <input
-              ref={firstInputRef}
-              id="description"
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              onBlur={() => handleFieldBlur("description")}
-              className={`${styles.formInput} ${getFieldErrorClass("description")}`}
-              placeholder="Ví dụ: Lương tháng 6, Ăn trưa..."
-              required
-              disabled={isLoading}
-              maxLength={100}
-            />
-            {renderFieldError("description")}
-
-            {/* Smart suggestions for description */}
-            {categoryId && getDescriptionSuggestions().length > 0 && (
-              <div className={styles.amountSuggestions}>
-                {getDescriptionSuggestions()
-                  .slice(0, 4)
-                  .map((suggestion) => (
-                    <button
-                      key={suggestion}
-                      type="button"
-                      className={styles.amountSuggestion}
-                      onClick={() =>
-                        handleDescriptionSuggestionClick(suggestion)
-                      }
+          {/* Form chính - chỉ hiển thị khi có dữ liệu */}
+          {!hasNoData && !isLoading && (
+            <>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Loại giao dịch</label>
+                <div className={styles.radioGroup}>
+                  <label>
+                    <input
+                      className={styles.radioInput}
+                      type="radio"
+                      value="CHITIEU"
+                      checked={type === "CHITIEU"}
+                      onChange={(e) => setType(e.target.value)}
                       disabled={isLoading}
+                    />
+                    <span
+                      className={`${styles.radioLabelText} ${styles.expense}`}
                     >
-                      {suggestion}
-                    </button>
-                  ))}
+                      <FontAwesomeIcon
+                        icon={faArrowDown}
+                        className={styles.radioIcon}
+                      />
+                      Chi tiêu
+                    </span>
+                  </label>
+                  <label>
+                    <input
+                      className={styles.radioInput}
+                      type="radio"
+                      value="THUNHAP"
+                      checked={type === "THUNHAP"}
+                      onChange={(e) => setType(e.target.value)}
+                      disabled={isLoading}
+                    />
+                    <span
+                      className={`${styles.radioLabelText} ${styles.income}`}
+                    >
+                      <FontAwesomeIcon
+                        icon={faArrowUp}
+                        className={styles.radioIcon}
+                      />
+                      Thu nhập
+                    </span>
+                  </label>
+                </div>
               </div>
-            )}
-          </div>
 
-          <div className={styles.formGroup}>
-            <label htmlFor="amount" className={styles.formLabel}>
-              Số tiền <span className={styles.requiredStar}>*</span>
-            </label>
-            <div className={styles.amountInputWrapper}>
-              <input
-                ref={amountInputRef}
-                id="amount"
-                type="text"
-                inputMode="numeric"
-                value={displayAmount}
-                onChange={handleAmountChange}
-                onBlur={() => handleFieldBlur("amount")}
-                className={`${styles.amountInput} ${getFieldErrorClass("amount")}`}
-                placeholder="0"
-                required
-                disabled={isLoading}
-              />
-              <span className={styles.currencySymbol}>₫</span>
-            </div>
-            {renderFieldError("amount")}
+              <div className={styles.formGroup}>
+                <label htmlFor="description" className={styles.formLabel}>
+                  Tên/Mô tả giao dịch{" "}
+                  <span className={styles.requiredStar}>*</span>
+                </label>
+                <input
+                  ref={firstInputRef}
+                  id="description"
+                  type="text"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  onBlur={() => handleFieldBlur("description")}
+                  className={`${styles.formInput} ${getFieldErrorClass("description")}`}
+                  placeholder="Ví dụ: Lương tháng 6, Ăn trưa..."
+                  required
+                  disabled={isLoading}
+                  maxLength={100}
+                />
+                {renderFieldError("description")}
 
-            {/* Smart amount suggestions */}
-            {!amount && (
-              <div className={styles.amountSuggestions}>
-                {getAmountSuggestions().map((suggestedAmount) => (
-                  <button
-                    key={suggestedAmount}
-                    type="button"
-                    className={styles.amountSuggestion}
-                    onClick={() => handleAmountSuggestionClick(suggestedAmount)}
+                {/* Smart suggestions for description */}
+                {categoryId && getDescriptionSuggestions().length > 0 && (
+                  <div className={styles.amountSuggestions}>
+                    {getDescriptionSuggestions()
+                      .slice(0, 4)
+                      .map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          className={styles.amountSuggestion}
+                          onClick={() =>
+                            handleDescriptionSuggestionClick(suggestion)
+                          }
+                          disabled={isLoading}
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="amount" className={styles.formLabel}>
+                  Số tiền <span className={styles.requiredStar}>*</span>
+                </label>
+                <div className={styles.amountInputWrapper}>
+                  <input
+                    ref={amountInputRef}
+                    id="amount"
+                    type="text"
+                    inputMode="numeric"
+                    value={displayAmount}
+                    onChange={handleAmountChange}
+                    onBlur={() => handleFieldBlur("amount")}
+                    className={`${styles.amountInput} ${getFieldErrorClass("amount")}`}
+                    placeholder="0"
+                    required
                     disabled={isLoading}
-                  >
-                    {suggestedAmount.toLocaleString("vi-VN")}₫
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className={styles.formGrid}>
-            <div className={styles.formGroup}>
-              <label htmlFor="category" className={styles.formLabel}>
-                Danh mục <span className={styles.requiredStar}>*</span>
-              </label>
-              <select
-                id="category"
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                onBlur={() => handleFieldBlur("categoryId")}
-                className={`${styles.formInput} ${getFieldErrorClass("categoryId")}`}
-                required
-                disabled={
-                  isLoading ||
-                  !Array.isArray(filteredCategories) ||
-                  filteredCategories.length === 0
-                }
-              >
-                <option value="">-- Chọn danh mục --</option>
-                {Array.isArray(filteredCategories) &&
-                  filteredCategories.map((cat) => (
-                    <option key={cat._id} value={cat._id}>
-                      {cat.name}
-                    </option>
-                  ))}
-              </select>
-              {renderFieldError("categoryId")}
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="account" className={styles.formLabel}>
-                Tài khoản <span className={styles.requiredStar}>*</span>
-              </label>
-              <select
-                id="account"
-                value={accountId}
-                onChange={(e) => setAccountId(e.target.value)}
-                onBlur={() => handleFieldBlur("accountId")}
-                className={`${styles.formInput} ${getFieldErrorClass("accountId")}`}
-                required
-                disabled={
-                  isLoading || !Array.isArray(accounts) || accounts.length === 0
-                }
-              >
-                <option value="">-- Chọn tài khoản --</option>
-                {Array.isArray(accounts) &&
-                  accounts.map((acc) => (
-                    <option key={acc.id} value={acc.id}>
-                      {acc.name}
-                    </option>
-                  ))}
-              </select>
-              {renderFieldError("accountId")}
-            </div>
-          </div>
-
-          <div className={styles.formGrid}>
-            <div className={styles.formGroup}>
-              <label htmlFor="date" className={styles.formLabel}>
-                Ngày <span className={styles.requiredStar}>*</span>
-              </label>
-              <input
-                id="date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                onBlur={() => handleFieldBlur("date")}
-                className={`${styles.formInput} ${getFieldErrorClass("date")}`}
-                required
-                disabled={isLoading}
-                max={
-                  new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-                    .toISOString()
-                    .split("T")[0]
-                }
-              />
-              {renderFieldError("date")}
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="note" className={styles.formLabel}>
-                Ghi chú
-              </label>
-              <input
-                id="note"
-                type="text"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                className={styles.formInput}
-                placeholder="Thêm ghi chú nếu cần..."
-                disabled={isLoading}
-              />
-            </div>
-          </div>
-
-          <div className={styles.formActions}>
-            <button
-              type="button"
-              onClick={onClose}
-              className={`${styles.formButton} ${styles.cancelButton}`}
-              disabled={isLoading || isSubmitting}
-            >
-              Hủy
-            </button>
-            <button
-              type="submit"
-              className={`${styles.formButton} ${styles.submitButton} ${
-                isValid ? styles.submitButtonActive : ""
-              }`}
-              disabled={isLoading || isSubmitting || !isValid}
-              title={
-                !isValid
-                  ? "Vui lòng kiểm tra lại các trường đã nhập"
-                  : "Nhấn Ctrl+Enter để lưu nhanh"
-              }
-            >
-              {isSubmitting ? (
-                <>
-                  <FontAwesomeIcon
-                    icon={faSpinner}
-                    spin
-                    className={styles.submitSpinner}
                   />
-                  <span>Đang lưu...</span>
-                </>
-              ) : (
-                <>
-                  {isValid && <FontAwesomeIcon icon={faCheckCircle} />}
-                  <span>{submitButtonText}</span>
-                </>
-              )}
-            </button>
-          </div>
+                  <span className={styles.currencySymbol}>₫</span>
+                </div>
+                {renderFieldError("amount")}
 
-          {/* Keyboard Shortcuts Hint */}
-          <div className={styles.keyboardHints}>
-            <span>
-              💡 Mẹo: Nhấn <kbd>Ctrl</kbd> + <kbd>Enter</kbd> để lưu nhanh
-            </span>
-          </div>
+                {/* Smart amount suggestions */}
+                {!amount && (
+                  <div className={styles.amountSuggestions}>
+                    {getAmountSuggestions().map((suggestedAmount) => (
+                      <button
+                        key={suggestedAmount}
+                        type="button"
+                        className={styles.amountSuggestion}
+                        onClick={() =>
+                          handleAmountSuggestionClick(suggestedAmount)
+                        }
+                        disabled={isLoading}
+                      >
+                        {suggestedAmount.toLocaleString("vi-VN")}₫
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.formGrid}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="category" className={styles.formLabel}>
+                    Danh mục <span className={styles.requiredStar}>*</span>
+                  </label>
+                  <select
+                    id="category"
+                    value={categoryId}
+                    onChange={(e) => setCategoryId(e.target.value)}
+                    onBlur={() => handleFieldBlur("categoryId")}
+                    className={`${styles.formInput} ${getFieldErrorClass("categoryId")}`}
+                    required
+                    disabled={
+                      isLoading ||
+                      !Array.isArray(filteredCategories) ||
+                      filteredCategories.length === 0
+                    }
+                  >
+                    <option value="">-- Chọn danh mục --</option>
+                    {Array.isArray(filteredCategories) &&
+                      filteredCategories.map((cat) => (
+                        <option key={cat._id} value={cat._id}>
+                          {cat.name}
+                        </option>
+                      ))}
+                  </select>
+                  {renderFieldError("categoryId")}
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="account" className={styles.formLabel}>
+                    Tài khoản <span className={styles.requiredStar}>*</span>
+                  </label>
+                  <select
+                    id="account"
+                    value={accountId}
+                    onChange={(e) => setAccountId(e.target.value)}
+                    onBlur={() => handleFieldBlur("accountId")}
+                    className={`${styles.formInput} ${getFieldErrorClass("accountId")}`}
+                    required
+                    disabled={
+                      isLoading ||
+                      !Array.isArray(accounts) ||
+                      accounts.length === 0
+                    }
+                  >
+                    <option value="">-- Chọn tài khoản --</option>
+                    {Array.isArray(accounts) &&
+                      accounts.map((acc) => (
+                        <option key={acc.id} value={acc.id}>
+                          {acc.name}
+                        </option>
+                      ))}
+                  </select>
+                  {renderFieldError("accountId")}
+                </div>
+              </div>
+
+              <div className={styles.formGrid}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="date" className={styles.formLabel}>
+                    Ngày <span className={styles.requiredStar}>*</span>
+                  </label>
+                  <input
+                    id="date"
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    onBlur={() => handleFieldBlur("date")}
+                    className={`${styles.formInput} ${getFieldErrorClass("date")}`}
+                    required
+                    disabled={isLoading}
+                    max={
+                      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                        .toISOString()
+                        .split("T")[0]
+                    }
+                  />
+                  {renderFieldError("date")}
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="note" className={styles.formLabel}>
+                    Ghi chú
+                  </label>
+                  <input
+                    id="note"
+                    type="text"
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    className={styles.formInput}
+                    placeholder="Thêm ghi chú nếu cần..."
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formActions}>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className={`${styles.formButton} ${styles.cancelButton}`}
+                  disabled={isLoading || isSubmitting}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className={`${styles.formButton} ${styles.submitButton} ${
+                    isValid ? styles.submitButtonActive : ""
+                  }`}
+                  disabled={isLoading || isSubmitting || !isValid}
+                  title={
+                    !isValid
+                      ? "Vui lòng kiểm tra lại các trường đã nhập"
+                      : "Nhấn Ctrl+Enter để lưu nhanh"
+                  }
+                >
+                  {isSubmitting ? (
+                    <>
+                      <FontAwesomeIcon
+                        icon={faSpinner}
+                        spin
+                        className={styles.submitSpinner}
+                      />
+                      <span>Đang lưu...</span>
+                    </>
+                  ) : (
+                    <>
+                      {isValid && <FontAwesomeIcon icon={faCheckCircle} />}
+                      <span>{submitButtonText}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Keyboard Shortcuts Hint */}
+              <div className={styles.keyboardHints}>
+                <span>
+                  💡 Mẹo: Nhấn <kbd>Ctrl</kbd> + <kbd>Enter</kbd> để lưu nhanh
+                </span>
+              </div>
+            </>
+          )}
         </form>
       </div>
     </div>

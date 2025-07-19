@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # MongoDB Database
   mongodb:
@@ -18,7 +16,7 @@ services:
       - expense-dev-network
 
   # Backend API (Development)
-  backend-dev:
+  backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -44,7 +42,7 @@ services:
     command: npm run dev
 
   # Frontend (Development với hot reload)
-  frontend-dev:
+  frontend:
     build:
       context: ./frontend-vite
       dockerfile: Dockerfile.dev
@@ -58,10 +56,9 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - backend-dev
+      - backend
     networks:
       - expense-dev-network
-    command: npm run dev
 
 volumes:
   mongodb_dev_data:

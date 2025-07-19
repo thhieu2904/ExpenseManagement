@@ -55,27 +55,27 @@ const formatCurrency = (amount) => {
 };
 
 // Component con cho từng card
-const StatCard = ({ type, amount, comparison, isSmall = false }) => {
+const StatCard = ({ type, amount, comparison }) => {
   const getConfig = () => {
     switch (type) {
       case "income":
         return {
           icon: faArrowDown,
-          label: "Thu nhập",
+          label: "THU NHẬP",
           iconClass: styles.iconIncome,
           amountClass: styles.amountIncome,
         };
       case "expense":
         return {
           icon: faArrowUp,
-          label: "Chi tiêu",
+          label: "CHI TIÊU",
           iconClass: styles.iconExpense,
           amountClass: styles.amountExpense,
         };
       case "cashflow":
         return {
           icon: faExchangeAlt,
-          label: "Dòng tiền",
+          label: "DÒNG TIỀN",
           iconClass: styles.iconCashflow,
           amountClass: styles.amountCashflow,
         };
@@ -88,25 +88,25 @@ const StatCard = ({ type, amount, comparison, isSmall = false }) => {
   const trendInfo = getTrendInfo(comparison, type);
 
   return (
-    <div className={`${styles.statCard} ${isSmall ? styles.smallCard : ""}`}>
-      <div className={config.iconClass}>
-        <FontAwesomeIcon icon={config.icon} />
+    <div className={styles.statCard}>
+      {/* HÀNG 1: GỘP ICON VÀ THÔNG TIN CHÍNH */}
+      <div className={styles.cardTop}>
+        <div className={config.iconClass}>
+          <FontAwesomeIcon icon={config.icon} />
+        </div>
+        <div className={styles.mainInfo}>
+          <span className={styles.label}>{config.label}</span>
+          <div className={config.amountClass}>{formatCurrency(amount)}</div>
+        </div>
       </div>
-      <div className={styles.details}>
-        <span className={styles.label}>{config.label}</span>
-        <span className={config.amountClass}>{formatCurrency(amount)}</span>
-        {comparison && (
-          <div
-            className={`${styles.comparison} ${styles[trendInfo.className]}`}
-          >
-            <FontAwesomeIcon
-              icon={trendInfo.icon}
-              className={styles.trendIcon}
-            />
-            <span>{comparison}</span>
-          </div>
-        )}
-      </div>
+
+      {/* HÀNG 2: PHẦN SO SÁNH */}
+      {comparison && (
+        <div className={`${styles.comparison} ${styles[trendInfo.className]}`}>
+          <FontAwesomeIcon icon={trendInfo.icon} className={styles.trendIcon} />
+          <span className={styles.comparisonText}>{comparison}</span>
+        </div>
+      )}
     </div>
   );
 };
@@ -114,13 +114,19 @@ const StatCard = ({ type, amount, comparison, isSmall = false }) => {
 // Component chính - widget compact hiển thị 3 thẻ theo chiều ngang
 const StatsOverview = ({ stats, loading }) => {
   if (loading) {
-    return <div className={styles.widgetContainer}>Đang tải...</div>;
+    return (
+      <div className={styles.widgetContainer}>
+        <div className={styles.loadingContent}>Đang tải...</div>
+      </div>
+    );
   }
 
   if (!stats) {
     return (
       <div className={styles.widgetContainer}>
-        Không có dữ liệu để hiển thị.
+        <div className={styles.noDataContent}>
+          Không có dữ liệu để hiển thị.
+        </div>
       </div>
     );
   }
@@ -143,6 +149,9 @@ const StatsOverview = ({ stats, loading }) => {
         comparison={stats.income?.changeDescription}
       />
 
+      {/* Divider */}
+      <div className={styles.divider}></div>
+
       {/* Chi tiêu */}
       <StatCard
         type="expense"
@@ -150,12 +159,16 @@ const StatsOverview = ({ stats, loading }) => {
         comparison={stats.expense?.changeDescription}
       />
 
+      {/* Divider */}
+      <div className={styles.divider}></div>
+
       {/* Dòng tiền */}
       <StatCard
         type="cashflow"
         amount={netCashFlow}
         comparison={
-          netCashFlow >= 0 ? "Tích lũy được tiền" : "Thiếu hụt ngân sách"
+          stats.balance?.changeDescription ||
+          (netCashFlow >= 0 ? "Tích lũy được tiền" : "Thiếu hụt ngân sách")
         }
       />
     </div>

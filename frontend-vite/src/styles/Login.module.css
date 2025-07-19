@@ -84,8 +84,8 @@ body {
   transition: width 0.3s ease;
 }
 
-.login-form-box input:focus + label::after,
-.login-form-box label:focus-within::after {
+/* Label focus state when corresponding input is focused */
+.login-form-box label.focused::after {
   width: 30px;
 }
 

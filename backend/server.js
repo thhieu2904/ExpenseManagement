@@ -51,6 +51,9 @@ app.use("/api/goals", require("./routes/goalRoutes"));
 const aiRoutes = require("./routes/ai");
 app.use("/api/ai-assistant", aiRoutes);
 
+const setupRoutes = require("./routes/setup");
+app.use("/api/setup", setupRoutes);
+
 const userRoutes = require("./routes/userRoutes");
 app.use("/api/users", require("./routes/userRoutes"));
 

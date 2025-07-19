@@ -310,13 +310,26 @@ ${data.formatted.isPositive ? "✅ Tháng này bạn đã tiết kiệm được
       }
     } catch (error) {
       console.error("Error confirming transaction:", error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          type: "assistant",
-          content: "❌ Có lỗi xảy ra khi tạo giao dịch. Vui lòng thử lại.",
-        },
-      ]);
+
+      // Xử lý lỗi đặc biệt khi user chưa có account
+      if (error.response?.data?.code === "NO_ACCOUNT_FOUND") {
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: "assistant",
+            content: `❌ ${error.response.data.message}\n\n💡 Bạn có muốn tôi hướng dẫn tạo tài khoản ngay không?`,
+            showAccountSuggestion: true,
+          },
+        ]);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: "assistant",
+            content: "❌ Có lỗi xảy ra khi tạo giao dịch. Vui lòng thử lại.",
+          },
+        ]);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -442,6 +455,17 @@ ${data.formatted.isPositive ? "✅ Tháng này bạn đã tiết kiệm được
       {
         type: "assistant",
         content: "Đã hủy tạo giao dịch. Bạn có cần hỗ trợ gì khác không?",
+      },
+    ]);
+  };
+
+  const handleCreateAccountSuggestion = () => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        type: "assistant",
+        content:
+          "Tôi sẽ hướng dẫn bạn tạo tài khoản. Bạn hãy nói: 'tạo tài khoản tiền mặt' hoặc 'tạo tài khoản ngân hàng Vietcombank'",
       },
     ]);
   };
@@ -587,6 +611,31 @@ ${data.formatted.isPositive ? "✅ Tháng này bạn đã tiết kiệm được
                             onClick={handleCancelTransaction}
                           >
                             ❌ Hủy
+                          </button>
+                        </div>
+                      )}
+                      {msg.showAccountSuggestion && (
+                        <div className={styles.confirmButtons}>
+                          <button
+                            className={styles.confirmButton}
+                            onClick={handleCreateAccountSuggestion}
+                          >
+                            💰 Tạo tài khoản
+                          </button>
+                          <button
+                            className={styles.cancelButton}
+                            onClick={() => {
+                              setMessages((prev) => [
+                                ...prev,
+                                {
+                                  type: "assistant",
+                                  content:
+                                    "Được rồi, bạn có thể tạo tài khoản sau. Tôi có thể giúp gì khác không?",
+                                },
+                              ]);
+                            }}
+                          >
+                            ❌ Để sau
                           </button>
                         </div>
                       )}
