@@ -6,7 +6,28 @@
 ![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)
+![Render](https://img.shields.io/badge/Render-46E3B7?style=for-th### 🔄 Git Workflow
+
+````bash
+# Cập nhật code mới nhất
+git pull origin main
+
+# Tạo branch mới cho feature
+git checkout -b feature/expense-tracking
+
+# Làm việc và commit với conventional format
+git add .
+git commit -m "feat: thêm tính năng theo dõi chi tiêu"
+
+# Push feature branch để test
+git push origin feature/expense-tracking
+
+# Tạo PR merge vào main branch (Development)
+# Sau khi test OK trên main, merge vào production branch để deploy live
+git checkout production
+git merge main
+git push origin production
+```der&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
 
 ## 🚀 Phiên Bản Production
@@ -82,88 +103,96 @@
 
 ### 🎨 Frontend (Vite + React 19)
 
-```
+````
+
 frontend-vite/
 ├── src/
-│   ├── components/         # Các component UI tái sử dụng
-│   │   ├── Common/         # Component chung (Header, Sidebar, Loading...)
-│   │   ├── Transactions/   # Component liên quan đến giao dịch
-│   │   ├── Statistics/     # Component hiển thị thống kê và biểu đồ
-│   │   ├── Auth/          # Component đăng nhập, đăng ký
-│   │   ├── Profile/       # Component profile và settings
-│   │   ├── Goals/         # Component quản lý mục tiêu
-│   │   └── AIAssistant/   # Component tính năng AI
-│   ├── pages/             # Các trang chính của ứng dụng
-│   │   ├── HomePage/      # Trang dashboard chính
-│   │   ├── TransactionsPage/ # Trang quản lý giao dịch
-│   │   ├── StatisticsPage/   # Trang thống kê
-│   │   ├── GoalsPage/     # Trang quản lý mục tiêu
-│   │   ├── ProfilePage/   # Trang hồ sơ người dùng
-│   │   └── Welcome/       # Trang chào mừng
-│   ├── api/               # Các service gọi API
-│   ├── contexts/          # React Context cho state management
-│   ├── hooks/             # Custom hooks
-│   ├── utils/             # Các hàm tiện ích
-│   ├── test/              # Testing utilities và setup
-│   └── styles/            # File CSS và Tailwind config
-├── public/                # File tĩnh và test scripts
-└── __tests__/             # Unit tests
+│ ├── components/ # Các component UI tái sử dụng
+│ │ ├── Common/ # Component chung (Header, Sidebar, Loading...)
+│ │ ├── Transactions/ # Component liên quan đến giao dịch
+│ │ ├── Statistics/ # Component hiển thị thống kê và biểu đồ
+│ │ ├── Auth/ # Component đăng nhập, đăng ký
+│ │ ├── Profile/ # Component profile và settings
+│ │ ├── Goals/ # Component quản lý mục tiêu
+│ │ └── AIAssistant/ # Component tính năng AI
+│ ├── pages/ # Các trang chính của ứng dụng
+│ │ ├── HomePage/ # Trang dashboard chính
+│ │ ├── TransactionsPage/ # Trang quản lý giao dịch
+│ │ ├── StatisticsPage/ # Trang thống kê
+│ │ ├── GoalsPage/ # Trang quản lý mục tiêu
+│ │ ├── ProfilePage/ # Trang hồ sơ người dùng
+│ │ └── Welcome/ # Trang chào mừng
+│ ├── api/ # Các service gọi API
+│ ├── contexts/ # React Context cho state management
+│ ├── hooks/ # Custom hooks
+│ ├── utils/ # Các hàm tiện ích
+│ ├── test/ # Testing utilities và setup
+│ └── styles/ # File CSS và Tailwind config
+├── public/ # File tĩnh và test scripts
+└── **tests**/ # Unit tests
+
 ```
 
 ### ⚙️ Backend (Node.js + Express)
 
 ```
+
 backend/
-├── controllers/           # Xử lý logic nghiệp vụ
-│   ├── authController.js      # Xử lý đăng nhập/đăng ký
-│   ├── transactionController.js # Quản lý giao dịch
-│   ├── aiController.js        # Tích hợp AI
-│   ├── statisticsController.js # Thống kê và báo cáo
-│   ├── userController.js      # Quản lý người dùng
-│   └── aiHandlers/            # AI service handlers
-│       ├── accountHandler.js
-│       ├── categoryHandler.js
-│       ├── goalHandler.js
-│       ├── transactionHandler.js
-│       └── utilsHelper.js
-├── models/               # Định nghĩa schema MongoDB
-│   ├── User.js           # Model người dùng
-│   ├── Transaction.js    # Model giao dịch
-│   ├── Category.js       # Model danh mục
-│   ├── Account.js        # Model tài khoản
-│   ├── Goal.js           # Model mục tiêu tài chính
-│   └── LoginHistory.js   # Model lịch sử đăng nhập
-├── routes/               # Định nghĩa API endpoints
-├── middleware/           # Middleware xử lý (auth, upload, validation...)
-├── tests/                # Unit tests và integration tests
-├── uploads/              # Thư mục lưu file upload
-├── swagger.js            # API documentation
-└── server.js            # File khởi tạo server
+├── controllers/ # Xử lý logic nghiệp vụ
+│ ├── authController.js # Xử lý đăng nhập/đăng ký
+│ ├── transactionController.js # Quản lý giao dịch
+│ ├── aiController.js # Tích hợp AI
+│ ├── statisticsController.js # Thống kê và báo cáo
+│ ├── userController.js # Quản lý người dùng
+│ └── aiHandlers/ # AI service handlers
+│ ├── accountHandler.js
+│ ├── categoryHandler.js
+│ ├── goalHandler.js
+│ ├── transactionHandler.js
+│ └── utilsHelper.js
+├── models/ # Định nghĩa schema MongoDB
+│ ├── User.js # Model người dùng
+│ ├── Transaction.js # Model giao dịch
+│ ├── Category.js # Model danh mục
+│ ├── Account.js # Model tài khoản
+│ ├── Goal.js # Model mục tiêu tài chính
+│ └── LoginHistory.js # Model lịch sử đăng nhập
+├── routes/ # Định nghĩa API endpoints
+├── middleware/ # Middleware xử lý (auth, upload, validation...)
+├── tests/ # Unit tests và integration tests
+├── uploads/ # Thư mục lưu file upload
+├── swagger.js # API documentation
+└── server.js # File khởi tạo server
+
 ```
 
 ### 🗄️ Cơ Sở Dữ Liệu (MongoDB)
 
 ```
+
 Collections:
-├── users          # Thông tin người dùng
-├── transactions   # Dữ liệu giao dịch
-├── categories     # Danh mục chi tiêu
-├── accounts       # Tài khoản ngân hàng/ví
-├── goals          # Mục tiêu tài chính
-└── loginhistory   # Lịch sử đăng nhập
+├── users # Thông tin người dùng
+├── transactions # Dữ liệu giao dịch
+├── categories # Danh mục chi tiêu
+├── accounts # Tài khoản ngân hàng/ví
+├── goals # Mục tiêu tài chính
+└── loginhistory # Lịch sử đăng nhập
+
 ```
 
 ### 🚀 DevOps & Deployment
 
 ```
+
 .github/workflows/
-├── deploy.yml            # GitHub Actions CI/CD pipeline
-docker-compose.yml        # Production deployment
-docker-compose.dev.yml    # Development environment
-backend/Dockerfile        # Backend container
-frontend-vite/Dockerfile  # Frontend container
-nginx/nginx.conf         # Reverse proxy configuration
-```
+├── deploy.yml # GitHub Actions CI/CD pipeline
+docker-compose.yml # Production deployment
+docker-compose.dev.yml # Development environment
+backend/Dockerfile # Backend container
+frontend-vite/Dockerfile # Frontend container
+nginx/nginx.conf # Reverse proxy configuration
+
+````
 
 ## 🚀 Hướng Dẫn Cài Đặt và Chạy Dự Án
 
@@ -182,7 +211,7 @@ nginx/nginx.conf         # Reverse proxy configuration
 # Clone dự án về máy
 git clone https://github.com/thhieu2904/ExpenseManagement.git
 cd ExpenseManagement
-```
+````
 
 #### 2. **Cài Đặt Dependencies**
 
@@ -371,14 +400,28 @@ Images được build tự động qua GitHub Actions khi push code lên main br
 
 1. **Backend Service**:
 
-   - Build từ Docker container
+   - Build từ Docker container với image `production` tag
    - Kết nối với MongoDB Atlas
-   - Tự động deploy khi có changes trên production branch
+   - Tự động deploy khi push vào `production` branch
 
 2. **Frontend Service**:
-   - Static site được build từ Vite
+   - Static site được build từ Vite với production config
    - Served bằng Nginx
    - CDN caching cho performance tối ưu
+   - Tự động deploy khi push vào `production` branch
+
+### 🔄 Branch Strategy
+
+- **`main` branch**: Development environment
+
+  - Build Docker images với tag `dev-latest`
+  - Chạy tests và security scan
+  - Dùng để test tính năng mới
+
+- **`production` branch**: Production environment
+  - Build Docker images với tag `latest` và `production`
+  - Deploy lên Render qua webhook
+  - Chỉ merge từ `main` sau khi test kỹ
 
 ### 🔄 CI/CD Pipeline
 
@@ -685,12 +728,21 @@ git push origin feature/expense-tracking
 ### 🔄 CI/CD Process
 
 ```yaml
-# Workflow tự động khi push code
+# Workflow tự động theo branch:
+
+# Khi push vào main branch (Development):
 1. Run Tests (Frontend & Backend)
-2. Build Docker Images
+2. Build Development Docker Images với tag 'dev-latest'
 3. Security Scan với Trivy
 4. Push to GitHub Container Registry
-5. Deploy to Render (nếu trên production branch)
+5. Ready for development deployment
+
+# Khi push vào production branch (Production):
+1. Run Tests (Frontend & Backend)
+2. Build Production Docker Images với tag 'latest'
+3. Security Scan với Trivy
+4. Push to GitHub Container Registry
+5. Deploy to Render via webhook
 ```
 
 ## 📄 Tài Liệu Kỹ Thuật
