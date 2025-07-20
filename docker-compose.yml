@@ -26,6 +26,11 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       target: production
+      args:
+        - MONGO_URL=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-admin123}@mongodb:27017/${MONGO_DB_NAME:-expense_management}?authSource=admin
+        - JWT_SECRET=${JWT_SECRET}
+        - GEMINI_API_KEY=${GEMINI_API_KEY}
+        - NODE_ENV=${NODE_ENV:-production}
     container_name: expense-backend
     restart: unless-stopped
     environment:
@@ -55,6 +60,8 @@ services:
     build:
       context: ./frontend-vite
       dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL}
     container_name: expense-frontend
     restart: unless-stopped
     ports:
