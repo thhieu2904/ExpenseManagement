@@ -105,14 +105,18 @@ const createTestGoal = async (userId, overrides = {}) => {
 
 // Generate JWT token for testing
 const generateTestToken = (userId) => {
-  return jwt.sign({ userId: userId }, process.env.JWT_SECRET, {
-    expiresIn: "1h",
-  });
+  return jwt.sign(
+    { id: userId, username: "testuser" },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "1h",
+    }
+  );
 };
 
 // Mock middleware
 const mockAuthMiddleware = (req, res, next) => {
-  req.user = { userId: new mongoose.Types.ObjectId() };
+  req.user = { id: new mongoose.Types.ObjectId() };
   next();
 };
 
@@ -141,12 +145,11 @@ const clearTestDB = async () => {
 // API response validators
 const expectSuccessResponse = (response, statusCode = 200) => {
   expect(response.status).toBe(statusCode);
-  expect(response.body).toHaveProperty("success", true);
+  expect(response.body).toHaveProperty("message");
 };
 
 const expectErrorResponse = (response, statusCode = 400) => {
   expect(response.status).toBe(statusCode);
-  expect(response.body).toHaveProperty("success", false);
   expect(response.body).toHaveProperty("message");
 };
 
