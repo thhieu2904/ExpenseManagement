@@ -12,7 +12,9 @@ RUN npm ci && npm cache clean --force
 
 # Copy source code
 COPY . .
-
+# Nhận biến từ build-args
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 # Build the app
 RUN npm run build
 
