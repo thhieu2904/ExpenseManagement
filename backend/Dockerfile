@@ -59,7 +59,18 @@ WORKDIR /app
 # Tạo user non-root để bảo mật
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S backend -u 1001
+# Nhận các biến từ build-args
+ARG MONGO_URL
+ENV MONGO_URL=$MONGO_URL
 
+ARG JWT_SECRET
+ENV JWT_SECRET=$JWT_SECRET
+
+ARG GEMINI_API_KEY
+ENV GEMINI_API_KEY=$GEMINI_API_KEY
+
+ARG NODE_ENV
+ENV NODE_ENV=$NODE_ENV
 # Copy built application từ build stage
 COPY --from=build --chown=backend:nodejs /app .
 
