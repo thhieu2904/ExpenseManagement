@@ -7,30 +7,25 @@ const options = {
     info: {
       title: "🏦 Expense Management API",
       version: "2.0.0",
-      description: `
-        API tài liệu cho hệ thống quản lý chi tiêu cá nhân
-        
-        ## Tính năng chính:
-        - 🔐 **Xác thực người dùng**: Đăng ký, đăng nhập với JWT
-        - 💰 **Quản lý tài khoản**: Tạo, sửa, xóa tài khoản ngân hàng
-        - 📊 **Danh mục thu chi**: Quản lý danh mục thu nhập và chi tiêu
-        - 💸 **Giao dịch**: Theo dõi thu chi hàng ngày
-        - 🎯 **Mục tiêu tiết kiệm**: Đặt và theo dõi mục tiêu tài chính
-        - 📈 **Thống kê**: Báo cáo chi tiết theo thời gian và danh mục
-        - 🤖 **AI Assistant**: Trợ lý AI thông minh hỗ trợ quản lý tài chính
-        
-        ## Cách sử dụng:
-        1. Đăng ký tài khoản hoặc đăng nhập
-        2. Thêm Bearer token vào header Authorization
-        3. Sử dụng các endpoint để quản lý dữ liệu
-        
-        ## Liên hệ:
-        - **Phát triển bởi**: Expense Management Team
-        - **Email**: support@expensemanagement.com
-      `,
+      description: [
+        "API tài liệu cho hệ thống quản lý chi tiêu cá nhân.",
+        "",
+        "• Phát triển bởi: Nhóm 8 - Trường Đại học Trà Vinh",
+        "• Thành viên: Nguyễn Thanh Hiếu (thhieu2904), Phạm Hoàng Kha, Nguyễn Trí Cường",
+        "",
+        "Tính năng nổi bật:",
+        "- Xác thực người dùng (JWT) và phân quyền",
+        "- Quản lý tài khoản ngân hàng, danh mục thu chi, giao dịch, mục tiêu tiết kiệm",
+        "- Thống kê báo cáo chi tiết, AI Assistant hỗ trợ tài chính",
+        "",
+        "Hướng dẫn sử dụng:",
+        "1. Đăng ký hoặc đăng nhập tài khoản",
+        "2. Thêm Bearer token vào header Authorization",
+        "3. Sử dụng các endpoint để quản lý dữ liệu cá nhân",
+      ].join("\n"),
       contact: {
-        name: "API Support",
-        email: "support@expensemanagement.com",
+        name: "Nhóm 8 - Nguyễn Thanh Hiếu",
+        email: "thhieu2904@gmail.com",
         url: "https://github.com/thhieu2904/ExpenseManagement",
       },
       license: {
@@ -44,7 +39,7 @@ const options = {
         description: "🖥️ Development Server",
       },
       {
-        url: "https://api.expensemanagement.com",
+        url: "https://expense-management-backend-production.onrender.com",
         description: "🌐 Production Server",
       },
     ],
