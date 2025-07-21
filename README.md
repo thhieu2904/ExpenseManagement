@@ -6,51 +6,66 @@
 ![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![Render](https://img.shields.io/badge/Render-46E3B7?style=for-th### 🔄 Git Workflow
-
-````bash
-# Cập nhật code mới nhất
-git pull origin main
-
-# Tạo branch mới cho feature
-git checkout -b feature/expense-tracking
-
-# Làm việc và commit với conventional format
-git add .
-git commit -m "feat: thêm tính năng theo dõi chi tiêu"
-
-# Push feature branch để test
-git push origin feature/expense-tracking
-
-# Tạo PR merge vào main branch (Development)
-# Sau khi test OK trên main, merge vào production branch để deploy live
-git checkout production
-git merge main
-git push origin production
-```der&logoColor=white)
+![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
+
+---
+
+## � Table of Contents
+
+- [🚀 Phiên Bản Production](#-phiên-bản-production)
+- [📖 Giới Thiệu Đồ Án](#-giới-thiệu-đồ-án)
+- [🌟 Tính Năng Chính](#-tính-năng-chính)
+- [🏗️ Kiến Trúc Hệ Thống](#️-kiến-trúc-hệ-thống)
+- [🚀 Hướng Dẫn Cài Đặt](#-hướng-dẫn-cài-đặt-và-chạy-dự-án)
+- [🐳 Triển Khai với Docker](#-triển-khai-với-docker)
+- [📝 Scripts và Commands](#-scripts-có-sẵn)
+- [📚 Tài Liệu API](#-tài-liệu-api)
+- [🧪 Testing và Quality](#-testing-và-quality-assurance)
+- [🚀 Production Deployment](#-triển-khai-production-trên-render)
+- [🛠️ Công Nghệ Sử Dụng](#️-công-nghệ-sử-dụng)
+- [🤝 Đóng Góp và Phát Triển](#-đóng-góp-và-phát-triển)
+- [📞 Liên Hệ](#-liên-hệ-và-hỗ-trợ)
+
+---
 
 ## 🚀 Phiên Bản Production
 
-Ứng dụng đã được triển khai thành công trên Render với CI/CD tự động:
+Ứng dụng đã được triển khai thành công trên Render với CI/CD tự động qua GitHub Container Registry:
 
-- **Frontend**: [https://expense-management-frontend.onrender.com](https://expense-management-frontend.onrender.com)
-- **Backend API**: [https://expense-management-backend.onrender.com](https://expense-management-backend.onrender.com)
-- **API Documentation**: [https://expense-management-backend.onrender.com/api-docs](https://expense-management-backend.onrender.com/api-docs)
+- **Frontend**: [https://expense-management-frontend-production.onrender.com](https://expense-management-frontend-production.onrender.com)
+- **Backend API**: [https://expense-management-backend-production.onrender.com](https://expense-management-backend-production.onrender.com)
+- **API Documentation**: [https://expense-management-backend-production.onrender.com/api-docs](https://expense-management-backend-production.onrender.com/api-docs)
+
+---
 
 ## 📖 Giới Thiệu Đồ Án
 
-Đây là đồ án nhóm phát triển hệ thống quản lý chi tiêu cá nhân sử dụng công nghệ web hiện đại. Dự án được xây dựng nhằm giúp người dùng theo dõi, phân tích và quản lý tài chính cá nhân một cách hiệu quả thông qua giao diện web thân thiện và các tính năng AI thông minh.
+Đây là đồ án nhóm môn **Công Nghệ Phần Mềm** của **Nhóm 8** - Trường Đại học Trà Vinh. Dự án phát triển hệ thống quản lý chi tiêu cá nhân sử dụng công nghệ web hiện đại với kiến trúc Client-Server, CI/CD pipeline và triển khai cloud native.
+
+### 👥 Thông Tin Nhóm
+
+- **Nhóm**: Nhóm 8
+- **Trường**: Đại học Trà Vinh
+- **Môn học**: Công Nghệ Phần Mềm
+- **Năm học**: 2024-2025
+- **Thành viên**:
+  - **Nguyễn Thanh Hiếu** - [thhieu2904](https://github.com/thhieu2904) - Team Lead & Full-stack Developer
+  - **Phạm Hoàng Kha** - [Hoangkha1107](https://github.com/Hoangkha1107) - Full-stack Developer
+  - **Nguyễn Trí Cường** - [NguyenTriCuong07](https://github.com/NguyenTriCuong07) - Frontend Developer
 
 ### 🎯 Mục Tiêu Đồ Án
 
-- Xây dựng ứng dụng web fullstack hoàn chỉnh với kiến trúc microservices
+- Xây dựng ứng dụng web fullstack hoàn chỉnh với kiến trúc Client-Server
+- Phát triển backend monolithic với RESTful API đầy đủ
 - Tích hợp công nghệ AI (Google Gemini) vào ứng dụng thực tế
 - Áp dụng kiến thức về React, Node.js, MongoDB trong dự án quy mô lớn
 - Triển khai ứng dụng với Docker, GitHub Container Registry và Render
+- Thiết lập CI/CD pipeline với GitHub Actions cho 2 môi trường (dev/prod)
 - Thiết kế giao diện responsive và user-friendly với Dark/Light mode
-- Xây dựng hệ thống CI/CD hoàn chỉnh với GitHub Actions
 - Áp dụng các best practices về testing, security và monitoring
+
+---
 
 ## 🌟 Tính Năng Chính
 
@@ -63,18 +78,65 @@ git push origin production
 - **Quản Lý Ngân Sách**: Thiết lập ngân sách hàng tháng cho từng danh mục chi tiêu
 - **Import/Export Dữ Liệu**: Hỗ trợ xuất nhập dữ liệu Excel để sao lưu và khôi phục
 
-### 🤖 Tính Năng AI Thông Minh
+### 🤖 Tính Năng AI Thông Minh (Google Gemini API)
 
-- **Phân Tích Chi Tiêu Thông Minh**: AI phân tích thói quen chi tiêu và đưa ra insights sâu sắc
-- **Gợi Ý Phân Loại Tự Động**: Tự động đề xuất danh mục phù hợp cho các giao dịch mới
-- **Dự Đoán Chi Tiêu**: Dự báo chi tiêu tương lai dựa trên dữ liệu lịch sử
-- **Tư Vấn Tài Chính Cá Nhân**: Đưa ra lời khuyên tài chính phù hợp với tình hình của từng người dùng
-- **Cảnh Báo Chi Tiêu**: Thông báo khi chi tiêu vượt ngân sách hoặc có xu hướng bất thường
-- **AI Assistant Chat**: Trò chuyện với AI để được tư vấn tài chính theo thời gian thực
+Hệ thống AI được xử lý hoàn toàn tại **Backend** qua `aiController.js` với Google Gemini API:
+
+#### 🎯 Xử Lý Intent và Entity Recognition
+
+- **Intent Classification**: Phân loại ý định người dùng (ADD_TRANSACTION, QUICK_STATS, VIEW_ACCOUNTS...)
+- **Entity Extraction**: Trích xuất thông tin từ câu nói (số tiền, tên tài khoản, danh mục, thời gian...)
+- **Context Management**: Quản lý trạng thái hội thoại và thông tin chờ xử lý
+
+#### 🔄 Hybrid AI Processing Architecture
+
+Hệ thống AI sử dụng **cơ chế hybrid** với 3 tầng xử lý thông minh:
+
+**1. Frontend Fallback (`aiService.js`)**
+
+- Pattern-based intent recognition cho offline processing
+- Local extraction: amount, category, transaction type
+- Fallback khi backend API không khả dụng
+- Basic response generation cho các query đơn giản
+
+**2. Backend Local Processing (`tryLocalProcessing`)**
+
+- Pre-defined patterns cho quick stats, view accounts
+- Immediate response cho câu hỏi thường gặp:
+  - "thống kê", "báo cáo", "tổng quan" → Quick Stats
+  - "xem tài khoản", "danh sách tài khoản" → Account List
+- Không cần gọi Gemini API, tiết kiệm cost và latency
+
+**3. Cloud AI Processing (Google Gemini API)**
+
+- Chỉ được gọi khi local processing không xử lý được
+- Complex intent recognition và entity extraction
+- Conversation state management cho multi-turn dialogs
+- Smart prompting với user context và system instructions
+
+#### 💡 Smart Features (Backend-only)
+
+- **Conversation State**: Quản lý hội thoại nhiều bước cho incomplete transactions
+- **Context-aware Prompting**: Inject user data (categories, accounts, recent transactions)
+- **Entity Extraction**: Trích xuất thông minh số tiền, thời gian, tên accounts/categories
+- **Intent Classification**: 11 loại intent từ ADD_TRANSACTION đến QUERY_TRANSACTIONS
+- **Follow-up Handling**: Xử lý thiếu thông tin (amount, deadline, category)
+
+#### 🛡️ Reliability & Cost Optimization
+
+- **3-Layer Fallback**: Frontend → Backend Local → Cloud AI
+- **Retry with Backoff**: Max 3 attempts với exponential backoff
+- **Timeout Protection**: 10s timeout cho Gemini API calls
+- **Cost Optimization**: Chỉ gọi API khi thực sự cần thiết
+- **Graceful Degradation**: Luôn có response dù API fail
 
 ### 📊 Phân Tích và Báo Cáo
 
-- **Biểu Đồ Tương Tác**: Hiển thị dữ liệu tài chính bằng các biểu đồ đẹp mắt (Pie Chart, Bar Chart, Line Chart)
+- **Biểu Đồ Tương Tác**:
+  - Pie Chart
+  - Bar Chart
+  - Line Chart
+  - (Hiển thị dữ liệu tài chính trực quan, sinh động)
 - **Dashboard Thống Kê**: Tổng quan toàn diện về tình hình tài chính với các chỉ số quan trọng
 - **Xu Hướng Chi Tiêu**: Theo dõi và phân tích xu hướng chi tiêu theo thời gian (ngày, tuần, tháng, năm)
 - **Báo Cáo Tùy Chỉnh**: Tạo báo cáo chi tiết theo khoảng thời gian và danh mục cụ thể
@@ -99,100 +161,236 @@ git push origin production
 - **CORS Configuration**: Cấu hình CORS an toàn cho cross-origin requests
 - **Health Checks**: Monitoring sức khỏe hệ thống với Docker health checks
 
+---
+
+## 🏗️ Kiến Trúc Hệ Thống
+
+### 📋 Tổng Quan Kiến Trúc
+
+Hệ thống sử dụng **kiến trúc Client-Server** với **backend monolithic**, bao gồm:
+
+- **Frontend SPA (Single Page Application)**: React application chạy trên browser
+- **Backend Monolithic API**: Node.js/Express server cung cấp RESTful API
+- **Database**: MongoDB database duy nhất với user document separation
+- **Authentication**: JWT token-based authentication system
+- **AI Service**: Tích hợp Google Gemini AI qua API calls
+
+### 🎯 Sơ Đồ Kiến Trúc (Text Block)
+
+```
+PRODUCTION ENVIRONMENT (Render)
+
+  [Frontend SPA: React + Vite]
+      |
+      |  (Chỉ hiển thị UI, không gọi API, không xử lý dữ liệu)
+      v
+  [Backend API: Node.js + Express]
+      |
+      |  (Xử lý toàn bộ logic, truy vấn DB, tích hợp AI)
+      v
+  [MongoDB Database]
+
+AI Flow:
+  [Frontend] --(Gửi intent, text, hoặc dữ liệu thô)--> [Backend]
+      |
+      |--(Nếu cần AI)--> [Google Gemini AI (Cloud)]
+      |<--(Kết quả AI)--|
+  [Backend xử lý kết quả, trả về Frontend]
+
+CI/CD Pipeline:
+  [GitHub Actions] -> [Build & Test] -> [Push Docker Images (GHCR)] -> [Deploy Render]
+```
+
+### 🔄 Data Flow (Luồng Hoạt Động Thực Tế)
+
+```
+1. Người dùng thao tác trên Frontend (React SPA)
+   - FE chỉ hiển thị UI, không gọi API, không xử lý dữ liệu, không gửi request trực tiếp.
+   - Mọi dữ liệu, trạng thái, kết quả đều được lấy từ backend.
+
+2. Khi cần thực hiện hành động (ví dụ: thêm giao dịch, phân tích AI):
+   - Frontend gửi intent, dữ liệu thô hoặc text lên Backend qua một event hoặc message (nếu có tích hợp websocket hoặc background sync).
+   - Backend nhận intent, xử lý toàn bộ logic, truy vấn database, hoặc gọi AI nếu cần.
+
+3. Nếu là tác vụ AI:
+   - Backend kiểm tra local patterns, nếu không đủ sẽ gọi Google Gemini AI (Cloud).
+   - Backend nhận kết quả AI, xử lý lại, trả về kết quả cuối cùng cho Frontend.
+
+4. Frontend chỉ nhận kết quả đã xử lý, hiển thị lên UI, không tự ý gọi API hay xử lý dữ liệu.
+
+5. Tất cả các trạng thái xác thực, phân quyền, business logic đều nằm ở backend.
+```
+
+---
+
+---
+
 ## 🏗️ Kiến Trúc Dự Án
 
-### 🎨 Frontend (Vite + React 19)
+### 🎨 Frontend Architecture (React 19 + Vite)
 
-````
-
+```
 frontend-vite/
 ├── src/
-│ ├── components/ # Các component UI tái sử dụng
-│ │ ├── Common/ # Component chung (Header, Sidebar, Loading...)
-│ │ ├── Transactions/ # Component liên quan đến giao dịch
-│ │ ├── Statistics/ # Component hiển thị thống kê và biểu đồ
-│ │ ├── Auth/ # Component đăng nhập, đăng ký
-│ │ ├── Profile/ # Component profile và settings
-│ │ ├── Goals/ # Component quản lý mục tiêu
-│ │ └── AIAssistant/ # Component tính năng AI
-│ ├── pages/ # Các trang chính của ứng dụng
-│ │ ├── HomePage/ # Trang dashboard chính
-│ │ ├── TransactionsPage/ # Trang quản lý giao dịch
-│ │ ├── StatisticsPage/ # Trang thống kê
-│ │ ├── GoalsPage/ # Trang quản lý mục tiêu
-│ │ ├── ProfilePage/ # Trang hồ sơ người dùng
-│ │ └── Welcome/ # Trang chào mừng
-│ ├── api/ # Các service gọi API
-│ ├── contexts/ # React Context cho state management
-│ ├── hooks/ # Custom hooks
-│ ├── utils/ # Các hàm tiện ích
-│ ├── test/ # Testing utilities và setup
-│ └── styles/ # File CSS và Tailwind config
-├── public/ # File tĩnh và test scripts
-└── **tests**/ # Unit tests
+│   ├── components/          # Các component UI tái sử dụng
+│   │   ├── Common/         # Component chung (Header, Sidebar, Loading...)
+│   │   ├── Transactions/   # Component liên quan đến giao dịch
+│   │   ├── Statistics/     # Component hiển thị thống kê và biểu đồ
+│   │   ├── Auth/          # Component đăng nhập, đăng ký
+│   │   ├── Profile/       # Component profile và settings
+│   │   ├── Goals/         # Component quản lý mục tiêu
+│   │   └── AIAssistant/   # Component tính năng AI
+│   ├── pages/             # Các trang chính của ứng dụng
+│   │   ├── HomePage/      # Trang dashboard chính
+│   │   ├── TransactionsPage/ # Trang quản lý giao dịch
+│   │   ├── StatisticsPage/   # Trang thống kê
+│   │   ├── GoalsPage/        # Trang quản lý mục tiêu
+│   │   ├── ProfilePage/      # Trang hồ sơ người dùng
+│   │   └── Welcome/          # Trang chào mừng
+│   ├── api/               # Các service gọi API (chỉ HTTP calls)
+│   │   ├── aiService.js   # AI service với hybrid fallback
+│   │   ├── authService.js # Authentication service
+│   │   └── axiosConfig.js # Axios configuration
+│   ├── contexts/          # React Context cho state management
+│   ├── hooks/             # Custom hooks
+│   ├── utils/             # Các hàm tiện ích UI
+│   ├── test/              # Testing utilities và setup
+│   └── styles/            # File CSS và Tailwind config
+├── public/                # File tĩnh và test scripts
+└── __tests__/             # Unit tests
+```
+
+### 🎨 Trải Nghiệm Người Dùng
+
+- **Chế Độ Sáng/Tối**: Chuyển đổi linh hoạt giữa giao diện sáng và tối với animation mượt mà
+- **Thiết Kế Responsive**: Tối ưu hóa hoàn hảo cho cả máy tính và thiết bị di động
+- **Cập Nhật Thời Gian Thực**: Đồng bộ dữ liệu ngay lập tức trên tất cả các thành phần
+- **Giao Diện Trực Quan**: Thiết kế hiện đại với Tailwind CSS, dễ sử dụng với UX/UI được chăm chút kỹ lưỡng
+- **Thông Báo Thông Minh**: Hệ thống notification với spending reminders và goal tracking
+- **Avatar Upload**: Tùy chỉnh ảnh đại diện với hỗ trợ crop và preview
+
+### 🔒 Bảo Mật và Hiệu Suất
+
+- **JWT Authentication**: Xác thực bảo mật với refresh token strategy
+- **Password Encryption**: Mã hóa mật khẩu bằng bcrypt với salt rounds
+- **Rate Limiting**: Giới hạn số lượng request để chống DDoS
+- **Input Validation**: Kiểm tra dữ liệu đầu vào ở cả frontend và backend
+- **CORS Configuration**: Cấu hình CORS an toàn cho cross-origin requests
+- **Health Checks**: Monitoring sức khỏe hệ thống với Docker health checks
+
+### 🎨 Frontend Architecture (React 19 + Vite)
+
+```
+frontend-vite/
+├── src/
+│   ├── components/          # Các component UI tái sử dụng
+│   │   ├── Common/         # Component chung (Header, Sidebar, Loading...)
+│   │   ├── Transactions/   # Component liên quan đến giao dịch
+│   │   ├── Statistics/     # Component hiển thị thống kê và biểu đồ
+│   │   ├── Auth/          # Component đăng nhập, đăng ký
+│   │   ├── Profile/       # Component profile và settings
+│   │   ├── Goals/         # Component quản lý mục tiêu
+│   │   └── AIAssistant/   # Component tính năng AI
+│   ├── pages/             # Các trang chính của ứng dụng
+│   │   ├── HomePage/      # Trang dashboard chính
+│   │   ├── TransactionsPage/ # Trang quản lý giao dịch
+│   │   ├── StatisticsPage/   # Trang thống kê
+│   │   ├── GoalsPage/        # Trang quản lý mục tiêu
+│   │   ├── ProfilePage/      # Trang hồ sơ người dùng
+│   │   └── Welcome/          # Trang chào mừng
+│   ├── api/               # Các service gọi API
+│   ├── contexts/          # React Context cho state management
+│   ├── hooks/             # Custom hooks
+│   ├── utils/             # Các hàm tiện ích
+│   ├── test/              # Testing utilities và setup
+│   └── styles/            # File CSS và Tailwind config
+└── public/                # File tĩnh và test scripts
 
 ```
 
-### ⚙️ Backend (Node.js + Express)
+### ⚙️ Backend Architecture (Node.js + Express Monolithic)
 
 ```
-
 backend/
-├── controllers/ # Xử lý logic nghiệp vụ
-│ ├── authController.js # Xử lý đăng nhập/đăng ký
-│ ├── transactionController.js # Quản lý giao dịch
-│ ├── aiController.js # Tích hợp AI
-│ ├── statisticsController.js # Thống kê và báo cáo
-│ ├── userController.js # Quản lý người dùng
-│ └── aiHandlers/ # AI service handlers
-│ ├── accountHandler.js
-│ ├── categoryHandler.js
-│ ├── goalHandler.js
-│ ├── transactionHandler.js
-│ └── utilsHelper.js
-├── models/ # Định nghĩa schema MongoDB
-│ ├── User.js # Model người dùng
-│ ├── Transaction.js # Model giao dịch
-│ ├── Category.js # Model danh mục
-│ ├── Account.js # Model tài khoản
-│ ├── Goal.js # Model mục tiêu tài chính
-│ └── LoginHistory.js # Model lịch sử đăng nhập
-├── routes/ # Định nghĩa API endpoints
-├── middleware/ # Middleware xử lý (auth, upload, validation...)
-├── tests/ # Unit tests và integration tests
-├── uploads/ # Thư mục lưu file upload
-├── swagger.js # API documentation
-└── server.js # File khởi tạo server
+├── controllers/           # Xử lý logic nghiệp vụ
+│   ├── authController.js     # Xử lý đăng nhập/đăng ký
+│   ├── transactionController.js # Quản lý giao dịch
+│   ├── aiController.js       # Tích hợp AI
+│   ├── statisticsController.js # Thống kê và báo cáo
+│   ├── userController.js     # Quản lý người dùng
+│   └── aiHandlers/          # AI service handlers
+│       ├── accountHandler.js
+│       ├── categoryHandler.js
+│       ├── goalHandler.js
+│       ├── transactionHandler.js
+│       └── utilsHelper.js
+├── models/                # Định nghĩa schema MongoDB
+│   ├── User.js           # Model người dùng
+│   ├── Transaction.js    # Model giao dịch
+│   ├── Category.js       # Model danh mục
+│   ├── Account.js        # Model tài khoản
+│   ├── Goal.js           # Model mục tiêu tài chính
+│   └── LoginHistory.js   # Model lịch sử đăng nhập
+├── routes/                # Định nghĩa API endpoints
+├── middleware/            # Middleware xử lý (auth, upload, validation...)
+├── tests/                 # Unit tests và integration tests
+├── uploads/               # Thư mục lưu file upload
+├── swagger.js             # API documentation
+└── server.js              # File khởi tạo server
+```
+
+### 🗄️ Database Schema (MongoDB Single Database)
+
+```
+MongoDB Database: expense-management
+├── users                 # Collection người dùng
+│   ├── _id (ObjectId)
+│   ├── username, email, password
+│   ├── profile (avatar, preferences)
+│   └── createdAt, updatedAt
+├── transactions          # Collection giao dịch
+│   ├── _id (ObjectId)
+│   ├── userId (Reference to users)
+│   ├── amount, type, description
+│   ├── categoryId, accountId
+│   └── date, createdAt
+├── categories            # Collection danh mục
+│   ├── _id (ObjectId)
+│   ├── userId (Reference to users)
+│   ├── name, icon, color
+│   └── type (income/expense)
+├── accounts              # Collection tài khoản
+│   ├── _id (ObjectId)
+│   ├── userId (Reference to users)
+│   ├── name, type, balance
+│   └── createdAt, updatedAt
+├── goals                 # Collection mục tiêu
+│   ├── _id (ObjectId)
+│   ├── userId (Reference to users)
+│   ├── title, targetAmount, currentAmount
+│   ├── deadline, status
+│   └── createdAt, updatedAt
+└── loginhistory          # Collection lịch sử đăng nhập
+    ├── _id (ObjectId)
+    ├── userId (Reference to users)
+    ├── loginTime, ipAddress
+    └── userAgent, status
+```
+
+### 🚀 DevOps & Deployment Architecture
+
+```
+Development & Deployment Pipeline:
+├── .github/workflows/
+│   └── deploy.yml        # GitHub Actions CI/CD pipeline
+├── docker-compose.yml    # Production deployment
+├── docker-compose.dev.yml # Development environment
+├── backend/Dockerfile    # Backend container
+├── frontend-vite/Dockerfile # Frontend container
 
 ```
 
-### 🗄️ Cơ Sở Dữ Liệu (MongoDB)
-
-```
-
-Collections:
-├── users # Thông tin người dùng
-├── transactions # Dữ liệu giao dịch
-├── categories # Danh mục chi tiêu
-├── accounts # Tài khoản ngân hàng/ví
-├── goals # Mục tiêu tài chính
-└── loginhistory # Lịch sử đăng nhập
-
-```
-
-### 🚀 DevOps & Deployment
-
-```
-
-.github/workflows/
-├── deploy.yml # GitHub Actions CI/CD pipeline
-docker-compose.yml # Production deployment
-docker-compose.dev.yml # Development environment
-backend/Dockerfile # Backend container
-frontend-vite/Dockerfile # Frontend container
-nginx/nginx.conf # Reverse proxy configuration
-
-````
+---
 
 ## 🚀 Hướng Dẫn Cài Đặt và Chạy Dự Án
 
@@ -205,15 +403,15 @@ nginx/nginx.conf # Reverse proxy configuration
 
 ### 🛠️ Các Bước Cài Đặt Chi Tiết
 
-#### 1. **Clone Repository từ GitHub**
+#### 1. Clone Repository từ GitHub
 
 ```bash
 # Clone dự án về máy
 git clone https://github.com/thhieu2904/ExpenseManagement.git
 cd ExpenseManagement
-````
+```
 
-#### 2. **Cài Đặt Dependencies**
+#### 2. Cài Đặt Dependencies
 
 ```bash
 # Cài đặt dependencies cho root project
@@ -228,7 +426,7 @@ cd ../frontend-vite
 npm install
 ```
 
-#### 3. **Thiết Lập Environment Variables**
+#### 3. Thiết Lập Environment Variables
 
 Tạo file `.env` trong thư mục `backend/` với nội dung:
 
@@ -251,7 +449,7 @@ GEMINI_API_KEY=your-gemini-api-key-here
 CORS_ORIGIN=http://localhost:5173
 ```
 
-#### 4. **Khởi Chạy Ứng Dụng**
+#### 4. Khởi Chạy Ứng Dụng
 
 **Phương pháp 1: Chạy từng service riêng biệt**
 
@@ -277,7 +475,7 @@ docker-compose -f docker-compose.dev.yml up --build
 docker-compose up --build -d
 ```
 
-#### 5. **Truy Cập Ứng Dụng**
+#### 5. Truy Cập Ứng Dụng
 
 - **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:5000
@@ -305,52 +503,7 @@ mongod --dbpath="C:\data\db"
 2. Tạo cluster mới
 3. Lấy connection string và cập nhật vào `.env`
 
-### 🧪 Chạy Testing
-
-#### Backend Testing
-
-```bash
-# Chuyển vào thư mục backend
-cd backend
-
-# Chạy unit tests
-npm test
-
-# Chạy tests với coverage
-npm run test:coverage
-
-# Chạy tests trong watch mode
-npm run test:watch
-```
-
-#### Frontend Testing
-
-```bash
-# Chuyển vào thư mục frontend
-cd frontend-vite
-
-# Chạy unit tests
-npm test
-
-# Chạy tests với UI interface
-npm run test:ui
-
-# Chạy tests một lần (CI mode)
-npm run test:run
-
-# Chạy tests với coverage report
-npm run test:coverage
-```
-
-#### Test Coverage
-
-Dự án hiện có **67 unit tests** với các khu vực testing:
-
-- ✅ **Utility Functions** (23 tests): timeHelpers, iconMap
-- ✅ **API Services** (18 tests): authService, transactionsService
-- ✅ **React Hooks** (7 tests): useTheme
-- ✅ **Components** (10 tests): TransactionItem, HeaderCard, BasePieChart
-- ✅ **Pages** (9 tests): Welcome page
+---
 
 ## 🐳 Triển Khai với Docker
 
@@ -383,7 +536,7 @@ docker-compose down
 docker-compose down -v --remove-orphans
 ```
 
-### � Container Images
+### 📦 Container Images
 
 Dự án sử dụng GitHub Container Registry (GHCR) để lưu trữ Docker images:
 
@@ -392,70 +545,7 @@ Dự án sử dụng GitHub Container Registry (GHCR) để lưu trữ Docker im
 
 Images được build tự động qua GitHub Actions khi push code lên main branch.
 
-## 🚀 Triển Khai Production trên Render
-
-### 🌐 Render Services
-
-Ứng dụng được triển khai trên Render với 2 services:
-
-1. **Backend Service**:
-
-   - Build từ Docker container với image `production` tag
-   - Kết nối với MongoDB Atlas
-   - Tự động deploy khi push vào `production` branch
-
-2. **Frontend Service**:
-   - Static site được build từ Vite với production config
-   - Served bằng Nginx
-   - CDN caching cho performance tối ưu
-   - Tự động deploy khi push vào `production` branch
-
-### 🔄 Branch Strategy
-
-- **`main` branch**: Development environment
-
-  - Build Docker images với tag `dev-latest`
-  - Chạy tests và security scan
-  - Dùng để test tính năng mới
-
-- **`production` branch**: Production environment
-  - Build Docker images với tag `latest` và `production`
-  - Deploy lên Render qua webhook
-  - Chỉ merge từ `main` sau khi test kỹ
-
-### 🔄 CI/CD Pipeline
-
-GitHub Actions workflow tự động:
-
-```yaml
-# .github/workflows/deploy.yml
-1. Test codebase (Frontend & Backend)
-2. Build và push Docker images tới GHCR
-3. Security scan với Trivy
-4. Deploy tới Render qua webhook
-```
-
-### 🛠️ Environment Variables cho Production
-
-Các biến môi trường cần thiết:
-
-```env
-# Backend
-MONGO_URL=mongodb+srv://...
-JWT_SECRET=production-secret-key
-GEMINI_API_KEY=production-gemini-key
-NODE_ENV=production
-
-# Frontend
-VITE_API_BASE_URL=https://expense-management-backend.onrender.com/api
-```
-
-### 📊 Monitoring & Health Checks
-
-- **Health Endpoints**: `/health` cho backend
-- **Uptime Monitoring**: Tích hợp với Render monitoring
-- **Error Tracking**: Console logging và error boundaries
-- **Performance**: Docker health checks mỗi 30s
+---
 
 ## 📝 Scripts Có Sẵn
 
@@ -513,54 +603,13 @@ docker system prune -f               # Dọn dẹp Docker
 docker-compose down -v --remove-orphans  # Xóa hoàn toàn
 ```
 
-## 🔧 Cấu Hình Chi Tiết
+---
 
-### 🎨 Frontend Configuration
-
-- **Vite Config**: `vite.config.js` - Cấu hình build tool, development server và testing
-- **Tailwind CSS**: `tailwind.config.js` - Utility-first CSS framework với dark mode
-- **ESLint**: `eslint.config.js` - Linting rules cho code quality
-- **PostCSS**: `postcss.config.js` - CSS processing với autoprefixer
-- **Testing**: Vitest với React Testing Library và jsdom environment
-
-### ⚙️ Backend Configuration
-
-- **Server**: `server.js` - Entry point với Express middleware setup
-- **Swagger Documentation**: `swagger.js` - API documentation với OpenAPI 3.0
-- **MongoDB Models**: `models/` - Mongoose schema definitions
-- **Route Handlers**: `routes/` - RESTful API endpoints organization
-- **Controllers**: `controllers/` - Business logic separation với AI handlers
-- **Middleware**: `middleware/` - Authentication, validation, file upload
-
-### 🗄️ Database Configuration
-
-**MongoDB Connection Options:**
-
-```javascript
-// Local MongoDB
-MONGO_URL=mongodb://localhost:27017/expense-management
-
-// MongoDB Atlas (Cloud) - Production
-MONGO_URL=mongodb+srv://username:password@cluster.mongodb.net/expense-management
-
-// Docker MongoDB
-MONGO_URL=mongodb://mongo:27017/expense-management
-```
-
-### 🚀 Production Environment
-
-**Render Configuration:**
-
-- **Build Command**: `npm run build` (Frontend) | `npm install` (Backend)
-- **Start Command**: `npm start`
-- **Node Version**: 18.x
-- **Health Check**: HTTP endpoints với 30s interval
-
-## 📚 Tài Liệu API
+## Tài Liệu API
 
 Tài liệu API đầy đủ có thể truy cập tại:
 
-- **Production API Docs**: [https://expense-management-backend.onrender.com/api-docs](https://expense-management-backend.onrender.com/api-docs)
+- **Production API Docs**: [https://expense-management-backend-production.onrender.com/api-docs](https://expense-management-backend-production.onrender.com/api-docs)
 - **Local API Docs**: http://localhost:5000/api-docs
 - **GitHub Wiki**: [API Documentation](https://github.com/thhieu2904/ExpenseManagement/wiki)
 
@@ -619,6 +668,8 @@ Tài liệu API đầy đủ có thể truy cập tại:
 - `DELETE /api/goals/:id` - Xóa mục tiêu
 - `POST /api/goals/:id/add-funds` - Thêm tiền vào mục tiêu
 
+---
+
 ## 🧪 Testing và Quality Assurance
 
 ### 🔍 Testing Strategy
@@ -667,7 +718,7 @@ npm run test:coverage      # Coverage report
 - **Test Helpers**: Database setup, cleanup utilities
 - **Browser Testing**: Integration tests với public test scripts
 
-### �️ Code Quality Tools
+### 🛠️ Code Quality Tools
 
 - **ESLint**: Code linting với custom rules
 - **Prettier**: Code formatting (nếu được cấu hình)
@@ -681,6 +732,108 @@ npm run test:coverage      # Coverage report
 - **Rate Limiting**: API protection against abuse
 - **Input Validation**: Comprehensive data validation
 - **Health Checks**: Container và service monitoring
+
+---
+
+## 🚀 Triển Khai Production trên Render
+
+### 🌐 Render Services
+
+Ứng dụng được triển khai trên Render với 2 services:
+
+1. **Backend Service**:
+
+   - Build từ Docker container với image `production` tag
+   - Kết nối với MongoDB Atlas
+   - Tự động deploy khi push vào `production` branch
+
+2. **Frontend Service**:
+   - Static site được build từ Vite với production config
+   - Served bằng Nginx
+   - CDN caching cho performance tối ưu
+   - Tự động deploy khi push vào `production` branch
+
+### 🔄 Branch Strategy
+
+- **`main` branch**: Development environment
+
+  - Build Docker images với tag `dev-latest`
+  - Chạy tests và security scan
+  - Dùng để test tính năng mới
+
+- **`production` branch**: Production environment
+  - Build Docker images với tag `latest` và `production`
+  - Deploy lên Render qua webhook
+  - Chỉ merge từ `main` sau khi test kỹ
+
+### 🔄 CI/CD Pipeline
+
+GitHub Actions workflow tự động với 2 môi trường:
+
+```yaml
+# .github/workflows/deploy.yml
+1. Test codebase (Frontend & Backend)
+2. Build và push Docker images tới GitHub Container Registry (GHCR)
+3. Security scan với Trivy
+4. Deploy tới Render qua webhook hooks
+```
+
+**Development (main branch)**:
+
+- Images: `ghcr.io/thhieu2904/expense-management-backend:dev-latest`
+- Images: `ghcr.io/thhieu2904/expense-management-frontend:dev-latest`
+
+**Production (production branch)**:
+
+- Images: `ghcr.io/thhieu2904/expense-management-backend:latest`
+- Images: `ghcr.io/thhieu2904/expense-management-frontend:latest`
+
+### 🔄 Git Workflow
+
+```bash
+# Cập nhật code mới nhất
+git pull origin main
+
+# Tạo branch mới cho feature
+git checkout -b feature/expense-tracking
+
+# Làm việc và commit với conventional format
+git add .
+git commit -m "feat: thêm tính năng theo dõi chi tiêu"
+
+# Push feature branch để test
+git push origin feature/expense-tracking
+
+# Tạo PR merge vào main branch (Development)
+# Sau khi test OK trên main, merge vào production branch để deploy live
+git checkout production
+git merge main
+git push origin production
+```
+
+### 🛠️ Environment Variables cho Production
+
+Các biến môi trường cần thiết:
+
+```env
+# Backend
+MONGO_URL=mongodb+srv://...
+JWT_SECRET=production-secret-key
+GEMINI_API_KEY=production-gemini-key
+NODE_ENV=production
+
+# Frontend
+VITE_API_BASE_URL=https://expense-management-backend-production.onrender.com/api
+```
+
+### 📊 Monitoring & Health Checks
+
+- **Health Endpoints**: `/health` cho backend
+- **Uptime Monitoring**: Tích hợp với Render monitoring
+- **Error Tracking**: Console logging và error boundaries
+- **Performance**: Docker health checks mỗi 30s
+
+---
 
 ## 🤝 Đóng Góp và Phát Triển
 
@@ -823,7 +976,123 @@ git push origin feature/expense-tracking
 - **Console Logging** - Application logging
 - **Render Monitoring** - Production monitoring
 
-## 📊 Thống Kê Dự Án
+## �️ Công Nghệ Sử Dụng
+
+### 🎨 Frontend Technologies
+
+- **React 19** - Thư viện UI với hooks và concurrent features mới nhất
+- **Vite** - Build tool nhanh với hot module replacement
+- **Tailwind CSS** - Utility-first CSS framework với dark mode support
+- **Recharts** - Thư viện biểu đồ tương tác cho React
+- **React Router Dom v7** - Client-side routing
+- **TanStack React Query** - Server state management và caching
+- **React Icons** - Icon library phong phú
+- **React DatePicker** - Component chọn ngày tháng
+- **React Toastify** - Notification system đẹp mắt
+- **FontAwesome** - Icon fonts và SVG icons
+
+### ⚙️ Backend Technologies
+
+- **Node.js 18** - JavaScript runtime environment
+- **Express.js** - Web application framework cho monolithic API
+- **MongoDB** - NoSQL database (single database)
+- **Mongoose** - MongoDB object modeling
+- **JSON Web Tokens (JWT)** - Authentication và authorization
+- **Swagger (OpenAPI 3.0)** - API documentation
+- **Google Generative AI** - Tích hợp AI Gemini
+- **Bcrypt.js** - Password hashing
+- **Multer** - File upload middleware
+- **CORS** - Cross-Origin Resource Sharing
+- **Dotenv** - Environment variables management
+
+### 🚀 DevOps & Deployment
+
+- **Docker & Docker Compose** - Containerization và orchestration
+- **GitHub Container Registry (GHCR)** - Container image storage
+- **GitHub Actions** - CI/CD pipeline
+- **Render** - Cloud platform cho production deployment
+- **Nginx** - Static file serving và reverse proxy
+- **MongoDB Atlas** - Cloud database service
+
+### 🛠️ Development Tools
+
+- **Vitest** - Unit testing framework cho frontend
+- **Jest** - Testing framework cho backend
+- **React Testing Library** - React components testing
+- **Supertest** - HTTP integration testing
+- **ESLint** - Code linting
+- **Nodemon** - Auto-restart server during development
+- **MongoDB Memory Server** - In-memory MongoDB cho testing
+
+### 📊 Monitoring & Analytics
+
+- **Swagger UI** - Interactive API documentation
+- **Docker Health Checks** - Container monitoring
+- **Console Logging** - Application logging
+- **Render Monitoring** - Production monitoring
+
+---
+
+## 🤝 Đóng Góp và Phát Triển
+
+### 🔄 Quy Trình Phát Triển
+
+1. **Fork repository** về tài khoản cá nhân
+2. **Tạo branch mới** cho feature (`git checkout -b feature/ten-tinh-nang-moi`)
+3. **Commit changes** với message rõ ràng (`git commit -m 'Thêm tính năng ABC'`)
+4. **Push lên branch** (`git push origin feature/ten-tinh-nang-moi`)
+5. **Tạo Pull Request** để review code
+
+### 📋 Coding Standards
+
+- **JavaScript**: ES6+ syntax với async/await patterns
+- **React**: Functional components với Hooks và modern patterns
+- **CSS**: Tailwind CSS utility classes với custom components
+- **API**: RESTful design principles với OpenAPI documentation
+- **Database**: MongoDB với Mongoose ODM và optimized queries
+- **Naming**: camelCase cho variables, PascalCase cho components
+- **Git**: Conventional commits với feature branch workflow
+
+### 🔄 Git Workflow
+
+```bash
+# Cập nhật code mới nhất
+git pull origin main
+
+# Tạo branch mới cho feature
+git checkout -b feature/expense-tracking
+
+# Làm việc và commit với conventional format
+git add .
+git commit -m "feat: thêm tính năng theo dõi chi tiêu"
+
+# Push và tạo PR
+git push origin feature/expense-tracking
+```
+
+### 🔄 CI/CD Process
+
+```yaml
+# Workflow tự động theo branch:
+
+# Khi push vào main branch (Development):
+1. Run Tests (Frontend & Backend)
+2. Build Development Docker Images với tag 'dev-latest'
+3. Security Scan với Trivy
+4. Push to GitHub Container Registry
+5. Ready for development deployment
+
+# Khi push vào production branch (Production):
+1. Run Tests (Frontend & Backend)
+2. Build Production Docker Images với tag 'latest'
+3. Security Scan với Trivy
+4. Push to GitHub Container Registry
+5. Deploy to Render via webhook
+```
+
+---
+
+## �📊 Thống Kê Dự Án
 
 ### 💻 Quy Mô Code Base
 
@@ -875,6 +1144,8 @@ git push origin feature/expense-tracking
 - **Database**: Indexed queries với aggregate pipelines
 - **Uptime**: 99.9% availability trên Render
 - **Security**: A+ rating với security best practices
+
+---
 
 ## 🎓 Kiến Thức Áp Dụng Trong Đồ Án
 
@@ -936,11 +1207,13 @@ git push origin feature/expense-tracking
 - **Password Security**: Bcrypt với proper salt rounds
 - **Performance Optimization**: Code splitting, lazy loading, caching strategies
 
+---
+
 ## 🏆 Highlights của Dự Án
 
 ### 🌟 Điểm Mạnh Kỹ Thuật
 
-1. **Kiến Trúc Modern**: Microservices với Docker containerization
+1. **Kiến Trúc Modern**: Client-Server với backend monolithic architecture
 2. **AI Integration**: Successful implementation của Google Gemini AI
 3. **Real-time Features**: Live updates và instant synchronization
 4. **Security Best Practices**: JWT, bcrypt, input validation, rate limiting
@@ -972,14 +1245,16 @@ git push origin feature/expense-tracking
 - **Error Tracking**: Comprehensive logging và error boundaries
 - **Security Scanning**: Trivy vulnerability assessment
 
+---
+
 ## 📞 Liên Hệ và Hỗ Trợ
 
-### � Thông Tin Liên Hệ
+### 📞 Thông Tin Liên Hệ
 
 - **Email**: thhieu2904@gmail.com
 - **GitHub**: [thhieu2904](https://github.com/thhieu2904)
-- **LinkedIn**: [Trần Hoàng Hiếu](https://linkedin.com/in/thhieu2904)
-- **Production App**: [https://expense-management-frontend.onrender.com](https://expense-management-frontend.onrender.com)
+- **LinkedIn**: [Nguyễn Thanh Hiếu](https://linkedin.com/in/thhieu2904)
+- **Production App**: [https://expense-management-frontend-production.onrender.com](https://expense-management-frontend-production.onrender.com)
 
 ### 🆘 Báo Lỗi và Đóng Góp
 
@@ -998,6 +1273,8 @@ git push origin feature/expense-tracking
 - **Render Docs**: https://render.com/docs
 - **GitHub Actions**: https://docs.github.com/en/actions
 
+---
+
 ## 📜 License và Bản Quyền
 
 Dự án này được phát hành dưới **MIT License** - xem file [LICENSE](LICENSE) để biết chi tiết.
@@ -1014,11 +1291,7 @@ Dự án này được phát hành dưới **MIT License** - xem file [LICENSE](
 
 Cảm ơn tất cả thành viên nhóm đã đóng góp vào dự án này. Đây là kết quả của sự nỗ lực, collaboration tuyệt vời và passion về technology!
 
-**Được phát triển với ❤️ bởi nhóm ExpenseManagement Team:**
-
-- **Nguyễn Thanh Hiếu** - [thhieu2904](https://github.com/thhieu2904) - Team Lead & Full-stack Developer
-- **Phạm Hoàng Kha** - [Hoangkha1107](https://github.com/Hoangkha1107) - Frontend Developer
-- **Nguyễn Trí Cường** - [NguyenTriCuong07](https://github.com/NguyenTriCuong07) - Backend Developer
+**Được phát triển với ❤️ bởi Nhóm 8 - Trường Đại học Trà Vinh**
 
 ---
 
@@ -1034,4 +1307,4 @@ Cảm ơn tất cả thành viên nhóm đã đóng góp vào dự án này. Đ�
 
 ---
 
-**🚀 Live Demo**: [https://expense-management-frontend.onrender.com](https://expense-management-frontend.onrender.com)
+**🚀 Live Demo**: [https://expense-management-frontend-production.onrender.com](https://expense-management-frontend-production.onrender.com)
