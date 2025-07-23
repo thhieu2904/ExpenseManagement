@@ -28,7 +28,7 @@ export const useNotifications = () => {
     }
   }, []);
 
-  // Tự động làm mới thông báo mỗi 5 phút
+  // Tự động làm mới thông báo mỗi 2 phút (giảm từ 5 phút để cập nhật nhanh hơn)
   useEffect(() => {
     loadNotifications();
 
@@ -36,15 +36,22 @@ export const useNotifications = () => {
       () => {
         loadNotifications();
       },
-      5 * 60 * 1000
-    ); // 5 phút
+      2 * 60 * 1000 // ✅ Giảm xuống 2 phút để cập nhật nhanh hơn
+    );
 
     return () => clearInterval(interval);
   }, [loadNotifications]);
 
-  // Làm mới thông báo khi có thay đổi chi tiêu
+  // Làm mới thông báo khi có thay đổi chi tiêu hoặc goal actions
   const refreshNotifications = useCallback(() => {
+    console.log("🔄 Manually refreshing notifications...");
     loadNotifications();
+  }, [loadNotifications]);
+
+  // ✅ THÊM: Function để refresh ngay lập tức khi có goal actions
+  const refreshNotificationsImmediate = useCallback(async () => {
+    console.log("⚡ Immediate notification refresh triggered");
+    await loadNotifications();
   }, [loadNotifications]);
 
   return {
@@ -52,6 +59,7 @@ export const useNotifications = () => {
     unreadCount,
     loading,
     refreshNotifications,
+    refreshNotificationsImmediate, // ✅ Export immediate refresh function
     loadNotifications,
   };
 };

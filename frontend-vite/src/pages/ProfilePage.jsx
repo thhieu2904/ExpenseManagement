@@ -32,12 +32,9 @@ import {
   getLoginHistory,
   deleteAccount as deleteAccountApi,
   getAvatarUrl,
-  clearUserData,
+  exportUserData, // ✅ Export function
+  importUserData, // ✅ Import function
 } from "../api/profileService";
-import { getAccounts, addAccount } from "../api/accountsService";
-import { getTransactions, addTransaction } from "../api/transactionsService"; // Thêm addTransaction
-import { getCategories, addCategory } from "../api/categoriesService";
-import { getGoals, createGoal } from "../api/goalService";
 
 // Utils
 import { getGreeting, getFullDate } from "../utils/timeHelpers";
@@ -298,46 +295,20 @@ const ProfilePage = () => {
     console.log("=== Starting Export Process ===");
 
     try {
-      const [
-        accountsRes,
-        transactionsRes,
-        profileRes,
-        loginHistoryRes,
-        categories,
-        goalsRes,
-      ] = await Promise.all([
-        getAccounts({}),
-        getTransactions(1, 9999, {}), // Lấy tất cả giao dịch
-        getProfile(),
-        getLoginHistory(),
-        getCategories(),
-        getGoals({ limit: 9999, page: 1 }), // ✅ SỬA: Lấy tất cả goals với limit cao
-      ]);
+      // ✅ SỬA: Sử dụng backend API thay vì gọi nhiều APIs riêng lẻ
+      const exportResult = await exportUserData();
+      console.log("Export API response:", exportResult);
 
-      // ✅ THÊM: Debug log để kiểm tra structure
-      console.log("Goals API response:", goalsRes);
-      console.log("Goals data:", goalsRes.data);
-
-      const exportData = {
-        profile: profileRes.data || {},
-        accounts: accountsRes || [],
-        transactions:
-          transactionsRes.data && transactionsRes.data.data
-            ? transactionsRes.data.data
-            : [],
-        categories: categories || [],
-        // ✅ SỬA: Xử lý nhiều trường hợp response structure cho goals
-        goals: goalsRes.data?.data || goalsRes.data || goalsRes || [],
-        loginHistory: loginHistoryRes.data || [],
-      };
+      const exportData = exportResult.data;
 
       // ✅ THÊM: Debug log exported data structure
       console.log("Exported data structure:", {
-        profileKeys: Object.keys(exportData.profile),
-        accountsCount: exportData.accounts.length,
-        categoriesCount: exportData.categories.length,
-        goalsCount: exportData.goals.length,
-        transactionsCount: exportData.transactions.length,
+        profileKeys: Object.keys(exportData.user || {}),
+        accountsCount: (exportData.accounts || []).length,
+        categoriesCount: (exportData.categories || []).length,
+        goalsCount: (exportData.goals || []).length,
+        transactionsCount: (exportData.transactions || []).length,
+        version: exportData.version,
       });
 
       const json = JSON.stringify(exportData, null, 2);
@@ -433,191 +404,21 @@ const ProfilePage = () => {
     });
 
     try {
-      await clearUserData();
-      setSettingsMessage({
-        text: "Đã xóa dữ liệu cũ, đang nhập dữ liệu mới...",
-        type: "info",
-      });
-
-      const categoryIdMap = {};
-      if (Array.isArray(importedData.categories)) {
-        for (const cat of importedData.categories) {
-          const oldCatId = cat._id || cat.id;
-          const { _id, id: _id2, userId: _userId, ...catData } = cat;
-          try {
-            const response = await addCategory(catData);
-            const newCat = response.data || response; // Xử lý cả hai trường hợp
-            categoryIdMap[oldCatId] = newCat._id || newCat.id;
-            console.log(
-              `Mapped category: ${oldCatId} -> ${newCat._id || newCat.id}`
-            );
-          } catch (error) {
-            console.error(`Failed to create category:`, cat, error);
-          }
-        }
-      }
-
-      const accountIdMap = {};
-      if (Array.isArray(importedData.accounts)) {
-        for (const acc of importedData.accounts) {
-          const oldAccId = acc._id || acc.id;
-          const { _id, id: _id2, userId: _userId, ...accData } = acc;
-          try {
-            const response = await addAccount(accData);
-            console.log("Account API response:", response); // Debug log
-            const newAcc = response.data || response; // Xử lý cả hai trường hợp
-            const newAccId = newAcc._id || newAcc.id;
-            accountIdMap[oldAccId] = newAccId;
-            console.log(`Mapped account: ${oldAccId} -> ${newAccId}`, newAcc);
-          } catch (error) {
-            console.error(`Failed to create account:`, acc, error);
-          }
-        }
-      }
-
-      const goalIdMap = {};
-      // ✅ SỬA: Xử lý nhiều format của goals data
-      let goalsToProcess = [];
-      if (Array.isArray(importedData.goals)) {
-        // Direct array format
-        goalsToProcess = importedData.goals;
-        console.log("Goals format: Direct array");
-      } else if (
-        importedData.goals &&
-        importedData.goals.data &&
-        Array.isArray(importedData.goals.data)
-      ) {
-        // API response format with pagination
-        goalsToProcess = importedData.goals.data;
-        console.log("Goals format: API response with pagination");
-      } else if (importedData.goals && typeof importedData.goals === "object") {
-        // Object format, convert to array
-        goalsToProcess = Object.values(importedData.goals);
-        console.log("Goals format: Object values");
-      }
-
-      console.log("Processing goals:", goalsToProcess); // ✅ Debug log
-      console.log("Goals count:", goalsToProcess.length);
-
-      if (goalsToProcess.length > 0) {
-        for (const goal of goalsToProcess) {
-          const oldGoalId = goal._id || goal.id;
-          const {
-            _id,
-            id: _id2,
-            user: _user,
-            userId: _userId,
-            ...goalData
-          } = goal; // ✅ Thêm userId vào destructuring
-          try {
-            console.log("Creating goal with data:", goalData); // ✅ Debug log
-            const response = await createGoal(goalData);
-            console.log("Goal API response:", response); // Debug log
-            const newGoal = response.data || response; // Xử lý cả hai trường hợp
-            const newGoalId = newGoal._id || newGoal.id;
-            goalIdMap[oldGoalId] = newGoalId;
-            console.log(`Mapped goal: ${oldGoalId} -> ${newGoalId}`, newGoal);
-          } catch (error) {
-            console.error(`Failed to create goal:`, goal, error);
-            console.error(
-              "Goal creation error details:",
-              error.response?.data || error.message
-            );
-          }
-        }
-      } else {
-        console.log("No goals to import or goals array is empty"); // ✅ Debug log
-      }
-
-      if (Array.isArray(importedData.transactions)) {
-        for (const tran of importedData.transactions) {
-          const newTranData = {
-            name: tran.description || tran.name, // Backend yêu cầu 'name', không phải 'description'
-            amount: tran.amount,
-            type: tran.type,
-            date: tran.date,
-            note: tran.note || "",
-          };
-
-          // Lấy ID cũ từ nhiều trường có thể - cải thiện logic mapping
-          const oldCatId =
-            tran.category?._id || tran.categoryId || tran.category?.id;
-          const oldAccId =
-            tran.paymentMethod?._id || tran.accountId || tran.paymentMethod?.id;
-          const oldGoalId = tran.goal?._id || tran.goalId || tran.goal?.id;
-
-          // Map category ID
-          if (oldCatId && categoryIdMap[oldCatId]) {
-            newTranData.categoryId = categoryIdMap[oldCatId];
-          }
-
-          // Map account ID
-          if (oldAccId && accountIdMap[oldAccId]) {
-            newTranData.accountId = accountIdMap[oldAccId];
-          }
-
-          // Map goal ID (optional)
-          if (oldGoalId && goalIdMap[oldGoalId]) {
-            newTranData.goalId = goalIdMap[oldGoalId];
-          }
-
-          // Debug log để kiểm tra mapping
-          console.log("Mapping transaction:", {
-            original: {
-              categoryId: oldCatId,
-              accountId: oldAccId,
-              goalId: oldGoalId,
-            },
-            mapped: {
-              categoryId: newTranData.categoryId,
-              accountId: newTranData.accountId,
-              goalId: newTranData.goalId,
-            },
-            maps: {
-              categoryExists: !!categoryIdMap[oldCatId],
-              accountExists: !!accountIdMap[oldAccId],
-              goalExists: !!goalIdMap[oldGoalId],
-            },
-          });
-
-          // Kiểm tra các trường bắt buộc
-          if (
-            newTranData.name &&
-            newTranData.amount &&
-            newTranData.type &&
-            newTranData.categoryId &&
-            newTranData.accountId
-          ) {
-            console.log("Creating transaction:", newTranData);
-            await addTransaction(newTranData);
-          } else {
-            console.warn("Bỏ qua giao dịch do thiếu thông tin:", {
-              original: tran,
-              mapped: newTranData,
-              missing: {
-                name: !newTranData.name,
-                amount: !newTranData.amount,
-                type: !newTranData.type,
-                categoryId: !newTranData.categoryId,
-                accountId: !newTranData.accountId,
-              },
-              mappingInfo: {
-                oldCatId,
-                oldAccId,
-                categoryMapped: categoryIdMap[oldCatId],
-                accountMapped: accountIdMap[oldAccId],
-              },
-            });
-          }
-        }
-      }
+      // ✅ SỬA: Sử dụng backend import API để xử lý toàn bộ
+      const importResult = await importUserData(importedData);
+      console.log("Import API response:", importResult);
 
       setSettingsMessage({
-        text: "Nhập dữ liệu thành công! Vui lòng tải lại trang để xem dữ liệu mới.",
+        text: `Nhập dữ liệu thành công! Đã nhập ${importResult.stats?.goals || 0} mục tiêu, ${importResult.stats?.accounts || 0} tài khoản, ${importResult.stats?.categories || 0} danh mục, ${importResult.stats?.transactions || 0} giao dịch.`,
         type: "success",
       });
+
+      // ✅ Refresh data sau khi import
+      setTimeout(() => {
+        window.location.reload(); // Reload để cập nhật UI với data mới
+      }, 2000);
+
       setIsImportDialogOpen(false);
-      // Không cần logout nữa!
     } catch (err) {
       setDialogError(
         "Có lỗi khi nhập dữ liệu: " +
