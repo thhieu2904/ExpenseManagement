@@ -104,6 +104,10 @@ const createGoal = asyncHandler(async (req, res) => {
     targetAmount,
     deadline,
     icon: icon || "🎯", // Icon mặc định emoji đẹp cho mục tiêu
+    currentAmount: 0, // ✅ Đảm bảo currentAmount được set
+    status: "in-progress", // ✅ Đảm bảo status được set
+    isPinned: false, // ✅ Đảm bảo isPinned được set
+    archived: false, // ✅ Đảm bảo archived được set
   });
 
   res.status(201).json(goal);
@@ -146,8 +150,40 @@ const updateGoal = asyncHandler(async (req, res) => {
     );
   }
 
-  const updatedGoal = await Goal.findByIdAndUpdate(req.params.id, req.body, {
+  // ✅ Prepare update data with validation
+  const updateData = {
+    ...(req.body.name && { name: req.body.name }),
+    ...(req.body.targetAmount && { targetAmount: req.body.targetAmount }),
+    ...(req.body.deadline !== undefined && { deadline: req.body.deadline }),
+    ...(req.body.icon && { icon: req.body.icon }),
+    ...(req.body.currentAmount !== undefined && {
+      currentAmount: req.body.currentAmount,
+    }),
+    ...(req.body.isPinned !== undefined && { isPinned: req.body.isPinned }),
+    ...(req.body.archived !== undefined && { archived: req.body.archived }),
+    ...(req.body.status && { status: req.body.status }),
+  };
+
+  // ✅ Auto-update status based on currentAmount vs targetAmount
+  if (
+    updateData.currentAmount !== undefined ||
+    updateData.targetAmount !== undefined
+  ) {
+    const currentAmount =
+      updateData.currentAmount !== undefined
+        ? updateData.currentAmount
+        : goal.currentAmount;
+    const targetAmount =
+      updateData.targetAmount !== undefined
+        ? updateData.targetAmount
+        : goal.targetAmount;
+    updateData.status =
+      currentAmount >= targetAmount ? "completed" : "in-progress";
+  }
+
+  const updatedGoal = await Goal.findByIdAndUpdate(req.params.id, updateData, {
     new: true, // Trả về document đã được cập nhật
+    runValidators: true, // ✅ Run validation on update
   });
 
   res.status(200).json(updatedGoal);
