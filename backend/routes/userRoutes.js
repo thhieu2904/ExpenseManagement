@@ -49,6 +49,7 @@ const express = require("express");
 const {
   // ...
   getLoginHistory, // Thêm import
+  clearUserData, // ✅ Add clear function
   exportUserData, // ✅ Thêm export function
   importUserData, // ✅ Thêm import function
 } = require("../controllers/userController");
@@ -220,6 +221,7 @@ router.get("/login-history", verifyToken, getLoginHistory);
 // ✅ Export/Import routes
 router.get("/export", verifyToken, exportUserData);
 router.post("/import", verifyToken, importUserData);
+router.delete("/clear-data", verifyToken, clearUserData); // ✅ Add clear data route
 
 router.delete("/me", verifyToken, deleteUserAccount);
 
