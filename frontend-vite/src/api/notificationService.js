@@ -45,28 +45,8 @@ export const getGoalNotifications = async () => {
       return true;
     });
 
-    console.log(
-      `🔔 Processing ${activeGoals.length} active goals out of ${goals.length} total goals`
-    );
-    console.log("📊 Filtered out:", {
-      archived: goals.filter((g) => g && g.archived).length,
-      completed: goals.filter((g) => g && g.status === "completed").length,
-      fullyFunded: goals.filter(
-        (g) =>
-          g &&
-          g.targetAmount &&
-          g.currentAmount &&
-          g.currentAmount >= g.targetAmount
-      ).length,
-    });
-
     activeGoals.forEach((goal) => {
       if (!goal) return;
-
-      // ✅ Debug log cho từng goal được xử lý
-      console.log(
-        `🎯 Processing goal: "${goal.name}" - Status: ${goal.status}, Progress: ${goal.currentAmount}/${goal.targetAmount}, Archived: ${goal.archived}`
-      );
 
       if (goal.deadline) {
         const deadline = new Date(goal.deadline);
@@ -79,17 +59,11 @@ export const getGoalNotifications = async () => {
           (goal.targetAmount && goal.currentAmount >= goal.targetAmount);
 
         if (isCompleted) {
-          console.log(
-            `✅ Skipping deadline notification for completed goal: "${goal.name}"`
-          );
           return;
         }
 
         // Thông báo cho mục tiêu sắp hết hạn (trong vòng 7 ngày)
         if (daysDiff <= 7 && daysDiff > 0) {
-          console.log(
-            `⏰ Creating deadline notification for goal: "${goal.name}" (${daysDiff} days left)`
-          );
           notifications.push({
             id: `goal_deadline_${goal._id}`,
             type: "goal_deadline",
@@ -103,9 +77,6 @@ export const getGoalNotifications = async () => {
 
         // Thông báo cho mục tiêu đã quá hạn
         if (daysDiff <= 0) {
-          console.log(
-            `⚠️ Creating overdue notification for goal: "${goal.name}" (${Math.abs(daysDiff)} days overdue)`
-          );
           notifications.push({
             id: `goal_overdue_${goal._id}`,
             type: "goal_overdue",
@@ -124,9 +95,6 @@ export const getGoalNotifications = async () => {
 
         // ✅ DOUBLE CHECK: Chỉ hiển thị notification khi thực sự gần hoàn thành chứ chưa hoàn thành
         if (progress >= 90 && progress < 100) {
-          console.log(
-            `🎯 Creating progress notification for goal: "${goal.name}" (${Math.round(progress)}% complete)`
-          );
           notifications.push({
             id: `goal_near_complete_${goal._id}`,
             type: "goal_progress",
@@ -136,10 +104,6 @@ export const getGoalNotifications = async () => {
             createdAt: new Date(),
             goalId: goal._id,
           });
-        } else if (progress >= 100) {
-          console.log(
-            `✅ Skipping progress notification for completed goal: "${goal.name}" (${Math.round(progress)}% complete)`
-          );
         }
       }
     });
@@ -151,12 +115,6 @@ export const getGoalNotifications = async () => {
         return priorityOrder[b.priority] - priorityOrder[a.priority];
       }
       return new Date(b.createdAt) - new Date(a.createdAt);
-    });
-
-    console.log(`🔔 Generated ${notifications.length} goal notifications:`, {
-      deadlines: notifications.filter((n) => n.type === "goal_deadline").length,
-      overdue: notifications.filter((n) => n.type === "goal_overdue").length,
-      progress: notifications.filter((n) => n.type === "goal_progress").length,
     });
 
     return notifications;
@@ -191,19 +149,11 @@ export const getAllNotifications = async () => {
     // Kiểm tra test mode
     if (isTestModeEnabled()) {
       const testNotifications = getTestNotifications();
-      console.log(
-        "🔔 Test mode enabled - returning test notifications:",
-        testNotifications.length
-      );
       return testNotifications;
     }
 
-    console.log("🔔 Loading real notifications...");
     const goalNotifications = await getGoalNotifications();
     const spendingNotifications = await generateSpendingNotifications();
-
-    console.log("📊 Goal notifications:", goalNotifications.length);
-    console.log("💰 Spending notifications:", spendingNotifications.length);
 
     const allNotifications = [...goalNotifications, ...spendingNotifications];
 
@@ -216,7 +166,6 @@ export const getAllNotifications = async () => {
       return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
-    console.log("🔔 Total notifications:", allNotifications.length);
     return allNotifications;
   } catch (error) {
     console.error("Error fetching all notifications:", error);
