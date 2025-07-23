@@ -13,6 +13,17 @@ export const changePassword = (oldPassword, newPassword) =>
 export const getLoginHistory = () => axiosInstance.get("/users/login-history");
 export const deleteAccount = () => axiosInstance.delete("/users/me");
 
+// ✅ THÊM: Export/Import functions
+export const exportUserData = async () => {
+  const response = await axiosInstance.get("/users/export");
+  return response.data;
+};
+
+export const importUserData = async (data) => {
+  const response = await axiosInstance.post("/users/import", { data });
+  return response.data;
+};
+
 // Get avatar URL through API service instead of direct localhost access
 export const getAvatarUrl = (avatarPath) => {
   if (!avatarPath) return "/default-avatar.png";

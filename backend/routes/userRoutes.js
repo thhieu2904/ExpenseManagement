@@ -49,6 +49,8 @@ const express = require("express");
 const {
   // ...
   getLoginHistory, // Thêm import
+  exportUserData, // ✅ Thêm export function
+  importUserData, // ✅ Thêm import function
 } = require("../controllers/userController");
 const router = express.Router();
 const {
@@ -214,8 +216,11 @@ router.put("/avatar", verifyToken, upload.single("avatar"), updateAvatar);
 // Đổi mật khẩu
 router.put("/change-password", verifyToken, changePassword);
 router.get("/login-history", verifyToken, getLoginHistory);
-// Lịch sử đăng nhập
-router.get("/login-history", verifyToken, getLoginHistory);
+
+// ✅ Export/Import routes
+router.get("/export", verifyToken, exportUserData);
+router.post("/import", verifyToken, importUserData);
+
 router.delete("/me", verifyToken, deleteUserAccount);
 
 module.exports = router;
