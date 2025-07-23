@@ -132,7 +132,7 @@ export const generateSpendingNotifications = async () => {
 
   // Kiểm tra ngưỡng chi tiêu hàng ngày
   const dailyPercentage = (dailySpending.total / settings.dailyLimit) * 100;
-  
+
   if (dailyPercentage >= settings.notificationThreshold) {
     notifications.push({
       id: `daily_spending_${Date.now()}`,
@@ -147,7 +147,7 @@ export const generateSpendingNotifications = async () => {
   // Kiểm tra ngưỡng chi tiêu hàng tháng
   const monthlyPercentage =
     (monthlySpending.total / settings.monthlyLimit) * 100;
-    
+
   if (monthlyPercentage >= settings.notificationThreshold) {
     notifications.push({
       id: `monthly_spending_${Date.now()}`,

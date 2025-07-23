@@ -16,11 +16,14 @@ export const deleteAccount = () => axiosInstance.delete("/users/me");
 // ✅ THÊM: Export/Import functions
 export const exportUserData = async () => {
   const response = await axiosInstance.get("/users/export");
-  return response.data;
+  return response; // ✅ SỬA: Return full response để có thể access response.data.data
 };
 
-export const importUserData = async (data) => {
-  const response = await axiosInstance.post("/users/import", { data });
+export const importUserData = async (data, clearExisting = true) => {
+  const response = await axiosInstance.post("/users/import", {
+    data,
+    clearExisting,
+  });
   return response.data;
 };
 
@@ -38,8 +41,6 @@ export const getAvatarUrl = (avatarPath) => {
 
 // Clear all user data (for data import/export features)
 export const clearUserData = async () => {
-  await axiosInstance.delete("/accounts/all");
-  await axiosInstance.delete("/categories/all");
-  await axiosInstance.delete("/transactions/all");
-  await axiosInstance.delete("/goals/all");
+  const response = await axiosInstance.delete("/users/clear-data");
+  return response.data;
 };

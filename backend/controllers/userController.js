@@ -203,9 +203,31 @@ const exportUserData = asyncHandler(async (req, res) => {
   }
 });
 
+// ✅ THÊM: Clear all user data
+const clearUserData = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Delete in correct order to avoid foreign key constraints
+    await Transaction.deleteMany({ userId });
+    await Goal.deleteMany({ user: userId });
+    await Category.deleteMany({ userId });
+    await Account.deleteMany({ userId });
+
+    res.status(200).json({
+      success: true,
+      message: "Đã xóa toàn bộ dữ liệu người dùng",
+    });
+  } catch (error) {
+    console.error("Clear data error:", error);
+    res.status(500);
+    throw new Error("Lỗi khi xóa dữ liệu");
+  }
+});
+
 // ✅ THÊM: Import user data
 const importUserData = asyncHandler(async (req, res) => {
-  const { data } = req.body;
+  const { data, clearExisting } = req.body;
 
   if (!data) {
     res.status(400);
@@ -222,11 +244,85 @@ const importUserData = asyncHandler(async (req, res) => {
       errors: [],
     };
 
+    // ✅ Clear existing data first if requested
+    if (clearExisting) {
+      console.log("Clearing existing data for user:", userId);
+      await Transaction.deleteMany({ userId });
+      await Goal.deleteMany({ user: userId });
+      await Category.deleteMany({ userId });
+      await Account.deleteMany({ userId });
+    }
+
+    console.log("Starting import for user:", userId);
+
+    // ✅ Import Accounts
+    if (data.accounts && Array.isArray(data.accounts)) {
+      for (const accountData of data.accounts) {
+        try {
+          // Only create if doesn't exist (for non-clearExisting scenarios)
+          const existingAccount = await Account.findOne({
+            userId,
+            name: accountData.name,
+            type: accountData.type,
+          });
+
+          if (!existingAccount) {
+            await Account.create({
+              userId,
+              name: accountData.name,
+              type: accountData.type,
+              balance: accountData.balance || 0,
+              icon: accountData.icon || "fa-wallet",
+              createdAt: new Date(accountData.createdAt) || new Date(),
+              updatedAt: new Date(accountData.updatedAt) || new Date(),
+            });
+            importStats.accounts++;
+          }
+        } catch (error) {
+          importStats.errors.push(
+            `Account "${accountData.name}": ${error.message}`
+          );
+        }
+      }
+    }
+
+    // ✅ Import Categories
+    if (data.categories && Array.isArray(data.categories)) {
+      for (const categoryData of data.categories) {
+        try {
+          // Only create if doesn't exist (for non-clearExisting scenarios)
+          const existingCategory = await Category.findOne({
+            userId,
+            name: categoryData.name,
+            type: categoryData.type,
+          });
+
+          if (!existingCategory) {
+            await Category.create({
+              userId,
+              name: categoryData.name,
+              type: categoryData.type,
+              icon: categoryData.icon || "fa-question-circle",
+              isGoalCategory: categoryData.isGoalCategory || false,
+              goalId: categoryData.goalId || null,
+              createdAt: new Date(categoryData.createdAt) || new Date(),
+              updatedAt: new Date(categoryData.updatedAt) || new Date(),
+            });
+            importStats.categories++;
+          }
+        } catch (error) {
+          importStats.errors.push(
+            `Category "${categoryData.name}": ${error.message}`
+          );
+        }
+      }
+    }
+
     // ✅ Import Goals with ALL fields
     if (data.goals && Array.isArray(data.goals)) {
       for (const goalData of data.goals) {
         try {
-          // Check if goal already exists
+          // Only create if doesn't exist (for non-clearExisting scenarios)
           const existingGoal = await Goal.findOne({
             user: userId,
             name: goalData.name,
@@ -239,13 +335,13 @@ const importUserData = asyncHandler(async (req, res) => {
               name: goalData.name,
               targetAmount: goalData.targetAmount,
               currentAmount: goalData.currentAmount || 0,
-              deadline: goalData.deadline,
+              deadline: new Date(goalData.deadline),
               icon: goalData.icon || "🎯",
               status: goalData.status || "in-progress", // ✅ Import completion status
               isPinned: goalData.isPinned || false, // ✅ Import pin status
               archived: goalData.archived || false, // ✅ Import archive status
-              createdAt: goalData.createdAt || new Date(),
-              updatedAt: goalData.updatedAt || new Date(),
+              createdAt: new Date(goalData.createdAt) || new Date(),
+              updatedAt: new Date(goalData.updatedAt) || new Date(),
             });
             importStats.goals++;
           }
@@ -257,8 +353,83 @@ const importUserData = asyncHandler(async (req, res) => {
       }
     }
 
-    // Import other data types similarly...
-    // (Account, Category, Transaction import logic would go here)
+    // ✅ Import Transactions (after accounts and categories)
+    if (data.transactions && Array.isArray(data.transactions)) {
+      for (const transactionData of data.transactions) {
+        try {
+          // Find corresponding account and category by name or ID
+          let accountId = null;
+          let categoryId = null;
+
+          // Try to find account by name (from populated data) or by ID
+          if (transactionData.accountId) {
+            if (
+              typeof transactionData.accountId === "object" &&
+              transactionData.accountId.name
+            ) {
+              const account = await Account.findOne({
+                userId,
+                name: transactionData.accountId.name,
+              });
+              accountId = account ? account._id : null;
+            } else {
+              // Direct ID reference - try to find by ID
+              const account = await Account.findOne({
+                userId,
+                _id: transactionData.accountId,
+              });
+              accountId = account ? account._id : null;
+            }
+          }
+
+          // Try to find category by name (from populated data) or by ID
+          if (transactionData.categoryId) {
+            if (
+              typeof transactionData.categoryId === "object" &&
+              transactionData.categoryId.name
+            ) {
+              const category = await Category.findOne({
+                userId,
+                name: transactionData.categoryId.name,
+              });
+              categoryId = category ? category._id : null;
+            } else {
+              // Direct ID reference - try to find by ID
+              const category = await Category.findOne({
+                userId,
+                _id: transactionData.categoryId,
+              });
+              categoryId = category ? category._id : null;
+            }
+          }
+
+          if (accountId && categoryId) {
+            await Transaction.create({
+              userId,
+              type: transactionData.type,
+              name: transactionData.name,
+              amount: transactionData.amount,
+              date: new Date(transactionData.date) || new Date(),
+              accountId: accountId,
+              categoryId: categoryId,
+              note: transactionData.note || "",
+              goalId: transactionData.goalId || null,
+              createdAt: new Date(transactionData.createdAt) || new Date(),
+              updatedAt: new Date(transactionData.updatedAt) || new Date(),
+            });
+            importStats.transactions++;
+          } else {
+            importStats.errors.push(
+              `Transaction "${transactionData.name}": Cannot find matching account or category`
+            );
+          }
+        } catch (error) {
+          importStats.errors.push(
+            `Transaction "${transactionData.name}": ${error.message}`
+          );
+        }
+      }
+    }
 
     res.status(200).json({
       success: true,
@@ -279,6 +450,7 @@ module.exports = {
   changePassword,
   getLoginHistory,
   deleteUserAccount,
+  clearUserData, // ✅ Add clear function
   exportUserData, // ✅ Export function
   importUserData, // ✅ Import function
 };

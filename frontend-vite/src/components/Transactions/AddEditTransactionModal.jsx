@@ -225,7 +225,7 @@ const AddEditTransactionModal = ({
       await createDefaultData();
       // Reload data sau khi tạo thành công
       const [categoriesRes, accountsRes] = await Promise.all([
-        getCategories(),
+        getCategories({ includeGoalCategories: "false" }), // ✅ SỬA: Loại bỏ goal categories
         getAccounts({}),
       ]);
 
@@ -293,7 +293,7 @@ const AddEditTransactionModal = ({
 
       try {
         const [categoriesRes, accountsRes] = await Promise.all([
-          getCategories(),
+          getCategories({ includeGoalCategories: "false" }), // ✅ SỬA: Loại bỏ goal categories
           getAccounts({}), // Pass empty object instead of undefined
         ]);
 
