@@ -827,7 +827,7 @@ ${
         name,
         targetAmount: Number(targetAmount),
         deadline: deadline ? new Date(deadline) : null,
-        icon: icon || "fa-bullseye",
+        icon: icon || "🎯", // Sử dụng emoji giống như manual goal creation
         userId,
       });
 

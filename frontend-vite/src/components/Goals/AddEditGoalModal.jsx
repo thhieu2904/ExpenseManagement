@@ -61,6 +61,30 @@ export default function AddEditGoalModal({
     setShowPicker(false); // Tự động đóng picker sau khi chọn
   };
 
+  // Thêm useEffect để xử lý click outside và ESC key
+  useEffect(() => {
+    if (showPicker) {
+      const handleClickOutside = (e) => {
+        if (!e.target.closest(`.${styles.iconPickerWrapper}`)) {
+          setShowPicker(false);
+        }
+      };
+
+      const handleKeyDown = (e) => {
+        if (e.key === "Escape") {
+          setShowPicker(false);
+        }
+      };
+
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+        document.removeEventListener("keydown", handleKeyDown);
+      };
+    }
+  }, [showPicker]);
+
   // Hàm xử lý khi người dùng nhấn nút submit (giữ nguyên)
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -117,11 +141,13 @@ export default function AddEditGoalModal({
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <div className={styles.modalHeaderIcon}>
-            🎯
-          </div>
+          <div className={styles.modalHeaderIcon}>🎯</div>
           <h2 className={styles.modalTitle}>{modalTitle}</h2>
-          <button onClick={onClose} className={styles.closeButton} aria-label="Đóng modal">
+          <button
+            onClick={onClose}
+            className={styles.closeButton}
+            aria-label="Đóng modal"
+          >
             ×
           </button>
         </div>
@@ -188,19 +214,33 @@ export default function AddEditGoalModal({
                   type="button"
                   className={styles.iconSelector}
                   onClick={() => setShowPicker((val) => !val)}
+                  disabled={isLoading}
                 >
                   {icon}
                 </button>
                 {showPicker && (
-                  <div className={styles.emojiPicker}>
-                    <EmojiPicker
-                      onEmojiClick={onEmojiClick}
-                      height={350}
-                      width="100%"
-                      lazyLoadEmojis={true}
-                      searchDisabled={true}
-                      previewConfig={{ showPreview: false }}
-                    />
+                  <div className={styles.emojiPickerOverlay}>
+                    <div className={styles.emojiPicker}>
+                      <EmojiPicker
+                        onEmojiClick={onEmojiClick}
+                        height={350}
+                        width={300}
+                        lazyLoadEmojis={true}
+                        searchDisabled={false}
+                        previewConfig={{ showPreview: false }}
+                        skinTonesDisabled={true}
+                        categories={[
+                          "suggested",
+                          "smileys_people",
+                          "animals_nature",
+                          "food_drink",
+                          "travel_places",
+                          "activities",
+                          "objects",
+                          "symbols",
+                        ]}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -226,7 +266,8 @@ export default function AddEditGoalModal({
                 <FontAwesomeIcon icon={faSpinner} spin />
               ) : (
                 <>
-                  {submitButtonText} <span className={styles.keyboardHint}>Enter</span>
+                  {submitButtonText}{" "}
+                  <span className={styles.keyboardHint}>Enter</span>
                 </>
               )}
             </button>
