@@ -5,12 +5,19 @@ const Transaction = require("../models/Transaction");
 const getCategories = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { period, year, month, date } = req.query;
+    const { period, year, month, date, includeGoalCategories } = req.query;
 
     const userObjectId = new mongoose.Types.ObjectId(userId);
 
-    // Lấy tất cả danh mục của người dùng (không thay đổi)
-    const categories = await Category.find({ userId }).sort({ createdAt: -1 });
+    // ✅ SỬA: Lọc bỏ goal categories trừ khi được yêu cầu explicitly
+    const categoryFilter = { userId };
+    if (includeGoalCategories !== "true") {
+      categoryFilter.isGoalCategory = { $ne: true };
+    }
+
+    const categories = await Category.find(categoryFilter).sort({
+      createdAt: -1,
+    });
 
     // ✅ BẮT ĐẦU SỬA: Xây dựng bộ lọc thời gian cho aggregation
     const matchTimeFilter = {};

@@ -404,8 +404,8 @@ const ProfilePage = () => {
     });
 
     try {
-      // ✅ SỬA: Sử dụng backend import API để xử lý toàn bộ
-      const importResult = await importUserData(importedData);
+      // ✅ SỬA: Sử dụng backend import API để xử lý toàn bộ với clearExisting = true
+      const importResult = await importUserData(importedData, true); // ✅ Xóa dữ liệu cũ trước khi import
       console.log("Import API response:", importResult);
 
       setSettingsMessage({
