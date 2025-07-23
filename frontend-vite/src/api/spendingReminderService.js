@@ -44,22 +44,28 @@ export const getDailySpending = async () => {
     const endOfDay = new Date(today.setHours(23, 59, 59, 999));
 
     const response = await getTransactions(1, 1000, {
-      type: "expense",
+      type: "CHITIEU", // ✅ SỬA: Sử dụng "CHITIEU" thay vì "expense"
       startDate: startOfDay.toISOString(),
       endDate: endOfDay.toISOString(),
     });
 
     const transactions =
       response.data?.data || response.data?.transactions || [];
-    const totalSpending = transactions.reduce(
+
+    // ✅ Filter chỉ lấy giao dịch chi tiêu thực tế
+    const expenseTransactions = transactions.filter(
+      (t) => t.type === "CHITIEU"
+    );
+
+    const totalSpending = expenseTransactions.reduce(
       (sum, transaction) => sum + transaction.amount,
       0
     );
 
     return {
       total: totalSpending,
-      count: transactions.length,
-      transactions: transactions.slice(0, 5), // Lấy 5 giao dịch gần nhất
+      count: expenseTransactions.length,
+      transactions: expenseTransactions.slice(0, 5), // Lấy 5 giao dịch gần nhất
     };
   } catch (error) {
     console.error("Error calculating daily spending:", error);
@@ -83,21 +89,27 @@ export const getMonthlySpending = async () => {
     );
 
     const response = await getTransactions(1, 1000, {
-      type: "expense",
+      type: "CHITIEU", // ✅ SỬA: Sử dụng "CHITIEU" thay vì "expense"
       startDate: startOfMonth.toISOString(),
       endDate: endOfMonth.toISOString(),
     });
 
     const transactions =
       response.data?.data || response.data?.transactions || [];
-    const totalSpending = transactions.reduce(
+
+    // ✅ Filter chỉ lấy giao dịch chi tiêu thực tế
+    const expenseTransactions = transactions.filter(
+      (t) => t.type === "CHITIEU"
+    );
+
+    const totalSpending = expenseTransactions.reduce(
       (sum, transaction) => sum + transaction.amount,
       0
     );
 
     return {
       total: totalSpending,
-      count: transactions.length,
+      count: expenseTransactions.length,
       averageDaily: totalSpending / now.getDate(),
     };
   } catch (error) {
@@ -120,6 +132,7 @@ export const generateSpendingNotifications = async () => {
 
   // Kiểm tra ngưỡng chi tiêu hàng ngày
   const dailyPercentage = (dailySpending.total / settings.dailyLimit) * 100;
+  
   if (dailyPercentage >= settings.notificationThreshold) {
     notifications.push({
       id: `daily_spending_${Date.now()}`,
@@ -134,6 +147,7 @@ export const generateSpendingNotifications = async () => {
   // Kiểm tra ngưỡng chi tiêu hàng tháng
   const monthlyPercentage =
     (monthlySpending.total / settings.monthlyLimit) * 100;
+    
   if (monthlyPercentage >= settings.notificationThreshold) {
     notifications.push({
       id: `monthly_spending_${Date.now()}`,
