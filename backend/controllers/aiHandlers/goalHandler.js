@@ -77,7 +77,7 @@ class GoalHandler {
           name: goal.name,
           targetAmount: Number(goal.targetAmount),
           deadline: goal.deadline,
-          icon: goal.icon || "fa-bullseye",
+          icon: goal.icon || "🎯", // Sử dụng emoji giống như manual goal creation
         },
       };
     } catch (error) {

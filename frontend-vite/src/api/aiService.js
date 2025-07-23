@@ -291,7 +291,7 @@ class AIService {
         name: goalData.name,
         targetAmount: goalData.targetAmount || goalData.amount,
         deadline: goalData.deadline,
-        icon: goalData.icon || "fa-bullseye",
+        icon: goalData.icon || "🎯", // Sử dụng emoji giống như manual goal creation
       };
 
       console.log("Request data to backend:", requestData);
