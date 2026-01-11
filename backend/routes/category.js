@@ -256,29 +256,25 @@ const {
   createCategory,
   updateCategory,
   deleteCategory,
+  deleteAllCategories,
 } = require("../controllers/categoryController");
 
 router.get("/", verifyToken, getCategories);
 router.post("/", verifyToken, createCategory);
 router.put("/:id", verifyToken, updateCategory);
 
-router.delete(
-  "/all",
-  require("../middleware/verifyToken"),
-  async (req, res) => {
-    try {
-      const result = await require("../models/Category").deleteMany({
-        userId: req.user.id,
-      });
-      res.json({
-        message: "Đã xóa toàn bộ danh mục!",
-        deletedCount: result.deletedCount,
-      });
-    } catch (err) {
-      res.status(500).json({ message: "Lỗi xóa danh mục", error: err.message });
-    }
+// RESTful: DELETE /categories?deleteAll=true hoặc DELETE /categories/:id
+router.delete("/", verifyToken, (req, res) => {
+  if (req.query.deleteAll === "true") {
+    return deleteAllCategories(req, res);
   }
-);
+  res
+    .status(400)
+    .json({
+      success: false,
+      message: "Missing category ID or deleteAll param",
+    });
+});
 
 router.delete("/:id", verifyToken, deleteCategory);
 

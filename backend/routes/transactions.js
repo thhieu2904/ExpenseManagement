@@ -327,18 +327,18 @@ const transactionController = require("../controllers/transactionController");
 
 router.post("/", verifyToken, transactionController.createTransaction);
 router.get("/", verifyToken, transactionController.getAllTransactions);
-router.delete("/all", verifyToken, async (req, res) => {
-  try {
-    const result = await require("../models/Transaction").deleteMany({
-      userId: req.user.id,
-    });
-    res.json({
-      message: "Đã xóa toàn bộ giao dịch!",
-      deletedCount: result.deletedCount,
-    });
-  } catch (err) {
-    res.status(500).json({ message: "Lỗi xóa giao dịch", error: err.message });
+
+// RESTful: DELETE /transactions?deleteAll=true hoặc DELETE /transactions/:id
+router.delete("/", verifyToken, (req, res, next) => {
+  if (req.query.deleteAll === "true") {
+    return transactionController.deleteAllTransactions(req, res);
   }
+  res
+    .status(400)
+    .json({
+      success: false,
+      message: "Missing transaction ID or deleteAll param",
+    });
 });
 
 router.delete("/:id", verifyToken, transactionController.deleteTransaction);

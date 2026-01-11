@@ -157,3 +157,21 @@ exports.deleteAccount = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// [DELETE] /api/accounts/all - Xóa tất cả tài khoản
+exports.deleteAllAccounts = async (req, res) => {
+  try {
+    const result = await Account.deleteMany({ userId: req.user.id });
+    res.json({
+      success: true,
+      message: "Đã xóa toàn bộ tài khoản!",
+      data: { deletedCount: result.deletedCount },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Lỗi xóa tài khoản",
+      errors: err.message,
+    });
+  }
+};

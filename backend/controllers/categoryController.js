@@ -175,10 +175,28 @@ const deleteCategory = async (req, res) => {
       .json({ message: "Lỗi khi xóa danh mục", error: err.message });
   }
 };
+// [DELETE] /api/categories/all - Xóa tất cả danh mục
+const deleteAllCategories = async (req, res) => {
+  try {
+    const result = await Category.deleteMany({ userId: req.user.id });
+    res.json({
+      success: true,
+      message: "Đã xóa toàn bộ danh mục!",
+      data: { deletedCount: result.deletedCount },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Lỗi xóa danh mục",
+      errors: err.message,
+    });
+  }
+};
 
 module.exports = {
   getCategories,
   createCategory,
   updateCategory,
   deleteCategory,
+  deleteAllCategories,
 };

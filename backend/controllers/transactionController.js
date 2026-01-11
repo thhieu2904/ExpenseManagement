@@ -380,3 +380,21 @@ exports.updateTransaction = async (req, res) => {
 };
 
 // Hiển thị lich giao dịch theo tháng
+
+// Xóa tất cả giao dịch của người dùng
+exports.deleteAllTransactions = async (req, res) => {
+  try {
+    const result = await Transaction.deleteMany({ userId: req.user.id });
+    res.json({
+      success: true,
+      message: "Đã xóa toàn bộ giao dịch!",
+      data: { deletedCount: result.deletedCount },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Lỗi xóa giao dịch",
+      errors: err.message,
+    });
+  }
+};

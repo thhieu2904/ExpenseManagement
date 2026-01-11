@@ -97,121 +97,16 @@ const accountController = require("../controllers/accountController");
 // 2. Sử dụng các hàm từ controller
 router.get("/", verifyToken, accountController.getAccounts);
 router.post("/", verifyToken, accountController.createAccount);
-/**
- * @swagger
- * /api/accounts/{id}:
- *   put:
- *     summary: Cập nhật tài khoản
- *     tags: [Accounts]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: ID của tài khoản
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               balance:
- *                 type: number
- *               bankName:
- *                 type: string
- *               accountNumber:
- *                 type: string
- *     responses:
- *       200:
- *         description: Cập nhật thành công
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Account'
- *       404:
- *         description: Không tìm thấy tài khoản
- *
- *   delete:
- *     summary: Xóa tài khoản
- *     tags: [Accounts]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: ID của tài khoản
- *     responses:
- *       200:
- *         description: Xóa thành công
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Xóa tài khoản thành công
- *       404:
- *         description: Không tìm thấy tài khoản
- */
-
-/**
- * @swagger
- * /api/accounts/all:
- *   delete:
- *     summary: Xóa tất cả tài khoản của người dùng
- *     tags: [Accounts]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Xóa thành công
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Đã xóa toàn bộ tài khoản!
- *                 deletedCount:
- *                   type: number
- *       500:
- *         description: Lỗi server
- */
-
 router.put("/:id", verifyToken, accountController.updateAccount);
 
-// Đặt route này TRƯỚC route delete theo id để tránh nhầm lẫn
-router.delete("/all", verifyToken, async (req, res) => {
-  try {
-    console.log("DELETE /accounts/all - req.user:", req.user);
-    const result = await require("../models/Account").deleteMany({
-      userId: req.user.id,
-    });
-    console.log("Kết quả deleteMany:", result);
-    res.json({
-      message: "Đã xóa toàn bộ tài khoản!",
-      deletedCount: result.deletedCount,
-    });
-  } catch (err) {
-    console.error("Lỗi xóa toàn bộ tài khoản:", err);
-    res
-      .status(500)
-      .json({
-        message: "Lỗi xóa tài khoản",
-        error: err.message,
-        stack: err.stack,
-      });
+// RESTful: DELETE /accounts?deleteAll=true hoặc DELETE /accounts/:id
+router.delete("/", verifyToken, (req, res) => {
+  if (req.query.deleteAll === "true") {
+    return accountController.deleteAllAccounts(req, res);
   }
+  res
+    .status(400)
+    .json({ success: false, message: "Missing account ID or deleteAll param" });
 });
 
 router.delete("/:id", verifyToken, accountController.deleteAccount);

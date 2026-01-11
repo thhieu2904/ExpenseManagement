@@ -56,139 +56,19 @@ const {
   toggleArchiveGoal,
   togglePinGoal,
   fixGoalCategoriesIcon,
+  deleteAllGoals,
 } = require("../controllers/goalController");
-
-/**
- * @swagger
- * /api/goals:
- *   get:
- *     summary: Lấy tất cả mục tiêu của người dùng
- *     tags: [Goals]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           default: 1
- *         description: Số trang
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 10
- *         description: Số lượng mục tiêu mỗi trang
- *       - in: query
- *         name: filter
- *         schema:
- *           type: string
- *           enum: [ALL, ACTIVE, COMPLETED, OVERDUE]
- *         description: Lọc theo trạng thái
- *       - in: query
- *         name: sortType
- *         schema:
- *           type: string
- *           enum: [CREATED, DEADLINE, PROGRESS]
- *           default: CREATED
- *         description: Kiểu sắp xếp
- *       - in: query
- *         name: sortDirection
- *         schema:
- *           type: string
- *           enum: [asc, desc]
- *           default: desc
- *         description: Hướng sắp xếp
- *     responses:
- *       200:
- *         description: Danh sách mục tiêu
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Goal'
- *                 currentPage:
- *                   type: integer
- *                 totalPages:
- *                   type: integer
- *                 totalGoals:
- *                   type: integer
- *
- *   post:
- *     summary: Tạo mục tiêu mới
- *     tags: [Goals]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - targetAmount
- *             properties:
- *               name:
- *                 type: string
- *               targetAmount:
- *                 type: number
- *               deadline:
- *                 type: string
- *                 format: date
- *               icon:
- *                 type: string
- *     responses:
- *       201:
- *         description: Mục tiêu được tạo thành công
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Goal'
- */
-
-/**
- * @swagger
- * /api/goals/all:
- *   delete:
- *     summary: Xóa tất cả mục tiêu của người dùng
- *     tags: [Goals]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Xóa thành công
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Đã xóa toàn bộ mục tiêu!
- *                 deletedCount:
- *                   type: number
- */
 
 const protect = require("../middleware/verifyToken");
 
-// Route này chỉ xóa các mục tiêu Goal của user hiện tại, không xóa user
-router.delete("/all", protect, async (req, res) => {
-  try {
-    const result = await require("../models/Goal").deleteMany({
-      user: req.user.id,
-    });
-    res.json({
-      message: "Đã xóa toàn bộ mục tiêu!",
-      deletedCount: result.deletedCount,
-    });
-  } catch (err) {
-    res.status(500).json({ message: "Lỗi xóa mục tiêu", error: err.message });
+// RESTful: DELETE /goals?deleteAll=true hoặc DELETE /goals/:id
+router.delete("/", protect, (req, res) => {
+  if (req.query.deleteAll === "true") {
+    return deleteAllGoals(req, res);
   }
+  res
+    .status(400)
+    .json({ success: false, message: "Missing goal ID or deleteAll param" });
 });
 
 /**

@@ -359,6 +359,16 @@ const fixGoalCategoriesIcon = asyncHandler(async (req, res) => {
   }
 });
 
+// [DELETE] /api/goals/all - Xóa tất cả mục tiêu
+const deleteAllGoals = asyncHandler(async (req, res) => {
+  const result = await Goal.deleteMany({ user: req.user.id });
+  res.json({
+    success: true,
+    message: "Đã xóa toàn bộ mục tiêu!",
+    data: { deletedCount: result.deletedCount },
+  });
+});
+
 module.exports = {
   getGoals,
   createGoal,
@@ -368,4 +378,5 @@ module.exports = {
   toggleArchiveGoal,
   togglePinGoal,
   fixGoalCategoriesIcon,
+  deleteAllGoals,
 };
